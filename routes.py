@@ -608,7 +608,8 @@ def edit_quiz(quiz_id):
 def admin_quiz_questions(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
     questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
-    return render_template('admin/quiz_questions.html', quiz=quiz, questions=questions)
+    form = QuizQuestionForm()  # Add form for CSRF token
+    return render_template('admin/quiz_questions.html', quiz=quiz, questions=questions, form=form)
 
 @app.route('/admin/questions/<int:question_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -631,7 +632,7 @@ def edit_question(question_id):
 def admin_course_assignments(course_id):
     course = Course.query.get_or_404(course_id)
     assignments = Assignment.query.filter_by(course_id=course_id).all()
-    return render_template('admin/course_assignments.html', course=course, assignments=assignments)
+    return render_template('admin/course_assignments.html', course=course, assignments=assignments, now=datetime.utcnow())
 
 @app.route('/admin/assignments/<int:assignment_id>/edit', methods=['GET', 'POST'])
 @login_required

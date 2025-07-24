@@ -40,7 +40,9 @@
                                 <td><span class="badge bg-primary">{{ lesson.order }}</span></td>
                                 <td>
                                     <strong>{{ lesson.title }}</strong>
+                                    {% if lesson.description %}
                                     <br><small class="text-muted">{{ lesson.description[:80] }}...</small>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <span class="badge bg-{{ 'info' if lesson.content_type == 'text' else 'warning' if lesson.content_type == 'video' else 'success' }}">

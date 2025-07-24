@@ -67,11 +67,13 @@ class Course(db.Model):
 class Lesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)  # Added description field
     content = db.Column(db.Text)
     content_type = db.Column(db.String(20), nullable=False)  # text, pdf, video
     file_path = db.Column(db.String(500))  # for PDF uploads
     video_url = db.Column(db.String(500))  # for video embeds
     order = db.Column(db.Integer, default=0)
+    duration = db.Column(db.Integer)  # Added duration field for templates
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

@@ -22,6 +22,9 @@ def create_app():
     # Configuration
     app.secret_key = os.environ.get("SESSION_SECRET")
     
+    # CSRF configuration for Flask-WTF
+    app.config['WTF_CSRF_ENABLED'] = True
+    
     # Database configuration - use environment DATABASE_URL if available, otherwise SQLite
     if os.environ.get("DATABASE_URL"):
         database_url = os.environ.get("DATABASE_URL")
@@ -49,7 +52,7 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = "login"
+    login_manager.login_view = "login"  # type: ignore
     login_manager.login_message = "Please log in to access this page."
     login_manager.login_message_category = "info"
     
