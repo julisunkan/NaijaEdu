@@ -1071,6 +1071,9 @@ def issue_certificate(user_id, course_id):
     user = User.query.get(user_id)
     course = Course.query.get(course_id)
     
+    if not user or not course:
+        return None
+    
     # Get default certificate template
     template = CertificateTemplate.query.filter_by(is_default=True, is_active=True).first()
     if not template:
@@ -1087,10 +1090,10 @@ def issue_certificate(user_id, course_id):
     certificate.course_id = course_id
     certificate.template_id = template.id
     certificate.certificate_number = certificate.generate_certificate_number()
-    certificate.student_name = f"{user.first_name} {user.last_name}" if user.first_name else user.username
+    certificate.student_name = f"{user.first_name} {user.last_name}" if user.first_name and user.last_name else user.username
     certificate.course_title = course.title
     certificate.completion_date = datetime.utcnow()
-    certificate.instructor_name = f"{course.instructor.first_name} {course.instructor.last_name}" if course.instructor.first_name else course.instructor.username
+    certificate.instructor_name = f"{course.instructor.first_name} {course.instructor.last_name}" if course.instructor and course.instructor.first_name and course.instructor.last_name else course.instructor.username if course.instructor else "Course Instructor"
     
     db.session.add(certificate)
     db.session.commit()

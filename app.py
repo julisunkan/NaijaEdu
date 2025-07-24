@@ -20,7 +20,7 @@ def create_app():
     app = Flask(__name__)
     
     # Configuration
-    app.secret_key = os.environ.get("SESSION_SECRET")
+    app.secret_key = os.environ.get("SESSION_SECRET") or "dev-secret-key-change-in-production"
     
     # CSRF configuration for Flask-WTF
     app.config['WTF_CSRF_ENABLED'] = True
