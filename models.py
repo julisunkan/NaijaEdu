@@ -25,7 +25,6 @@ class User(UserMixin, db.Model):
     instructor_verified = db.Column(db.Boolean, default=False)
     badge_level = db.Column(db.String(20), default='basic')  # basic, bronze, silver, gold, premium
     wallet_balance = db.Column(db.Float, default=0.0)
-    course_credits = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
     

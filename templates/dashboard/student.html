@@ -36,7 +36,14 @@
         <div class="card text-center">
             <div class="card-body">
                 <i data-feather="award" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>{{ current_user.course_credits }}</h5>
+                <h5>
+                    {% set earned_credits = current_user.course_credits %}
+                    {% if earned_credits %}
+                        {{ earned_credits|sum(attribute='credits_earned') }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </h5>
                 <p class="text-muted">Course Credits</p>
             </div>
         </div>
