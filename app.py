@@ -72,9 +72,10 @@ def create_app():
 # Create app instance
 app = create_app()
 
-# Import models after app creation to avoid circular imports
+# Import models and routes after app creation to avoid circular imports
 with app.app_context():
     import models
+    import routes  # Import routes to register them
     db.create_all()
     
     # Create default admin user if not exists
