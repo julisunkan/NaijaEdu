@@ -198,7 +198,7 @@
                                         </form>
                                         {% endif %}
                                         <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                onclick="confirmDeleteVoucher('{{ voucher.code }}', '{{ url_for('delete_voucher', voucher_id=voucher.id) }}')"
+                                                onclick="confirmDeleteVoucher({{ voucher.code|tojson }}, {{ url_for('delete_voucher', voucher_id=voucher.id)|tojson }})"
                                                 title="Delete Voucher">
                                             <i data-feather="trash-2"></i>
                                         </button>

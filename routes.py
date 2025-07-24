@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from flask import render_template, request, redirect, url_for, flash, jsonify, send_from_directory, make_response
+from flask import render_template, request, redirect, url_for, flash, jsonify, send_from_directory, make_response, send_file
 from datetime import datetime as dt
 from flask_login import login_user, logout_user, login_required, current_user
 from app import app, db
