@@ -231,8 +231,20 @@ Preferred communication style: Simple, everyday language.
 - ✓ Payment, voucher, and certificate management systems working without errors
 - ✓ Project is stable and ready for continued development and deployment
 
+### July 24, 2025 - Tutor Account System Implementation
+- ✓ Enhanced User Registration: Added role selection for student vs tutor account creation
+- ✓ Tutor Course Management: Tutors can create courses that require admin approval before going live
+- ✓ Course Approval System: Added approval_status field with pending/approved/rejected states
+- ✓ Access Control Updates: Modified instructor_required decorator to include tutor role
+- ✓ Withdrawal Request System: Added WithdrawalRequest model for tutor earnings withdrawal
+- ✓ Commission System: Implemented 15% platform commission calculation for tutor earnings
+- ✓ Enhanced Voucher System: Added course-specific and tutor-created voucher support
+- ✓ Database Schema Updates: Added new columns for course approval and withdrawal management
+- ✓ Role-Based Dashboard: Tutor and instructor roles share the same dashboard functionality
+- ✓ Public Course Filtering: Only approved courses are visible to public users
+
 ### Current Status - July 24, 2025
-The Nigerian e-learning platform has been successfully migrated from Replit Agent to standard Replit environment with comprehensive enhancements. The platform now features advanced certificate templates with colorful designs and company logo support, email verification and password reset functionality, Progressive Web App (PWA) capabilities, enhanced mobile responsiveness, website settings import/export functionality, Google AdSense integration, Google Analytics tracking, student content downloads, and bulk import/export systems.
+The Nigerian e-learning platform has been successfully migrated from Replit Agent to standard Replit environment with comprehensive enhancements including a complete tutor system. The platform now features advanced certificate templates with colorful designs and company logo support, email verification and password reset functionality, Progressive Web App (PWA) capabilities, enhanced mobile responsiveness, website settings import/export functionality, Google AdSense integration, Google Analytics tracking, student content downloads, and bulk import/export systems.
 
 #### Latest Migration & Enhancement Features (July 24, 2025):
 - ✓ Enhanced Certificate Templates: Colorful designs with gradient backgrounds, company logo support, customizable color schemes, decorative elements, and multiple seal designs

@@ -19,7 +19,7 @@ def admin_required(f):
 def instructor_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role not in ['admin', 'instructor']:
+        if not current_user.is_authenticated or current_user.role not in ['admin', 'instructor', 'tutor']:
             flash('Instructor access required', 'danger')
             return redirect(url_for('dashboard'))
         return f(*args, **kwargs)
