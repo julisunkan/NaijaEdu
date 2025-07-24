@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Withdrawal Requests - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i data-feather="credit-card"></i> Withdrawal Requests</h2>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary active" onclick="filterWithdrawals('all')">All</button>
+            <button type="button" class="btn btn-outline-warning" onclick="filterWithdrawals('pending')">Pending</button>
+            <button type="button" class="btn btn-outline-success" onclick="filterWithdrawals('approved')">Approved</button>
+            <button type="button" class="btn btn-outline-primary" onclick="filterWithdrawals('paid')">Paid</button>
+            <button type="button" class="btn btn-outline-danger" onclick="filterWithdrawals('rejected')">Rejected</button>
+        </div>
+    </div>
+
+    {% if withdrawals %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tutor</th>
+                            <th>Amount</th>
+                            <th>Bank Details</th>
+                            <th>Request Date</th>
+                            <th>Status</th>
+                            <th>Processed</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for withdrawal in withdrawals %}
+                        <tr class="withdrawal-row" data-status="{{ withdrawal.status }}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div>
+                                        <strong>{{ withdrawal.tutor.username }}</strong><br>
+                                        <small class="text-muted">{{ withdrawal.tutor.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <strong class="text-success">{{ withdrawal.amount|currency }}</strong>
+                                {% if withdrawal.request_reason %}
+                                <br><small class="text-muted">{{ withdrawal.request_reason }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ withdrawal.bank_name }}</strong><br>
+                                {{ withdrawal.account_number }}<br>
+                                <small>{{ withdrawal.account_name }}</small>
+                            </td>
+                            <td>{{ withdrawal.requested_at.strftime('%Y-%m-%d<br>%H:%M')|safe }}</td>
+                            <td>
+                                {% if withdrawal.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif withdrawal.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif withdrawal.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% elif withdrawal.status == 'paid' %}
+                                    <span class="badge bg-primary">Paid</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if withdrawal.processed_at %}
+                                    {{ withdrawal.processed_at.strftime('%Y-%m-%d<br>%H:%M')|safe }}
+                                    {% if withdrawal.approved_by %}
+                                    <br><small class="text-muted">by {{ User.query.get(withdrawal.approved_by).username if User.query.get(withdrawal.approved_by) }}</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if withdrawal.status == 'pending' %}
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ url_for('process_withdrawal', withdrawal_id=withdrawal.id) }}" class="btn btn-outline-primary">
+                                        <i data-feather="edit"></i> Process
+                                    </a>
+                                </div>
+                                {% elif withdrawal.status == 'approved' %}
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ url_for('process_withdrawal', withdrawal_id=withdrawal.id) }}" class="btn btn-outline-success">
+                                        <i data-feather="check"></i> Mark Paid
+                                    </a>
+                                </div>
+                                {% else %}
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ url_for('process_withdrawal', withdrawal_id=withdrawal.id) }}" class="btn btn-outline-secondary">
+                                        <i data-feather="eye"></i> View
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i data-feather="inbox" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
+        <h4>No withdrawal requests yet</h4>
+        <p class="text-muted">Withdrawal requests from tutors and instructors will appear here.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function filterWithdrawals(status) {
+    const rows = document.querySelectorAll('.withdrawal-row');
+    const buttons = document.querySelectorAll('.btn-group button');
+    
+    // Update button states
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Show/hide rows
+    rows.forEach(row => {
+        if (status === 'all' || row.dataset.status === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Initialize Feather icons
+feather.replace();
+</script>
+{% endblock %}

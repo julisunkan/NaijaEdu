@@ -46,6 +46,21 @@
 </div>
 
 <div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <i data-feather="dollar-sign" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>Earnings</h5>
+                <p class="mb-2">View earnings & withdraw</p>
+                <a href="{{ url_for('instructor_earnings') }}" class="btn btn-light btn-sm">
+                    <i data-feather="eye"></i> View Earnings
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
@@ -55,6 +70,8 @@
                 <div class="d-grid gap-2">
                     <a href="{{ url_for('create_course') }}" class="btn btn-primary">Create New Course</a>
                     <a href="{{ url_for('manage_courses') }}" class="btn btn-secondary">Manage Courses</a>
+                    <a href="{{ url_for('instructor_earnings') }}" class="btn btn-success">View Earnings</a>
+                    <a href="{{ url_for('request_withdrawal') }}" class="btn btn-outline-success">Request Withdrawal</a>
                 </div>
             </div>
         </div>

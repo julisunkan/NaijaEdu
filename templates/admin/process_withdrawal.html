@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Process Withdrawal - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i data-feather="credit-card"></i> Process Withdrawal Request</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Withdrawal Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Tutor Information</h6>
+                            <p><strong>Name:</strong> {{ withdrawal.tutor.username }}</p>
+                            <p><strong>Email:</strong> {{ withdrawal.tutor.email }}</p>
+                            <p><strong>Full Name:</strong> {{ withdrawal.tutor.first_name }} {{ withdrawal.tutor.last_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Withdrawal Details</h6>
+                            <p><strong>Amount:</strong> <span class="text-success h5">{{ withdrawal.amount|currency }}</span></p>
+                            <p><strong>Requested:</strong> {{ withdrawal.requested_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            <p><strong>Current Status:</strong> 
+                                {% if withdrawal.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif withdrawal.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif withdrawal.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% elif withdrawal.status == 'paid' %}
+                                    <span class="badge bg-primary">Paid</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Bank Details -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6><i data-feather="credit-card"></i> Bank Details</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Bank Name:</strong><br>
+                                    {{ withdrawal.bank_name }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Account Number:</strong><br>
+                                    {{ withdrawal.account_number }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Account Name:</strong><br>
+                                    {{ withdrawal.account_name }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Request Reason -->
+                    {% if withdrawal.request_reason %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6><i data-feather="message-circle"></i> Request Reason</h6>
+                        </div>
+                        <div class="card-body">
+                            <p>{{ withdrawal.request_reason }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Previous Admin Notes -->
+                    {% if withdrawal.admin_notes %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6><i data-feather="file-text"></i> Previous Admin Notes</h6>
+                        </div>
+                        <div class="card-body">
+                            <p>{{ withdrawal.admin_notes }}</p>
+                            {% if withdrawal.processed_at %}
+                            <small class="text-muted">
+                                Processed on {{ withdrawal.processed_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% if withdrawal.approved_by %}
+                                by {{ User.query.get(withdrawal.approved_by).username if User.query.get(withdrawal.approved_by) }}
+                                {% endif %}
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Process Form -->
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.status.label(class="form-label") }}
+                            {{ form.status(class="form-select") }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.admin_notes.label(class="form-label") }}
+                            {{ form.admin_notes(class="form-control", rows="4", placeholder="Add notes about your decision...") }}
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i data-feather="info"></i> Status Guide:</h6>
+                            <ul class="mb-0">
+                                <li><strong>Approved:</strong> Withdrawal is approved and ready for payment</li>
+                                <li><strong>Rejected:</strong> Withdrawal is denied (provide reason in notes)</li>
+                                <li><strong>Paid:</strong> Money has been transferred to the tutor's account</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin_withdrawals') }}" class="btn btn-secondary">
+                                <i data-feather="arrow-left"></i> Back to Withdrawals
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="save"></i> Update Status
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize Feather icons
+feather.replace();
+</script>
+{% endblock %}

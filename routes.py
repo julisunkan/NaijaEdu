@@ -1063,6 +1063,134 @@ def submit_assignment(assignment_id):
     
     return render_template('assignments/submit.html', form=form, assignment=assignment, submission=existing_submission, now=dt.utcnow())
 
+# Withdrawal routes
+@app.route('/instructor/earnings')
+@login_required
+@instructor_required
+def instructor_earnings():
+    """Display tutor/instructor earnings and withdrawal options"""
+    # Calculate total earnings
+    total_earnings = 0
+    commission_rate = 0.15  # 15% platform commission
+    
+    courses = Course.query.filter_by(instructor_id=current_user.id, approval_status='approved').all()
+    
+    for course in courses:
+        successful_payments = Payment.query.filter_by(
+            course_id=course.id, 
+            status='approved'
+        ).all()
+        
+        for payment in successful_payments:
+            tutor_share = payment.amount * (1 - commission_rate)
+            total_earnings += tutor_share
+    
+    # Calculate total withdrawals
+    total_withdrawals = db.session.query(db.func.sum(WithdrawalRequest.amount)).filter(
+        WithdrawalRequest.tutor_id == current_user.id,
+        WithdrawalRequest.status.in_(['approved', 'paid'])
+    ).scalar() or 0
+    
+    available_balance = max(0, total_earnings - total_withdrawals)
+    
+    # Get withdrawal history
+    withdrawal_history = WithdrawalRequest.query.filter_by(tutor_id=current_user.id).order_by(WithdrawalRequest.requested_at.desc()).all()
+    
+    return render_template('instructor/earnings.html', 
+                         total_earnings=total_earnings,
+                         total_withdrawals=total_withdrawals,
+                         available_balance=available_balance,
+                         withdrawal_history=withdrawal_history,
+                         commission_rate=commission_rate * 100)
+
+@app.route('/instructor/withdraw', methods=['GET', 'POST'])
+@login_required
+@instructor_required
+def request_withdrawal():
+    """Submit withdrawal request"""
+    form = WithdrawalRequestForm()
+    
+    # Calculate available balance
+    total_earnings = 0
+    commission_rate = 0.15
+    
+    courses = Course.query.filter_by(instructor_id=current_user.id, approval_status='approved').all()
+    
+    for course in courses:
+        successful_payments = Payment.query.filter_by(
+            course_id=course.id, 
+            status='approved'
+        ).all()
+        
+        for payment in successful_payments:
+            tutor_share = payment.amount * (1 - commission_rate)
+            total_earnings += tutor_share
+    
+    total_withdrawals = db.session.query(db.func.sum(WithdrawalRequest.amount)).filter(
+        WithdrawalRequest.tutor_id == current_user.id,
+        WithdrawalRequest.status.in_(['approved', 'paid'])
+    ).scalar() or 0
+    
+    available_balance = max(0, total_earnings - total_withdrawals)
+    
+    if form.validate_on_submit():
+        # Validate withdrawal amount
+        if form.amount.data > available_balance:
+            flash(f'Insufficient balance. Available: ₦{available_balance:,.2f}', 'error')
+            return render_template('instructor/withdraw.html', form=form, available_balance=available_balance)
+        
+        # Create withdrawal request
+        withdrawal = WithdrawalRequest()
+        withdrawal.tutor_id = current_user.id
+        withdrawal.amount = form.amount.data
+        withdrawal.bank_name = form.bank_name.data
+        withdrawal.account_number = form.account_number.data
+        withdrawal.account_name = form.account_name.data
+        withdrawal.request_reason = form.request_reason.data
+        
+        db.session.add(withdrawal)
+        db.session.commit()
+        
+        flash('Withdrawal request submitted successfully! It will be reviewed by admin.', 'success')
+        return redirect(url_for('instructor_earnings'))
+    
+    return render_template('instructor/withdraw.html', form=form, available_balance=available_balance)
+
+@app.route('/admin/withdrawals')
+@login_required
+@admin_required
+def admin_withdrawals():
+    """Admin view of all withdrawal requests"""
+    withdrawals = WithdrawalRequest.query.order_by(WithdrawalRequest.requested_at.desc()).all()
+    return render_template('admin/withdrawals.html', withdrawals=withdrawals)
+
+@app.route('/admin/withdrawals/<int:withdrawal_id>/process', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def process_withdrawal(withdrawal_id):
+    """Process withdrawal request (approve/reject/mark as paid)"""
+    withdrawal = WithdrawalRequest.query.get_or_404(withdrawal_id)
+    form = WithdrawalApprovalForm()
+    
+    if form.validate_on_submit():
+        withdrawal.status = form.status.data
+        withdrawal.admin_notes = form.admin_notes.data
+        withdrawal.approved_by = current_user.id
+        withdrawal.processed_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        status_messages = {
+            'approved': 'Withdrawal request approved!',
+            'rejected': 'Withdrawal request rejected.',
+            'paid': 'Withdrawal marked as paid.'
+        }
+        
+        flash(status_messages.get(form.status.data, 'Withdrawal status updated.'), 'success')
+        return redirect(url_for('admin_withdrawals'))
+    
+    return render_template('admin/process_withdrawal.html', form=form, withdrawal=withdrawal)
+
 # Admin Course Management
 @app.route('/admin/courses')
 @login_required

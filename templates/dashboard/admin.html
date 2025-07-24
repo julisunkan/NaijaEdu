@@ -96,6 +96,9 @@
                 <a class="nav-link" href="{{ url_for('manage_payments') }}">
                     <i data-feather="credit-card"></i> Review Payments
                 </a>
+                <a class="nav-link" href="{{ url_for('admin_withdrawals') }}">
+                    <i data-feather="dollar-sign"></i> Withdrawal Requests
+                </a>
                 
                 <div class="nav-title">System Tools</div>
                 <a class="nav-link" href="{{ url_for('create_voucher') }}">
@@ -215,6 +218,17 @@
     <div class="col-md-4 mb-4">
         <div class="card text-center">
             <div class="card-body">
+                <i data-feather="dollar-sign" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>Withdrawal Requests</h5>
+                <p class="text-muted">Review tutor withdrawal requests</p>
+                <a href="{{ url_for('admin_withdrawals') }}" class="btn btn-warning btn-sm">Review</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
                 <i data-feather="settings" class="mb-2" style="width: 48px; height: 48px;"></i>
                 <h5>System Settings</h5>
                 <p class="text-muted">Configure platform settings</p>
@@ -237,6 +251,7 @@
                     <a href="{{ url_for('admin_courses') }}" class="btn btn-info">Manage Quizzes</a>
                     <a href="{{ url_for('admin_courses') }}" class="btn btn-warning">Manage Assignments</a>
                     <a href="{{ url_for('create_voucher') }}" class="btn btn-success">Create Voucher</a>
+                    <a href="{{ url_for('admin_withdrawals') }}" class="btn btn-warning">Withdrawal Requests</a>
                     <a href="{{ url_for('manage_certificate_templates') }}" class="btn btn-warning">Certificate Templates</a>
                     <a href="{{ url_for('bulk_import_courses') }}" class="btn btn-success">Bulk Import Courses</a>
                     <a href="{{ url_for('bulk_export_courses') }}" class="btn btn-info">Bulk Export Courses</a>

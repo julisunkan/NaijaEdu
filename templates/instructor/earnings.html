@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}My Earnings - {{ config.SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i data-feather="dollar-sign"></i> My Earnings</h2>
+        <a href="{{ url_for('request_withdrawal') }}" class="btn btn-success">
+            <i data-feather="download"></i> Request Withdrawal
+        </a>
+    </div>
+
+    <!-- Earnings Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center bg-primary text-white">
+                <div class="card-body">
+                    <h4>{{ total_earnings|currency }}</h4>
+                    <p class="mb-0">Total Earnings</p>
+                    <small>{{ commission_rate }}% commission deducted</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-warning text-white">
+                <div class="card-body">
+                    <h4>{{ total_withdrawals|currency }}</h4>
+                    <p class="mb-0">Total Withdrawn</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-success text-white">
+                <div class="card-body">
+                    <h4>{{ available_balance|currency }}</h4>
+                    <p class="mb-0">Available Balance</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-info text-white">
+                <div class="card-body">
+                    <h4>{{ commission_rate }}%</h4>
+                    <p class="mb-0">Platform Commission</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How Earnings Work -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i data-feather="info"></i> How Earnings Work</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Commission Structure</h6>
+                    <ul>
+                        <li>Platform takes {{ commission_rate }}% commission on each sale</li>
+                        <li>You earn {{ 100 - commission_rate }}% of the course price</li>
+                        <li>Earnings are calculated from approved payments only</li>
+                        <li>Only approved courses generate earnings</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Withdrawal Process</h6>
+                    <ul>
+                        <li>Minimum withdrawal amount: ₦100</li>
+                        <li>Requests are processed by admin</li>
+                        <li>Payments are made via bank transfer</li>
+                        <li>Processing time: 1-3 business days</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal History -->
+    <div class="card">
+        <div class="card-header">
+            <h5><i data-feather="clock"></i> Withdrawal History</h5>
+        </div>
+        <div class="card-body">
+            {% if withdrawal_history %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date Requested</th>
+                            <th>Amount</th>
+                            <th>Bank Details</th>
+                            <th>Status</th>
+                            <th>Processed Date</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for withdrawal in withdrawal_history %}
+                        <tr>
+                            <td>{{ withdrawal.requested_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td><strong>{{ withdrawal.amount|currency }}</strong></td>
+                            <td>
+                                <strong>{{ withdrawal.bank_name }}</strong><br>
+                                {{ withdrawal.account_number }}<br>
+                                <small>{{ withdrawal.account_name }}</small>
+                            </td>
+                            <td>
+                                {% if withdrawal.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif withdrawal.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif withdrawal.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% elif withdrawal.status == 'paid' %}
+                                    <span class="badge bg-primary">Paid</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if withdrawal.processed_at %}
+                                    {{ withdrawal.processed_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if withdrawal.admin_notes %}
+                                    <small>{{ withdrawal.admin_notes }}</small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i data-feather="inbox" style="width: 48px; height: 48px;" class="text-muted mb-3"></i>
+                <h6>No withdrawal requests yet</h6>
+                <p class="text-muted">Start earning by creating and selling courses!</p>
+                <a href="{{ url_for('create_course') }}" class="btn btn-primary">
+                    <i data-feather="plus"></i> Create Course
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize Feather icons
+feather.replace();
+</script>
+{% endblock %}
