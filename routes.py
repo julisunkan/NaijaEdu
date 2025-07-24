@@ -150,6 +150,54 @@ def manage_courses():
         courses = current_user.courses_created.all()
     return render_template('courses/manage.html', courses=courses)
 
+@app.route('/courses/<int:course_id>/instructor_edit', methods=['GET', 'POST'])
+@login_required
+@instructor_required
+def instructor_edit_course(course_id):
+    course = Course.query.get_or_404(course_id)
+    # Only allow editing own courses (or admin can edit any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only edit your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    form = CourseForm(obj=course)
+    if form.validate_on_submit():
+        course.title = form.title.data
+        course.description = form.description.data
+        course.price = form.price.data
+        
+        # If tutor/instructor edits course, reset to pending approval
+        if current_user.role != 'admin' and course.approval_status == 'approved':
+            course.approval_status = 'pending'
+            flash('Course updated and resubmitted for admin approval!', 'success')
+        else:
+            flash('Course updated successfully!', 'success')
+        
+        db.session.commit()
+        return redirect(url_for('manage_courses'))
+    return render_template('courses/edit.html', form=form, course=course)
+
+@app.route('/courses/<int:course_id>/instructor_delete', methods=['POST'])
+@login_required
+@instructor_required
+def instructor_delete_course(course_id):
+    course = Course.query.get_or_404(course_id)
+    # Only allow deleting own courses (or admin can delete any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only delete your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    try:
+        # Delete course and all related content
+        db.session.delete(course)
+        db.session.commit()
+        flash('Course deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting course. Please try again.', 'danger')
+    
+    return redirect(url_for('manage_courses'))
+
 @app.route('/courses/<int:course_id>/lessons/create', methods=['GET', 'POST'])
 @login_required
 @instructor_required
@@ -185,6 +233,65 @@ def create_lesson(course_id):
         return redirect(url_for('course_detail', course_id=course_id))
     
     return render_template('lessons/create.html', form=form, course=course)
+
+@app.route('/lessons/<int:lesson_id>/instructor_edit', methods=['GET', 'POST'])
+@login_required
+@instructor_required
+def instructor_edit_lesson(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    course = lesson.course
+    # Only allow editing own course lessons (or admin can edit any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only edit lessons from your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    form = LessonForm(obj=lesson)
+    if form.validate_on_submit():
+        lesson.title = form.title.data
+        lesson.content_type = form.content_type.data
+        lesson.order = form.order.data or 0
+        
+        if form.content_type.data == 'text':
+            lesson.content = form.content.data
+        elif form.content_type.data == 'pdf' and form.pdf_file.data:
+            if form.pdf_file.data.filename:
+                filename = secure_filename(form.pdf_file.data.filename)
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'pdfs', filename)
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                form.pdf_file.data.save(file_path)
+                lesson.file_path = file_path
+        elif form.content_type.data == 'video':
+            lesson.video_url = form.video_url.data
+        
+        db.session.commit()
+        flash('Lesson updated successfully!', 'success')
+        return redirect(url_for('course_detail', course_id=course.id))
+    return render_template('lessons/edit.html', form=form, lesson=lesson, course=course)
+
+@app.route('/lessons/<int:lesson_id>/instructor_delete', methods=['POST'])
+@login_required
+@instructor_required
+def instructor_delete_lesson(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    course = lesson.course
+    # Only allow deleting own course lessons (or admin can edit any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only delete lessons from your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    try:
+        # Delete lesson file if exists
+        if lesson.file_path and os.path.exists(lesson.file_path):
+            os.remove(lesson.file_path)
+        
+        db.session.delete(lesson)
+        db.session.commit()
+        flash('Lesson deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting lesson. Please try again.', 'danger')
+    
+    return redirect(url_for('course_detail', course_id=course.id))
 
 @app.route('/lessons/<int:lesson_id>')
 @login_required
@@ -729,6 +836,52 @@ def create_quiz(course_id):
     
     return render_template('quizzes/create.html', form=form, course=course)
 
+@app.route('/quizzes/<int:quiz_id>/instructor_edit', methods=['GET', 'POST'])
+@login_required
+@instructor_required
+def instructor_edit_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    course = quiz.course
+    # Only allow editing own course quizzes (or admin can edit any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only edit quizzes from your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    form = QuizForm(obj=quiz)
+    if form.validate_on_submit():
+        quiz.title = form.title.data
+        quiz.description = form.description.data
+        quiz.time_limit = form.time_limit.data
+        quiz.max_attempts = form.max_attempts.data
+        quiz.max_credits = form.max_credits.data
+        quiz.pass_threshold = form.pass_threshold.data
+        
+        db.session.commit()
+        flash('Quiz updated successfully!', 'success')
+        return redirect(url_for('course_detail', course_id=course.id))
+    return render_template('quizzes/edit.html', form=form, quiz=quiz, course=course)
+
+@app.route('/quizzes/<int:quiz_id>/instructor_delete', methods=['POST'])
+@login_required
+@instructor_required
+def instructor_delete_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    course = quiz.course
+    # Only allow deleting own course quizzes (or admin can delete any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only delete quizzes from your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    try:
+        db.session.delete(quiz)
+        db.session.commit()
+        flash('Quiz deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting quiz. Please try again.', 'danger')
+    
+    return redirect(url_for('course_detail', course_id=course.id))
+
 @app.route('/quizzes/<int:quiz_id>/take')
 @login_required
 def take_quiz(quiz_id):
@@ -821,6 +974,53 @@ def create_assignment(course_id):
         return redirect(url_for('course_detail', course_id=course_id))
     
     return render_template('assignments/create.html', form=form, course=course)
+
+@app.route('/assignments/<int:assignment_id>/instructor_edit', methods=['GET', 'POST'])
+@login_required
+@instructor_required
+def instructor_edit_assignment(assignment_id):
+    assignment = Assignment.query.get_or_404(assignment_id)
+    course = assignment.course
+    # Only allow editing own course assignments (or admin can edit any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only edit assignments from your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    form = AssignmentForm(obj=assignment)
+    if form.validate_on_submit():
+        assignment.title = form.title.data
+        assignment.description = form.description.data
+        assignment.instructions = form.instructions.data
+        assignment.due_date = form.due_date.data
+        assignment.max_points = form.max_points.data
+        assignment.max_credits = form.max_credits.data
+        assignment.pass_threshold = form.pass_threshold.data
+        
+        db.session.commit()
+        flash('Assignment updated successfully!', 'success')
+        return redirect(url_for('course_detail', course_id=course.id))
+    return render_template('assignments/edit.html', form=form, assignment=assignment, course=course)
+
+@app.route('/assignments/<int:assignment_id>/instructor_delete', methods=['POST'])
+@login_required
+@instructor_required
+def instructor_delete_assignment(assignment_id):
+    assignment = Assignment.query.get_or_404(assignment_id)
+    course = assignment.course
+    # Only allow deleting own course assignments (or admin can delete any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only delete assignments from your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    try:
+        db.session.delete(assignment)
+        db.session.commit()
+        flash('Assignment deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting assignment. Please try again.', 'danger')
+    
+    return redirect(url_for('course_detail', course_id=course.id))
 
 @app.route('/assignments/<int:assignment_id>/submit', methods=['GET', 'POST'])
 @login_required

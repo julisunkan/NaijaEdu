@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Lesson - {{ config.SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Edit Lesson: {{ lesson.title }}</h4>
+                    <small class="text-muted">Course: {{ course.title }}</small>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control") }}
+                            {% if form.title.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.title.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows="3") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.content_type.label(class="form-label") }}
+                            {{ form.content_type(class="form-select", onchange="toggleContentFields()") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.order.label(class="form-label") }}
+                            {{ form.order(class="form-control", type="number", min="1") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.duration.label(class="form-label") }}
+                            <div class="input-group">
+                                {{ form.duration(class="form-control", type="number", min="1") }}
+                                <span class="input-group-text">minutes</span>
+                            </div>
+                        </div>
+                        
+                        <div id="text-content" class="mb-3" style="display: none;">
+                            {{ form.content.label(class="form-label") }}
+                            {{ form.content(class="form-control", rows="8") }}
+                        </div>
+                        
+                        <div id="video-content" class="mb-3" style="display: none;">
+                            {{ form.video_url.label(class="form-label") }}
+                            {{ form.video_url(class="form-control", placeholder="https://youtube.com/watch?v=...") }}
+                            <small class="text-muted">Supported: YouTube, Vimeo, and other embeddable video URLs</small>
+                        </div>
+                        
+                        <div id="pdf-content" class="mb-3" style="display: none;">
+                            {{ form.pdf_file.label(class="form-label") }}
+                            {{ form.pdf_file(class="form-control") }}
+                            <small class="text-muted">Upload a new PDF file (optional - leave empty to keep current file)</small>
+                            {% if lesson.file_path %}
+                                <div class="mt-2">
+                                    <small class="text-success">
+                                        <i data-feather="file-text"></i> Current file: {{ lesson.file_path.split('/')[-1] }}
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-secondary">
+                                <i data-feather="arrow-left"></i> Back to Course
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="save"></i> Update Lesson
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleContentFields() {
+    const contentType = document.getElementById('content_type').value;
+    const textDiv = document.getElementById('text-content');
+    const videoDiv = document.getElementById('video-content');
+    const pdfDiv = document.getElementById('pdf-content');
+    
+    // Hide all content fields
+    textDiv.style.display = 'none';
+    videoDiv.style.display = 'none';
+    pdfDiv.style.display = 'none';
+    
+    // Show relevant field
+    if (contentType === 'text') {
+        textDiv.style.display = 'block';
+    } else if (contentType === 'video') {
+        videoDiv.style.display = 'block';
+    } else if (contentType === 'pdf') {
+        pdfDiv.style.display = 'block';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleContentFields();
+});
+</script>
+{% endblock %}

@@ -40,12 +40,45 @@
                 </div>
             </div>
             <div class="card-footer">
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary btn-sm">View</a>
-                    <a href="{{ url_for('create_lesson', course_id=course.id) }}" class="btn btn-success btn-sm">Add Lesson</a>
-                    <a href="{{ url_for('create_quiz', course_id=course.id) }}" class="btn btn-warning btn-sm">Add Quiz</a>
-                    <a href="{{ url_for('create_assignment', course_id=course.id) }}" class="btn btn-info btn-sm">Add Assignment</a>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary btn-sm">
+                        <i data-feather="eye"></i> View
+                    </a>
+                    
+                    {% if current_user.role == 'admin' or course.instructor_id == current_user.id %}
+                    <a href="{{ url_for('instructor_edit_course', course_id=course.id) }}" class="btn btn-outline-warning btn-sm">
+                        <i data-feather="edit"></i> Edit
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('create_lesson', course_id=course.id) }}" class="btn btn-success btn-sm">
+                        <i data-feather="plus"></i> Add Lesson
+                    </a>
+                    <a href="{{ url_for('create_quiz', course_id=course.id) }}" class="btn btn-warning btn-sm">
+                        <i data-feather="help-circle"></i> Add Quiz
+                    </a>
+                    <a href="{{ url_for('create_assignment', course_id=course.id) }}" class="btn btn-info btn-sm">
+                        <i data-feather="file-text"></i> Add Assignment
+                    </a>
+                    
+                    {% if current_user.role == 'admin' or course.instructor_id == current_user.id %}
+                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                            onclick="confirmDeleteCourse('{{ course.title }}', '{{ url_for('instructor_delete_course', course_id=course.id) }}')">
+                        <i data-feather="trash-2"></i> Delete
+                    </button>
+                    {% endif %}
                 </div>
+                
+                {% if course.approval_status != 'approved' %}
+                <div class="mt-2">
+                    <span class="badge bg-warning">{{ course.approval_status.title() }}</span>
+                    {% if course.approval_status == 'pending' %}
+                        <small class="text-muted ms-2">Waiting for admin approval</small>
+                    {% elif course.approval_status == 'rejected' %}
+                        <small class="text-muted ms-2">Rejected by admin</small>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -59,4 +92,43 @@
     <a href="{{ url_for('create_course') }}" class="btn btn-primary">Create Your First Course</a>
 </div>
 {% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the course "<span id="courseTitle"></span>"?</p>
+                <div class="alert alert-danger">
+                    <i data-feather="alert-triangle"></i>
+                    <strong>Warning:</strong> This action cannot be undone. All lessons, quizzes, assignments, and student progress will be permanently deleted.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">
+                        <i data-feather="trash-2"></i> Delete Course
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDeleteCourse(courseTitle, deleteUrl) {
+    document.getElementById('courseTitle').textContent = courseTitle;
+    document.getElementById('deleteForm').action = deleteUrl;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Initialize Feather icons
+feather.replace();
+</script>
 {% endblock %}

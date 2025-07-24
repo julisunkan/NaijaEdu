@@ -252,8 +252,20 @@ Preferred communication style: Simple, everyday language.
 - ✓ Fixed database schema error in course download functionality (is_approved → status='approved')
 - ✓ Ensured proper course approval workflow is enforced throughout the application
 
+### July 24, 2025 - Tutor/Instructor Edit & Delete Functionality
+- ✓ Added comprehensive edit functionality for tutors/instructors on their own courses
+- ✓ Implemented course editing with automatic approval status reset for non-admin users
+- ✓ Added lesson edit/delete capabilities with proper ownership validation
+- ✓ Created quiz edit/delete functionality for course owners
+- ✓ Implemented assignment edit/delete features with security checks
+- ✓ Updated course management interface with edit/delete buttons
+- ✓ Added confirmation modals for delete operations to prevent accidental deletions
+- ✓ Created dedicated edit templates for courses, lessons, quizzes, and assignments
+- ✓ Ensured only course owners and admins can edit/delete content
+- ✓ Maintained approval workflow integrity when content is modified
+
 ### Current Status - July 24, 2025
-The Nigerian e-learning platform has been successfully migrated from Replit Agent to standard Replit environment with comprehensive enhancements including a complete tutor system and proper course approval workflow. The platform now features advanced certificate templates with colorful designs and company logo support, email verification and password reset functionality, Progressive Web App (PWA) capabilities, enhanced mobile responsiveness, website settings import/export functionality, Google AdSense integration, Google Analytics tracking, student content downloads, and bulk import/export systems.
+The Nigerian e-learning platform has been successfully migrated from Replit Agent to standard Replit environment with comprehensive enhancements including a complete tutor system, proper course approval workflow, and full edit/delete capabilities for instructors and tutors. The platform now features advanced certificate templates with colorful designs and company logo support, email verification and password reset functionality, Progressive Web App (PWA) capabilities, enhanced mobile responsiveness, website settings import/export functionality, Google AdSense integration, Google Analytics tracking, student content downloads, and bulk import/export systems.
 
 #### Latest Migration & Enhancement Features (July 24, 2025):
 - ✓ Enhanced Certificate Templates: Colorful designs with gradient backgrounds, company logo support, customizable color schemes, decorative elements, and multiple seal designs
