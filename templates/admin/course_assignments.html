@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Assignments - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>Manage Assignments</h2>
+                <p class="text-muted">{{ course.title }}</p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin_courses') }}" class="btn btn-secondary me-2">
+                    <i data-feather="arrow-left" class="me-1"></i>Back to Courses
+                </a>
+                <a href="{{ url_for('create_assignment', course_id=course.id) }}" class="btn btn-primary">
+                    <i data-feather="plus" class="me-1"></i>Add Assignment
+                </a>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                {% if assignments %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Assignment Title</th>
+                                <th>Max Points</th>
+                                <th>Due Date</th>
+                                <th>Submissions</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in assignments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ assignment.title }}</strong>
+                                    <br><small class="text-muted">{{ assignment.description[:80] }}...</small>
+                                </td>
+                                <td>{{ assignment.max_points }} points</td>
+                                <td>
+                                    {% if assignment.due_date %}
+                                        <span class="{% if assignment.due_date < now %}text-danger{% else %}text-success{% endif %}">
+                                            {{ assignment.due_date.strftime('%Y-%m-%d') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">No due date</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ assignment.submissions.count() }} submissions</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('edit_assignment', assignment_id=assignment.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Edit Assignment">
+                                            <i data-feather="edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('view_assignment_submissions', assignment_id=assignment.id) }}" 
+                                           class="btn btn-sm btn-outline-info" title="View Submissions">
+                                            <i data-feather="file-text"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i data-feather="file-text" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="text-muted">No assignments found</h5>
+                    <p class="text-muted">Add your first assignment to this course.</p>
+                    <a href="{{ url_for('create_assignment', course_id=course.id) }}" class="btn btn-primary">
+                        <i data-feather="plus" class="me-1"></i>Add First Assignment
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

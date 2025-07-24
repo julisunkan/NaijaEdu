@@ -20,14 +20,18 @@ class CourseForm(FlaskForm):
     title = StringField('Course Title', validators=[DataRequired(), Length(max=200)])
     description = TextAreaField('Description', widget=TextArea())
     price = FloatField('Price (₦)', validators=[DataRequired(), NumberRange(min=0)])
+    category = StringField('Category', validators=[Optional(), Length(max=100)])
+    is_active = BooleanField('Active Status', default=True)
 
 class LessonForm(FlaskForm):
     title = StringField('Lesson Title', validators=[DataRequired(), Length(max=200)])
+    description = TextAreaField('Description', validators=[Optional()])
     content_type = SelectField('Content Type', choices=[('text', 'Text Content'), ('pdf', 'PDF Upload'), ('video', 'Video URL')])
     content = TextAreaField('Text Content', widget=TextArea())
     pdf_file = FileField('PDF File', validators=[FileAllowed(['pdf'], 'PDF files only!')])
     video_url = StringField('Video URL (YouTube/Vimeo)')
     order = IntegerField('Lesson Order', validators=[Optional(), NumberRange(min=0)])
+    duration = IntegerField('Duration (minutes)', validators=[Optional(), NumberRange(min=1)])
 
 class PaymentForm(FlaskForm):
     course_id = HiddenField()
@@ -64,6 +68,7 @@ class QuizQuestionForm(FlaskForm):
 class AssignmentForm(FlaskForm):
     title = StringField('Assignment Title', validators=[DataRequired(), Length(max=200)])
     description = TextAreaField('Description', validators=[DataRequired()])
+    instructions = TextAreaField('Detailed Instructions', validators=[Optional()])
     due_date = DateTimeField('Due Date', format='%Y-%m-%d %H:%M:%S', validators=[Optional()])
     max_points = IntegerField('Maximum Points', validators=[DataRequired(), NumberRange(min=1)], default=100)
 

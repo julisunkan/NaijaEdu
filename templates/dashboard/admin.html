@@ -25,9 +25,9 @@
         <div class="card text-center">
             <div class="card-body">
                 <i data-feather="book" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>{{ current_user.courses_created.count() }}</h5>
-                <p class="text-muted">Total Courses</p>
-                <a href="{{ url_for('manage_courses') }}" class="btn btn-primary btn-sm">Manage</a>
+                <h5>Manage Courses</h5>
+                <p class="text-muted">Edit content, quizzes & assignments</p>
+                <a href="{{ url_for('admin_courses') }}" class="btn btn-primary btn-sm">Manage</a>
             </div>
         </div>
     </div>
@@ -63,7 +63,8 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ url_for('create_course') }}" class="btn btn-primary">Create New Course</a>
+                    <a href="{{ url_for('admin_courses') }}" class="btn btn-primary">Manage All Courses</a>
+                    <a href="{{ url_for('create_course') }}" class="btn btn-outline-primary">Create New Course</a>
                     <a href="{{ url_for('create_voucher') }}" class="btn btn-success">Create Voucher</a>
                     <a href="{{ url_for('admin_settings') }}" class="btn btn-secondary">System Settings</a>
                 </div>

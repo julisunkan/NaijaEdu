@@ -23,7 +23,7 @@
                     <div class="col-md-6">
                         {% if assignment.due_date %}
                         <strong>Due Date:</strong> 
-                        <span class="{% if assignment.due_date < moment().datetime %}text-danger{% else %}text-success{% endif %}">
+                        <span class="{% if assignment.due_date < now %}text-danger{% else %}text-success{% endif %}">
                             {{ assignment.due_date.strftime('%Y-%m-%d %H:%M') }}
                         </span>
                         {% else %}

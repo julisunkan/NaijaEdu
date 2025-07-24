@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from flask import render_template, request, redirect, url_for, flash, jsonify, send_from_directory
+from datetime import datetime as dt
 from flask_login import login_user, logout_user, login_required, current_user
 from app import app, db
 from models import *
@@ -415,6 +416,45 @@ def take_quiz(quiz_id):
     questions = quiz.questions.all()
     return render_template('quizzes/take.html', quiz=quiz, questions=questions)
 
+@app.route('/quizzes/<int:quiz_id>/submit', methods=['POST'])
+@login_required
+def submit_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    if not current_user.can_access_course(quiz.course):
+        flash('You need to enroll in this course first', 'warning')
+        return redirect(url_for('course_detail', course_id=quiz.course_id))
+    
+    # Check attempt limit
+    attempts = QuizAttempt.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).count()
+    if attempts >= quiz.max_attempts:
+        flash('You have reached the maximum number of attempts for this quiz', 'warning')
+        return redirect(url_for('course_detail', course_id=quiz.course_id))
+    
+    # Calculate score
+    questions = quiz.questions.all()
+    total_score = 0
+    max_score = len(questions)
+    
+    for question in questions:
+        answer_key = f'question_{question.id}'
+        user_answer = request.form.get(answer_key)
+        if user_answer and user_answer == question.correct_answer:
+            total_score += 1
+    
+    # Save attempt
+    attempt = QuizAttempt(
+        user_id=current_user.id,
+        quiz_id=quiz_id,
+        score=total_score,
+        max_score=max_score,
+        completed_at=datetime.utcnow()
+    )
+    db.session.add(attempt)
+    db.session.commit()
+    
+    flash(f'Quiz completed! You scored {total_score}/{max_score}', 'success')
+    return redirect(url_for('course_detail', course_id=quiz.course_id))
+
 # Assignment routes
 @app.route('/courses/<int:course_id>/assignments/create', methods=['GET', 'POST'])
 @login_required
@@ -481,7 +521,144 @@ def submit_assignment(assignment_id):
         flash('Assignment submitted successfully!', 'success')
         return redirect(url_for('course_detail', course_id=assignment.course_id))
     
-    return render_template('assignments/submit.html', form=form, assignment=assignment, submission=existing_submission)
+    return render_template('assignments/submit.html', form=form, assignment=assignment, submission=existing_submission, now=dt.utcnow())
+
+# Admin Course Management
+@app.route('/admin/courses')
+@login_required
+@admin_required
+def admin_courses():
+    courses = Course.query.all()
+    return render_template('admin/courses.html', courses=courses)
+
+@app.route('/admin/courses/<int:course_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_course(course_id):
+    course = Course.query.get_or_404(course_id)
+    form = CourseForm(obj=course)
+    
+    if form.validate_on_submit():
+        form.populate_obj(course)
+        db.session.commit()
+        flash('Course updated successfully!', 'success')
+        return redirect(url_for('admin_courses'))
+    
+    return render_template('admin/edit_course.html', form=form, course=course)
+
+@app.route('/admin/courses/<int:course_id>/lessons')
+@login_required
+@admin_required
+def admin_course_lessons(course_id):
+    course = Course.query.get_or_404(course_id)
+    lessons = Lesson.query.filter_by(course_id=course_id).order_by(Lesson.order).all()
+    return render_template('admin/course_lessons.html', course=course, lessons=lessons)
+
+@app.route('/admin/lessons/<int:lesson_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_lesson(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    form = LessonForm(obj=lesson)
+    
+    if form.validate_on_submit():
+        form.populate_obj(lesson)
+        db.session.commit()
+        flash('Lesson updated successfully!', 'success')
+        return redirect(url_for('admin_course_lessons', course_id=lesson.course_id))
+    
+    return render_template('admin/edit_lesson.html', form=form, lesson=lesson)
+
+@app.route('/admin/courses/<int:course_id>/quizzes')
+@login_required
+@admin_required
+def admin_course_quizzes(course_id):
+    course = Course.query.get_or_404(course_id)
+    quizzes = Quiz.query.filter_by(course_id=course_id).all()
+    return render_template('admin/course_quizzes.html', course=course, quizzes=quizzes)
+
+@app.route('/admin/quizzes/<int:quiz_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    form = QuizForm(obj=quiz)
+    
+    if form.validate_on_submit():
+        form.populate_obj(quiz)
+        db.session.commit()
+        flash('Quiz updated successfully!', 'success')
+        return redirect(url_for('admin_course_quizzes', course_id=quiz.course_id))
+    
+    return render_template('admin/edit_quiz.html', form=form, quiz=quiz)
+
+@app.route('/admin/quizzes/<int:quiz_id>/questions')
+@login_required
+@admin_required
+def admin_quiz_questions(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
+    return render_template('admin/quiz_questions.html', quiz=quiz, questions=questions)
+
+@app.route('/admin/questions/<int:question_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_question(question_id):
+    question = QuizQuestion.query.get_or_404(question_id)
+    form = QuizQuestionForm(obj=question)
+    
+    if form.validate_on_submit():
+        form.populate_obj(question)
+        db.session.commit()
+        flash('Question updated successfully!', 'success')
+        return redirect(url_for('admin_quiz_questions', quiz_id=question.quiz_id))
+    
+    return render_template('admin/edit_question.html', form=form, question=question)
+
+@app.route('/admin/courses/<int:course_id>/assignments')
+@login_required
+@admin_required
+def admin_course_assignments(course_id):
+    course = Course.query.get_or_404(course_id)
+    assignments = Assignment.query.filter_by(course_id=course_id).all()
+    return render_template('admin/course_assignments.html', course=course, assignments=assignments)
+
+@app.route('/admin/assignments/<int:assignment_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_assignment(assignment_id):
+    assignment = Assignment.query.get_or_404(assignment_id)
+    form = AssignmentForm(obj=assignment)
+    
+    if form.validate_on_submit():
+        form.populate_obj(assignment)
+        db.session.commit()
+        flash('Assignment updated successfully!', 'success')
+        return redirect(url_for('admin_course_assignments', course_id=assignment.course_id))
+    
+    return render_template('admin/edit_assignment.html', form=form, assignment=assignment)
+
+@app.route('/admin/quizzes/<int:quiz_id>/questions/add', methods=['POST'])
+@login_required
+@admin_required
+def add_question(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    
+    question = QuizQuestion(
+        quiz_id=quiz_id,
+        question=request.form['question'],
+        option_a=request.form['option_a'],
+        option_b=request.form['option_b'],
+        option_c=request.form['option_c'],
+        option_d=request.form['option_d'],
+        correct_answer=request.form['correct_answer'],
+        points=int(request.form.get('points', 1))
+    )
+    
+    db.session.add(question)
+    db.session.commit()
+    flash('Question added successfully!', 'success')
+    return redirect(url_for('admin_quiz_questions', quiz_id=quiz_id))
 
 # Admin settings
 @app.route('/settings', methods=['GET', 'POST'])

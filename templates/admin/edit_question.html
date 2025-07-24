@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Question{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4>Edit Question</h4>
+                <a href="{{ url_for('admin_quiz_questions', quiz_id=question.quiz_id) }}" class="btn btn-secondary btn-sm">
+                    <i data-feather="arrow-left" class="me-1"></i>Back to Questions
+                </a>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.question.label(class="form-label") }}
+                        {{ form.question(class="form-control", rows="3") }}
+                        {% if form.question.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.question.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.option_a.label(class="form-label") }}
+                        {{ form.option_a(class="form-control") }}
+                        {% if form.option_a.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.option_a.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.option_b.label(class="form-label") }}
+                        {{ form.option_b(class="form-control") }}
+                        {% if form.option_b.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.option_b.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.option_c.label(class="form-label") }}
+                        {{ form.option_c(class="form-control") }}
+                        {% if form.option_c.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.option_c.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.option_d.label(class="form-label") }}
+                        {{ form.option_d(class="form-control") }}
+                        {% if form.option_d.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.option_d.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.correct_answer.label(class="form-label") }}
+                                {{ form.correct_answer(class="form-control") }}
+                                {% if form.correct_answer.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.correct_answer.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.points.label(class="form-label") }}
+                                {{ form.points(class="form-control") }}
+                                {% if form.points.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.points.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('admin_quiz_questions', quiz_id=question.quiz_id) }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="save" class="me-1"></i>Update Question
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

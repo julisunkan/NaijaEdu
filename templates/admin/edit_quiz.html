@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Quiz - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4>Edit Quiz</h4>
+                <a href="{{ url_for('admin_course_quizzes', course_id=quiz.course_id) }}" class="btn btn-secondary btn-sm">
+                    <i data-feather="arrow-left" class="me-1"></i>Back to Quizzes
+                </a>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.title.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows="4") }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.description.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.time_limit.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.time_limit(class="form-control") }}
+                                    <span class="input-group-text">minutes</span>
+                                </div>
+                                {% if form.time_limit.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.time_limit.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.max_attempts.label(class="form-label") }}
+                                {{ form.max_attempts(class="form-control") }}
+                                {% if form.max_attempts.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.max_attempts.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('admin_course_quizzes', course_id=quiz.course_id) }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <a href="{{ url_for('admin_quiz_questions', quiz_id=quiz.id) }}" class="btn btn-warning me-md-2">
+                            <i data-feather="help-circle" class="me-1"></i>Manage Questions
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="save" class="me-1"></i>Update Quiz
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
