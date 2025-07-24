@@ -63,7 +63,7 @@ class User(UserMixin, db.Model):
     
     # Override Flask-Login is_active property appropriately
     @property 
-    def is_active(self):
+    def is_active(self) -> bool:
         return self.is_account_active()
     
     def get_badge_info(self):
