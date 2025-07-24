@@ -21,8 +21,15 @@ def create_app():
     
     # Configuration
     app.secret_key = os.environ.get("SESSION_SECRET")
-    # Force SQLite usage regardless of environment variables
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///elearning.db"
+    
+    # Database configuration - use environment DATABASE_URL if available, otherwise SQLite
+    if os.environ.get("DATABASE_URL"):
+        database_url = os.environ.get("DATABASE_URL")
+    else:
+        # Use absolute path for SQLite in development
+        db_path = os.path.join(os.getcwd(), "instance", "elearning.db")
+        database_url = f"sqlite:///{db_path}"
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
@@ -35,6 +42,9 @@ def create_app():
     
     # Ensure upload directory exists
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+    
+    # Ensure instance directory exists for SQLite database
+    os.makedirs("instance", exist_ok=True)
     
     # Initialize extensions
     db.init_app(app)
