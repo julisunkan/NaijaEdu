@@ -25,11 +25,11 @@ def create_app():
     # CSRF configuration for Flask-WTF
     app.config['WTF_CSRF_ENABLED'] = True
     
-    # Database configuration - use environment DATABASE_URL if available, otherwise SQLite
+    # Database configuration - prioritize PostgreSQL DATABASE_URL, fallback to SQLite for local development
     if os.environ.get("DATABASE_URL"):
         database_url = os.environ.get("DATABASE_URL")
     else:
-        # Use absolute path for SQLite in development
+        # Use absolute path for SQLite in development only
         db_path = os.path.join(os.getcwd(), "instance", "elearning.db")
         database_url = f"sqlite:///{db_path}"
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url

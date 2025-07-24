@@ -264,8 +264,9 @@ Preferred communication style: Simple, everyday language.
 - ✓ Ensured only course owners and admins can edit/delete content
 - ✓ Maintained approval workflow integrity when content is modified
 
-### July 24, 2025 - PostgreSQL Migration & Enhanced Course Approval System
-- ✓ Successfully migrated from SQLite to PostgreSQL database for improved scalability
+### July 24, 2025 - PostgreSQL Migration & Enhanced Course Approval System  
+- ✓ Successfully migrated from SQLite to PostgreSQL database for improved scalability and persistent storage
+- ✓ Resolved course content deletion issue by moving from ephemeral SQLite to permanent PostgreSQL storage
 - ✓ Enhanced course approval system with admin approve/reject functionality
 - ✓ Added course approval status display in admin dashboard with visual indicators
 - ✓ Implemented rejection reason tracking for better communication with instructors
