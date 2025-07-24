@@ -15,7 +15,7 @@
                         <div class="card bg-light">
                             <div class="card-body text-center">
                                 <h5>Current Balance</h5>
-                                <h2 class="text-success">₦{{ "%.2f"|format(current_user.wallet_balance) }}</h2>
+                                <h2 class="text-success">{{ current_user.wallet_balance|currency }}</h2>
                             </div>
                         </div>
                     </div>

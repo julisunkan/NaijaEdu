@@ -56,6 +56,14 @@ def create_app():
     # Proxy fix for deployment
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     
+    # Add template filters
+    @app.template_filter('currency')
+    def currency_filter(amount):
+        """Format amount with Nigerian Naira symbol and comma separators"""
+        if amount is None:
+            return "₦0.00"
+        return f"₦{amount:,.2f}"
+    
     return app
 
 # Create app instance

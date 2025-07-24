@@ -116,7 +116,7 @@
     <div class="col-lg-4">
         <div class="card">
             <div class="card-body text-center">
-                <h3 class="text-success">₦{{ "%.2f"|format(course.price) }}</h3>
+                <h3 class="text-success">{{ course.price|currency }}</h3>
                 <p class="text-muted">Course Price</p>
                 
                 {% if current_user.is_authenticated %}
