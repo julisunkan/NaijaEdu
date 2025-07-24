@@ -137,11 +137,12 @@ def create_lesson(course_id):
         if form.content_type.data == 'text':
             lesson.content = form.content.data
         elif form.content_type.data == 'pdf' and form.pdf_file.data:
-            filename = secure_filename(form.pdf_file.data.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'pdfs', filename)
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            form.pdf_file.data.save(file_path)
-            lesson.file_path = file_path
+            if form.pdf_file.data.filename:
+                filename = secure_filename(form.pdf_file.data.filename)
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'pdfs', filename)
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                form.pdf_file.data.save(file_path)
+                lesson.file_path = file_path
         elif form.content_type.data == 'video':
             lesson.video_url = form.video_url.data
         
@@ -188,10 +189,13 @@ def enroll_course(course_id):
     
     if form.validate_on_submit():
         # Save payment proof
-        filename = secure_filename(form.proof_file.data.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'payments', filename)
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        form.proof_file.data.save(file_path)
+        if form.proof_file.data and form.proof_file.data.filename:
+            filename = secure_filename(form.proof_file.data.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'payments', filename)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            form.proof_file.data.save(file_path)
+        else:
+            file_path = None
         
         # Create payment record
         payment = Payment(
@@ -287,7 +291,7 @@ def create_voucher():
     form = VoucherForm()
     if form.validate_on_submit():
         voucher = Voucher(
-            code=form.code.data.upper(),
+            code=form.code.data.upper() if form.code.data else '',
             discount_type=form.discount_type.data,
             discount_value=form.discount_value.data,
             max_uses=form.max_uses.data,
@@ -307,7 +311,8 @@ def redeem_voucher(course_id):
     form.course_id.data = course_id
     
     if form.validate_on_submit():
-        voucher = Voucher.query.filter_by(code=form.voucher_code.data.upper()).first()
+        voucher_code = form.voucher_code.data
+        voucher = Voucher.query.filter_by(code=voucher_code.upper() if voucher_code else '').first()
         
         if not voucher or not voucher.is_valid():
             flash('Invalid or expired voucher code', 'danger')
@@ -347,10 +352,13 @@ def wallet_topup():
     
     if form.validate_on_submit():
         # Save payment proof
-        filename = secure_filename(form.proof_file.data.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'payments', filename)
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        form.proof_file.data.save(file_path)
+        if form.proof_file.data and form.proof_file.data.filename:
+            filename = secure_filename(form.proof_file.data.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'payments', filename)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            form.proof_file.data.save(file_path)
+        else:
+            file_path = None
         
         # Create payment record
         payment = Payment(
@@ -500,7 +508,7 @@ def submit_assignment(assignment_id):
     form = AssignmentSubmissionForm()
     if form.validate_on_submit():
         file_path = None
-        if form.file.data:
+        if form.file.data and form.file.data.filename:
             filename = secure_filename(form.file.data.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'assignments', filename)
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
