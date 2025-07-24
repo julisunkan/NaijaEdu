@@ -441,7 +441,7 @@ def generate_course_download_package(course_id, user_id):
     from models import Course, Lesson, Enrollment
     
     # Check if user is enrolled
-    enrollment = Enrollment.query.filter_by(course_id=course_id, user_id=user_id, is_approved=True).first()
+    enrollment = Enrollment.query.filter_by(course_id=course_id, user_id=user_id, status='approved').first()
     if not enrollment:
         return None, "You are not enrolled in this course"
     

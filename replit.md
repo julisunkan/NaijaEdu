@@ -243,8 +243,17 @@ Preferred communication style: Simple, everyday language.
 - ✓ Role-Based Dashboard: Tutor and instructor roles share the same dashboard functionality
 - ✓ Public Course Filtering: Only approved courses are visible to public users
 
+### July 24, 2025 - Course Approval System Fix
+- ✓ Fixed instructor access control to include tutor roles in decorator
+- ✓ Updated homepage and course listing to show only approved courses
+- ✓ Modified course creation: only admin-created courses auto-approve
+- ✓ All tutor/instructor courses now require admin approval before going live
+- ✓ Added access controls to course detail pages for unapproved courses
+- ✓ Fixed database schema error in course download functionality (is_approved → status='approved')
+- ✓ Ensured proper course approval workflow is enforced throughout the application
+
 ### Current Status - July 24, 2025
-The Nigerian e-learning platform has been successfully migrated from Replit Agent to standard Replit environment with comprehensive enhancements including a complete tutor system. The platform now features advanced certificate templates with colorful designs and company logo support, email verification and password reset functionality, Progressive Web App (PWA) capabilities, enhanced mobile responsiveness, website settings import/export functionality, Google AdSense integration, Google Analytics tracking, student content downloads, and bulk import/export systems.
+The Nigerian e-learning platform has been successfully migrated from Replit Agent to standard Replit environment with comprehensive enhancements including a complete tutor system and proper course approval workflow. The platform now features advanced certificate templates with colorful designs and company logo support, email verification and password reset functionality, Progressive Web App (PWA) capabilities, enhanced mobile responsiveness, website settings import/export functionality, Google AdSense integration, Google Analytics tracking, student content downloads, and bulk import/export systems.
 
 #### Latest Migration & Enhancement Features (July 24, 2025):
 - ✓ Enhanced Certificate Templates: Colorful designs with gradient backgrounds, company logo support, customizable color schemes, decorative elements, and multiple seal designs
