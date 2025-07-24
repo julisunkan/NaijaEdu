@@ -94,12 +94,11 @@ def course_detail(course_id):
 def create_course():
     form = CourseForm()
     if form.validate_on_submit():
-        course = Course(
-            title=form.title.data,
-            description=form.description.data,
-            price=form.price.data,
-            instructor_id=current_user.id
-        )
+        course = Course()
+        course.title = form.title.data
+        course.description = form.description.data
+        course.price = form.price.data
+        course.instructor_id = current_user.id
         db.session.add(course)
         db.session.commit()
         flash('Course created successfully!', 'success')
