@@ -27,7 +27,7 @@
                 </thead>
                 <tbody>
                     {% for user in users %}
-                    <tr class="{% if user.banned %}table-danger{% elif not user.active %}table-warning{% endif %}">
+                    <tr class="{% if user.is_banned %}table-danger{% elif not user.is_active %}table-warning{% endif %}">
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="me-2">
@@ -60,12 +60,12 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if user.banned %}
+                            {% if user.is_banned %}
                             <span class="badge bg-danger">Banned</span>
                             {% if user.ban_reason %}
                             <br><small class="text-muted">{{ user.ban_reason[:30] }}...</small>
                             {% endif %}
-                            {% elif not user.active %}
+                            {% elif not user.is_active %}
                             <span class="badge bg-warning">Inactive</span>
                             {% else %}
                             <span class="badge bg-success">Active</span>
@@ -104,13 +104,22 @@
                                 </form>
                                 {% endif %}
                                 
+                                {% if user.role == 'student' %}
+                                <form method="POST" action="{{ url_for('promote_to_instructor', user_id=user.id) }}" style="display: inline;" 
+                                      onsubmit="return confirm('Are you sure you want to promote {{ user.username }} to instructor?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-info" title="Promote to Instructor">
+                                        <i data-feather="user-plus"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                
                                 <form method="POST" action="{{ url_for('toggle_premium', user_id=user.id) }}" style="display: inline;">
                                     <button type="submit" class="btn btn-sm btn-outline-warning" title="Toggle Premium">
                                         <i data-feather="{% if user.premium_user %}star{% else %}star{% endif %}"></i>
                                     </button>
                                 </form>
                                 
-                                {% if user.banned %}
+                                {% if user.is_banned %}
                                 <form method="POST" action="{{ url_for('unban_user', user_id=user.id) }}" style="display: inline;">
                                     <button type="submit" class="btn btn-sm btn-outline-success" title="Unban User">
                                         <i data-feather="unlock"></i>

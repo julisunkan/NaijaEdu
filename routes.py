@@ -49,7 +49,7 @@ def register():
             user.email = form.email.data
             user.first_name = form.first_name.data
             user.last_name = form.last_name.data
-            user.role = form.role.data
+            user.role = 'student'  # All new registrations are students by default
             user.set_password(form.password.data)
             db.session.add(user)
             db.session.commit()
@@ -411,9 +411,10 @@ def edit_user(user_id):
     form = UserManagementForm(obj=user)
     
     if form.validate_on_submit():
+        old_role = user.role
         user.role = form.role.data
-        user.active = form.active.data
-        user.banned = form.banned.data
+        user.is_active = form.active.data
+        user.is_banned = form.banned.data
         user.ban_reason = form.ban_reason.data if form.banned.data else None
         user.email_verified = form.email_verified.data
         user.instructor_verified = form.instructor_verified.data
@@ -421,6 +422,11 @@ def edit_user(user_id):
         user.badge_level = form.badge_level.data
         
         db.session.commit()
+        
+        # Log role change
+        if old_role != user.role:
+            flash(f'User {user.username} role changed from {old_role} to {user.role}', 'info')
+        
         flash(f'User "{user.username}" updated successfully!', 'success')
         return redirect(url_for('manage_users'))
     
@@ -433,7 +439,7 @@ def ban_user(user_id):
     user = User.query.get_or_404(user_id)
     ban_reason = request.form.get('ban_reason', '')
     
-    user.banned = True
+    user.is_banned = True
     user.ban_reason = ban_reason
     db.session.commit()
     
@@ -445,11 +451,31 @@ def ban_user(user_id):
 @admin_required
 def unban_user(user_id):
     user = User.query.get_or_404(user_id)
-    user.banned = False
+    user.is_banned = False
     user.ban_reason = None
     db.session.commit()
     
     flash(f'User "{user.username}" has been unbanned!', 'success')
+    return redirect(url_for('manage_users'))
+
+@app.route('/admin/users/<int:user_id>/promote-instructor', methods=['POST'])
+@login_required
+@admin_required
+def promote_to_instructor(user_id):
+    """Quick action to promote a user to instructor"""
+    user = User.query.get_or_404(user_id)
+    
+    if user.role == 'instructor':
+        flash(f'{user.username} is already an instructor', 'warning')
+    elif user.role == 'admin':
+        flash(f'{user.username} is an admin and cannot be demoted to instructor', 'warning')
+    else:
+        old_role = user.role
+        user.role = 'instructor'
+        user.instructor_verified = True
+        db.session.commit()
+        flash(f'{user.username} has been promoted from {old_role} to instructor', 'success')
+    
     return redirect(url_for('manage_users'))
 
 @app.route('/admin/users/<int:user_id>/verify-email', methods=['POST'])

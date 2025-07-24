@@ -14,7 +14,6 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
     first_name = StringField('First Name', validators=[Optional(), Length(max=50)])
     last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
-    role = SelectField('Role', choices=[('student', 'Student'), ('instructor', 'Instructor')], default='student')
 
 class CourseForm(FlaskForm):
     title = StringField('Course Title', validators=[DataRequired(), Length(max=200)])
