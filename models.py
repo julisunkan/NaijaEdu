@@ -425,7 +425,7 @@ class Certificate(db.Model):
     
     # Relationships
     user = db.relationship('User', backref=db.backref('certificates', lazy='dynamic'))
-    course = db.relationship('Course', backref=db.backref('certificates', lazy='dynamic'))
+    course = db.relationship('Course', backref=db.backref('certificates', lazy='dynamic', cascade='all, delete-orphan'))
     
     def generate_certificate_number(self):
         """Generate a unique certificate number"""

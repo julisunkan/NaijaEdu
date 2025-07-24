@@ -872,11 +872,19 @@ def delete_course(course_id):
     course = Course.query.get_or_404(course_id)
     course_title = course.title
     
-    # Delete course (cascade will handle related records)
-    db.session.delete(course)
-    db.session.commit()
+    try:
+        # Delete related certificates first to avoid constraint issues
+        Certificate.query.filter_by(course_id=course_id).delete()
+        
+        # Delete course (cascade will handle other related records)
+        db.session.delete(course)
+        db.session.commit()
+        
+        flash(f'Course "{course_title}" and all its content deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting course: {str(e)}', 'danger')
     
-    flash(f'Course "{course_title}" and all its content deleted successfully!', 'success')
     return redirect(url_for('admin_courses'))
 
 @app.route('/admin/courses/<int:course_id>/lessons')
