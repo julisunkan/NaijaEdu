@@ -169,14 +169,12 @@
                                     <div class="btn-group" role="group">
                                         {% if voucher.is_active %}
                                         <form method="POST" action="{{ url_for('toggle_voucher', voucher_id=voucher.id) }}" style="display: inline;">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Deactivate">
                                                 <i data-feather="x-circle"></i>
                                             </button>
                                         </form>
                                         {% else %}
                                         <form method="POST" action="{{ url_for('toggle_voucher', voucher_id=voucher.id) }}" style="display: inline;">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             <button type="submit" class="btn btn-sm btn-outline-success" title="Activate">
                                                 <i data-feather="check-circle"></i>
                                             </button>
@@ -226,7 +224,6 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form id="deleteVoucherForm" method="POST" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button type="submit" class="btn btn-danger">Delete Voucher</button>
                 </form>
             </div>
