@@ -12,7 +12,7 @@ from utils import admin_required, instructor_required
 
 @app.route('/')
 def index():
-    courses = Course.query.filter_by(is_active=True).all()
+    courses = Course.query.filter_by(is_active=True, approval_status='approved').all()
     return render_template('index.html', courses=courses)
 
 # Authentication routes
@@ -102,6 +102,16 @@ def courses():
 @app.route('/courses/<int:course_id>')
 def course_detail(course_id):
     course = Course.query.get_or_404(course_id)
+    # Only allow access to approved courses for public users
+    if not current_user.is_authenticated or current_user.role not in ['admin', 'instructor', 'tutor']:
+        if course.approval_status != 'approved':
+            flash('Course not available', 'danger')
+            return redirect(url_for('courses'))
+    # Tutors can only see their own pending courses
+    elif current_user.role == 'tutor' and course.instructor_id != current_user.id and course.approval_status != 'approved':
+        flash('Course not available', 'danger')
+        return redirect(url_for('courses'))
+    
     user_enrolled = False
     if current_user.is_authenticated:
         user_enrolled = current_user.can_access_course(course)
@@ -118,13 +128,13 @@ def create_course():
         course.description = form.description.data
         course.price = form.price.data
         course.instructor_id = current_user.id
-        # Set approval status based on user role
-        if current_user.role == 'tutor':
+        # Set approval status based on user role - only admins can auto-approve
+        if current_user.role == 'admin':
+            course.approval_status = 'approved'
+            flash('Course created successfully!', 'success')
+        else:
             course.approval_status = 'pending'
             flash('Course created and submitted for admin approval!', 'success')
-        else:
-            course.approval_status = 'approved'  # Admin/instructor courses auto-approved
-            flash('Course created successfully!', 'success')
         db.session.add(course)
         db.session.commit()
         return redirect(url_for('manage_courses'))
