@@ -305,6 +305,31 @@ def create_voucher():
         return redirect(url_for('dashboard'))
     return render_template('vouchers/create.html', form=form)
 
+@app.route('/admin/vouchers/<int:voucher_id>/toggle', methods=['POST'])
+@login_required
+@admin_required
+def toggle_voucher(voucher_id):
+    voucher = Voucher.query.get_or_404(voucher_id)
+    voucher.is_active = not voucher.is_active
+    db.session.commit()
+    
+    status = "activated" if voucher.is_active else "deactivated"
+    flash(f'Voucher "{voucher.code}" has been {status}!', 'success')
+    return redirect(url_for('dashboard'))
+
+@app.route('/admin/vouchers/<int:voucher_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_voucher(voucher_id):
+    voucher = Voucher.query.get_or_404(voucher_id)
+    voucher_code = voucher.code
+    
+    db.session.delete(voucher)
+    db.session.commit()
+    
+    flash(f'Voucher "{voucher_code}" has been deleted permanently!', 'success')
+    return redirect(url_for('dashboard'))
+
 @app.route('/courses/<int:course_id>/redeem', methods=['GET', 'POST'])
 @login_required
 def redeem_voucher(course_id):

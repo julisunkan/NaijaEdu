@@ -130,6 +130,7 @@
                                 <th>Value</th>
                                 <th>Uses</th>
                                 <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,9 +159,35 @@
                                 <td>
                                     {% if voucher.is_valid() %}
                                         <span class="badge bg-success">Active</span>
+                                    {% elif not voucher.is_active %}
+                                        <span class="badge bg-danger">Deactivated</span>
                                     {% else %}
                                         <span class="badge bg-secondary">Expired</span>
                                     {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        {% if voucher.is_active %}
+                                        <form method="POST" action="{{ url_for('toggle_voucher', voucher_id=voucher.id) }}" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Deactivate">
+                                                <i data-feather="x-circle"></i>
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <form method="POST" action="{{ url_for('toggle_voucher', voucher_id=voucher.id) }}" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Activate">
+                                                <i data-feather="check-circle"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmDeleteVoucher('{{ voucher.code }}', '{{ url_for('delete_voucher', voucher_id=voucher.id) }}')"
+                                                title="Delete Voucher">
+                                            <i data-feather="trash-2"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -183,4 +210,39 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Voucher Confirmation Modal -->
+<div class="modal fade" id="deleteVoucherModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Voucher Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete voucher "<strong id="deleteVoucherCode"></strong>"?</p>
+                <p class="text-danger"><small><i data-feather="alert-triangle" class="me-1"></i>This action cannot be undone. All voucher usage history will be lost.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteVoucherForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Delete Voucher</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDeleteVoucher(voucherCode, deleteUrl) {
+    document.getElementById('deleteVoucherCode').textContent = voucherCode;
+    document.getElementById('deleteVoucherForm').action = deleteUrl;
+    var modal = new bootstrap.Modal(document.getElementById('deleteVoucherModal'));
+    modal.show();
+}
+
+// Initialize Feather icons
+feather.replace();
+</script>
 {% endblock %}
