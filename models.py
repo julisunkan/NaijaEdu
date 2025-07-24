@@ -52,10 +52,13 @@ class User(UserMixin, db.Model):
         ).first()
         return enrollment is not None
     
-    # Override UserMixin's is_active property to use our database field
-    @property
+    # Check if user account is active (not using property override to avoid conflicts)
+    def is_account_active(self) -> bool:
+        return bool(self.active and not self.banned)
+    
+    # Keep Flask-Login compatibility
     def is_active(self):
-        return self.active and not self.banned
+        return self.is_account_active()
     
     def get_badge_info(self):
         badges = {
