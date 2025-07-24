@@ -57,14 +57,13 @@
                 left: auto;
             }
             
-            /* Profile dropdown fixes */
-            .navbar-nav .dropdown-menu {
-                position: absolute;
-                top: 100%;
-                right: 0;
-                left: auto;
-                z-index: 1000;
-                min-width: 200px;
+            /* Profile offcanvas enhancements */
+            .offcanvas-end {
+                width: 320px;
+            }
+            
+            .offcanvas-header {
+                background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
             }
         }
         
@@ -90,19 +89,24 @@
             padding: 12px 16px;
         }
         
-        /* Profile dropdown positioning */
-        .navbar-nav .nav-item.dropdown {
-            position: relative;
+        /* Offcanvas styling */
+        .list-group-item {
+            border: none;
+            border-bottom: 1px solid #dee2e6;
         }
         
-        .dropdown-menu-end {
-            --bs-position: end;
+        .list-group-item:hover {
+            background-color: #f8f9fa;
         }
         
-        @media (max-width: 991.98px) {
-            .dropdown-menu-end {
-                right: auto;
-                left: 0;
+        .list-group-item.bg-light {
+            background-color: #f8f9fa !important;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .offcanvas-end {
+                width: 280px;
             }
         }
         
@@ -156,31 +160,13 @@
                 
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            {{ current_user.username }}
+                    <li class="nav-item">
+                        <button class="btn btn-outline-light btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#profileOffcanvas" aria-controls="profileOffcanvas">
+                            <i data-feather="user"></i> {{ current_user.username }}
                             {% if current_user.wallet_balance > 0 %}
-                            <span class="badge bg-success">₦{{ "%.2f"|format(current_user.wallet_balance) }}</span>
+                            <span class="badge bg-success ms-1">₦{{ "%.2f"|format(current_user.wallet_balance) }}</span>
                             {% endif %}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ url_for('wallet_history') }}">Wallet</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('my_certificates') }}">My Certificates</a></li>
-                            {% if current_user.role in ['admin', 'instructor'] %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('create_course') }}">Create Course</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('manage_courses') }}">Manage Courses</a></li>
-                            {% endif %}
-                            {% if current_user.role == 'admin' %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('manage_payments') }}">Manage Payments</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('create_voucher') }}">Create Voucher</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('manage_certificate_templates') }}">Certificate Templates</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('admin_settings') }}">Settings</a></li>
-                            {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
-                        </ul>
+                        </button>
                     </li>
                     {% else %}
                     <li class="nav-item">
@@ -194,6 +180,86 @@
             </div>
         </div>
     </nav>
+
+    <!-- Profile Offcanvas Menu -->
+    {% if current_user.is_authenticated %}
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="profileOffcanvas" aria-labelledby="profileOffcanvasLabel">
+        <div class="offcanvas-header bg-primary text-white">
+            <h5 class="offcanvas-title" id="profileOffcanvasLabel">
+                <i data-feather="user"></i> {{ current_user.username }}
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="list-group list-group-flush">
+                <!-- User Info Section -->
+                <div class="list-group-item bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Wallet Balance</span>
+                        <strong class="text-success">₦{{ "%.2f"|format(current_user.wallet_balance) }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-1">
+                        <span class="text-muted small">Role</span>
+                        <span class="badge bg-primary">{{ current_user.role.title() }}</span>
+                    </div>
+                </div>
+                
+                <!-- Navigation Links -->
+                <a href="{{ url_for('wallet_history') }}" class="list-group-item list-group-item-action">
+                    <i data-feather="credit-card" class="me-2"></i> Wallet
+                </a>
+                <a href="{{ url_for('my_certificates') }}" class="list-group-item list-group-item-action">
+                    <i data-feather="award" class="me-2"></i> My Certificates
+                </a>
+                
+                {% if current_user.role in ['admin', 'instructor', 'tutor'] %}
+                <div class="list-group-item bg-light">
+                    <strong class="text-muted small">{{ 'INSTRUCTOR' if current_user.role == 'instructor' else current_user.role.upper() }} TOOLS</strong>
+                </div>
+                <a href="{{ url_for('create_course') }}" class="list-group-item list-group-item-action">
+                    <i data-feather="plus-circle" class="me-2"></i> Create Course
+                </a>
+                <a href="{{ url_for('manage_courses') }}" class="list-group-item list-group-item-action">
+                    <i data-feather="book" class="me-2"></i> Manage Courses
+                </a>
+                {% if current_user.role in ['instructor', 'tutor'] %}
+                <a href="{{ url_for('instructor_earnings') }}" class="list-group-item list-group-item-action">
+                    <i data-feather="dollar-sign" class="me-2"></i> Earnings
+                </a>
+                {% endif %}
+                {% endif %}
+                
+                {% if current_user.role == 'admin' %}
+                <div class="list-group-item bg-light">
+                    <strong class="text-muted small">ADMIN TOOLS</strong>
+                </div>
+                <a href="{{ url_for('admin_dashboard') }}" class="list-group-item list-group-item-action">
+                    <i data-feather="grid" class="me-2"></i> Admin Dashboard
+                </a>
+                <a href="{{ url_for('manage_payments') }}" class="list-group-item list-group-item-action">
+                    <i data-feather="credit-card" class="me-2"></i> Manage Payments
+                </a>
+                <a href="{{ url_for('create_voucher') }}" class="list-group-item list-group-item-action">
+                    <i data-feather="tag" class="me-2"></i> Create Voucher
+                </a>
+                <a href="{{ url_for('manage_certificate_templates') }}" class="list-group-item list-group-item-action">
+                    <i data-feather="file-text" class="me-2"></i> Certificate Templates
+                </a>
+                <a href="{{ url_for('admin_settings') }}" class="list-group-item list-group-item-action">
+                    <i data-feather="settings" class="me-2"></i> Settings
+                </a>
+                {% endif %}
+                
+                <!-- Logout Section -->
+                <div class="list-group-item bg-light mt-auto">
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger w-100">
+                        <i data-feather="log-out" class="me-2"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <main class="container my-4">
         {% with messages = get_flashed_messages(with_categories=true) %}
