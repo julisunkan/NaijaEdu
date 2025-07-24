@@ -47,8 +47,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i data-feather="gift" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>Vouchers</h5>
-                <p class="text-muted">Create discount vouchers</p>
+                <h5>{{ vouchers|length if vouchers else 0 }}</h5>
+                <p class="text-muted">Active Vouchers</p>
                 <a href="{{ url_for('create_voucher') }}" class="btn btn-success btn-sm">Create</a>
             </div>
         </div>
@@ -112,24 +112,73 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5>Recent Activity</h5>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>Created Vouchers</h5>
+                    <a href="{{ url_for('create_voucher') }}" class="btn btn-sm btn-success">
+                        <i data-feather="plus" class="me-1"></i>New
+                    </a>
+                </div>
             </div>
             <div class="card-body">
-                <p class="text-muted">Recent platform activities will be displayed here.</p>
-                <ul class="list-unstyled">
-                    <li class="mb-2">
-                        <i data-feather="user-plus" class="me-2"></i>
-                        New user registrations
-                    </li>
-                    <li class="mb-2">
-                        <i data-feather="credit-card" class="me-2"></i>
-                        Pending payments to review
-                    </li>
-                    <li class="mb-2">
-                        <i data-feather="book" class="me-2"></i>
-                        New course enrollments
-                    </li>
-                </ul>
+                {% if vouchers %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Type</th>
+                                <th>Value</th>
+                                <th>Uses</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for voucher in vouchers[:10] %}
+                            <tr>
+                                <td>
+                                    <strong>{{ voucher.code }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if voucher.discount_type == 'free' else 'info' if voucher.discount_type == 'percentage' else 'primary' }}">
+                                        {{ voucher.discount_type.title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if voucher.discount_type == 'free' %}
+                                        Free
+                                    {% elif voucher.discount_type == 'percentage' %}
+                                        {{ voucher.discount_value|int }}%
+                                    {% else %}
+                                        {{ voucher.discount_value|currency }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ voucher.current_uses }}/{{ voucher.max_uses }}</small>
+                                </td>
+                                <td>
+                                    {% if voucher.is_valid() %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Expired</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if vouchers|length > 10 %}
+                <div class="text-center mt-2">
+                    <small class="text-muted">Showing 10 of {{ vouchers|length }} vouchers</small>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-3">
+                    <i data-feather="gift" class="text-muted mb-2" style="width: 32px; height: 32px;"></i>
+                    <p class="text-muted mb-2">No vouchers created yet</p>
+                    <a href="{{ url_for('create_voucher') }}" class="btn btn-sm btn-success">Create First Voucher</a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

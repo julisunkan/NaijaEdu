@@ -69,7 +69,9 @@ def logout():
 @login_required
 def dashboard():
     if current_user.role == 'admin':
-        return render_template('dashboard/admin.html')
+        # Get vouchers for admin dashboard
+        vouchers = Voucher.query.order_by(Voucher.created_at.desc()).all()
+        return render_template('dashboard/admin.html', vouchers=vouchers)
     elif current_user.role == 'instructor':
         return render_template('dashboard/instructor.html')
     else:
