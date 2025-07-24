@@ -231,6 +231,65 @@ def enroll_course(course_id):
     
     return render_template('payments/manual.html', form=form, course=course)
 
+@app.route('/courses/<int:course_id>/enroll/wallet', methods=['POST'])
+@login_required
+def enroll_with_wallet(course_id):
+    course = Course.query.get_or_404(course_id)
+    
+    # Check if already enrolled
+    existing_enrollment = Enrollment.query.filter_by(
+        user_id=current_user.id,
+        course_id=course_id
+    ).first()
+    
+    if existing_enrollment:
+        if existing_enrollment.status == 'approved':
+            flash('You are already enrolled in this course', 'info')
+            return redirect(url_for('course_detail', course_id=course_id))
+        elif existing_enrollment.status == 'pending':
+            flash('Your enrollment is pending approval', 'warning')
+            return redirect(url_for('course_detail', course_id=course_id))
+    
+    # Check if user has sufficient wallet balance
+    if current_user.wallet_balance < course.price:
+        flash(f'Insufficient wallet balance. You need ₦{course.price:.2f} but have ₦{current_user.wallet_balance:.2f}', 'danger')
+        return redirect(url_for('course_detail', course_id=course_id))
+    
+    # Deduct amount from wallet
+    current_user.wallet_balance -= course.price
+    
+    # Create wallet transaction record
+    transaction = WalletTransaction()
+    transaction.user_id = current_user.id
+    transaction.amount = -course.price  # Negative for debit
+    transaction.transaction_type = 'course_purchase'
+    transaction.description = f'Purchased course: {course.title}'
+    db.session.add(transaction)
+    
+    # Create enrollment record (approved immediately since payment is confirmed)
+    enrollment = Enrollment()
+    enrollment.user_id = current_user.id
+    enrollment.course_id = course_id
+    enrollment.enrollment_method = 'wallet'
+    enrollment.status = 'approved'
+    enrollment.approved_at = datetime.utcnow()
+    db.session.add(enrollment)
+    
+    # Create payment record for tracking
+    payment = Payment()
+    payment.user_id = current_user.id
+    payment.course_id = course_id
+    payment.amount = course.price
+    payment.payment_type = 'wallet'
+    payment.status = 'approved'
+    payment.processed_at = datetime.utcnow()
+    db.session.add(payment)
+    
+    db.session.commit()
+    
+    flash(f'Successfully enrolled in {course.title} using wallet balance! Your new balance is ₦{current_user.wallet_balance:.2f}', 'success')
+    return redirect(url_for('course_detail', course_id=course_id))
+
 @app.route('/payments/manage')
 @login_required
 @admin_required
@@ -658,7 +717,7 @@ def submit_quiz(quiz_id):
     attempt.user_id = current_user.id
     attempt.quiz_id = quiz_id
     attempt.score = total_score
-    attempt.max_score = max_score
+    attempt.total_points = max_score
     attempt.completed_at = datetime.utcnow()
     db.session.add(attempt)
     db.session.commit()
