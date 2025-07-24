@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Credits Progress - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>Credit Progress</h2>
+                <p class="text-muted">{{ course.title }}</p>
+            </div>
+            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-secondary">
+                <i data-feather="arrow-left" class="me-1"></i>Back to Course
+            </a>
+        </div>
+        
+        <!-- Credit Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i data-feather="award" class="mb-2 text-primary" style="width: 32px; height: 32px;"></i>
+                        <h4 class="{% if total_earned >= course.min_credits_for_certificate %}text-success{% else %}text-warning{% endif %}">
+                            {{ total_earned }}
+                        </h4>
+                        <p class="text-muted mb-0">Total Credits Earned</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i data-feather="target" class="mb-2 text-info" style="width: 32px; height: 32px;"></i>
+                        <h4 class="text-info">{{ course.min_credits_for_certificate }}</h4>
+                        <p class="text-muted mb-0">Required for Certificate</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i data-feather="help-circle" class="mb-2 text-success" style="width: 32px; height: 32px;"></i>
+                        <h4 class="text-success">{{ quiz_credits }}</h4>
+                        <p class="text-muted mb-0">Quiz Credits</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i data-feather="file-text" class="mb-2 text-warning" style="width: 32px; height: 32px;"></i>
+                        <h4 class="text-warning">{{ assignment_credits }}</h4>
+                        <p class="text-muted mb-0">Assignment Credits</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6>Progress Towards Certificate</h6>
+                    <span class="text-muted">{{ total_earned }}/{{ course.min_credits_for_certificate }} credits</span>
+                </div>
+                {% set progress_percentage = (total_earned / course.min_credits_for_certificate * 100) if course.min_credits_for_certificate > 0 else 0 %}
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar {% if progress_percentage >= 100 %}bg-success{% elif progress_percentage >= 70 %}bg-warning{% else %}bg-info{% endif %}" 
+                         role="progressbar" 
+                         style="width: {{ [progress_percentage, 100]|min }}%">
+                    </div>
+                </div>
+                <small class="text-muted">{{ progress_percentage|round(1) }}% complete</small>
+            </div>
+        </div>
+        
+        <!-- Certificate Status -->
+        {% if can_get_certificate %}
+        <div class="alert alert-success">
+            <i data-feather="check-circle" class="me-2"></i>
+            <strong>Congratulations!</strong> You have earned enough credits to receive your certificate.
+            <a href="{{ url_for('my_certificates') }}" class="btn btn-success btn-sm ms-2">
+                <i data-feather="award" class="me-1"></i>View Certificates
+            </a>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i data-feather="info" class="me-2"></i>
+            You need {{ course.min_credits_for_certificate - total_earned }} more credits to earn your certificate. 
+            Complete more quizzes and assignments to reach the requirement.
+        </div>
+        {% endif %}
+        
+        <!-- Detailed Credit Breakdown -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Credit Details</h5>
+            </div>
+            <div class="card-body">
+                {% if credits %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Item</th>
+                                <th>Score</th>
+                                <th>Credits Earned</th>
+                                <th>Max Credits</th>
+                                <th>Date Earned</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for credit in credits %}
+                            <tr>
+                                <td>
+                                    {% if credit.item_type == 'quiz' %}
+                                    <span class="badge bg-success">Quiz</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Assignment</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if credit.item_type == 'quiz' %}
+                                    {% set quiz = course.quizzes.filter_by(id=credit.item_id).first() %}
+                                    {{ quiz.title if quiz else 'Quiz #' + credit.item_id|string }}
+                                    {% else %}
+                                    {% set assignment = course.assignments.filter_by(id=credit.item_id).first() %}
+                                    {{ assignment.title if assignment else 'Assignment #' + credit.item_id|string }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="{% if credit.score_percentage >= 90 %}text-success{% elif credit.score_percentage >= 70 %}text-warning{% else %}text-danger{% endif %}">
+                                        {{ credit.score_percentage|round(1) }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong class="text-primary">{{ credit.credits_earned }}</strong>
+                                </td>
+                                <td>{{ credit.max_credits }}</td>
+                                <td>
+                                    <small class="text-muted">{{ credit.earned_at.strftime('%Y-%m-%d') }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i data-feather="file-text" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                    <h6 class="text-muted">No Credits Earned Yet</h6>
+                    <p class="text-muted">Complete quizzes and assignments to start earning credits.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize Feather icons
+feather.replace();
+</script>
+{% endblock %}

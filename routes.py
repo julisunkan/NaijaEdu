@@ -569,11 +569,23 @@ def grade_submission(submission_id):
     feedback = request.form.get('feedback', '')
     
     if grade is not None and 0 <= grade <= submission.assignment.max_points:
-        submission.grade = grade
+        submission.score = grade
         submission.feedback = feedback
         submission.graded_at = datetime.utcnow()
         db.session.commit()
-        flash('Assignment graded successfully!', 'success')
+        
+        # Award credits for the graded assignment
+        credits_earned = CourseCredit.award_assignment_credits(
+            submission.user_id, 
+            submission.assignment_id, 
+            submission
+        )
+        
+        if credits_earned > 0:
+            flash(f'Assignment graded successfully! Student earned {credits_earned} credits.', 'success')
+        else:
+            percentage = (submission.score / submission.assignment.max_points * 100) if submission.assignment.max_points > 0 else 0
+            flash(f'Assignment graded successfully! Score: {percentage:.1f}% (Need {submission.assignment.pass_threshold}% for credits)', 'success')
     else:
         flash('Invalid grade value!', 'error')
     
@@ -687,6 +699,8 @@ def create_quiz(course_id):
         quiz.course_id = course_id
         quiz.time_limit = form.time_limit.data
         quiz.max_attempts = form.max_attempts.data
+        quiz.max_credits = form.max_credits.data
+        quiz.pass_threshold = form.pass_threshold.data
         db.session.add(quiz)
         db.session.commit()
         flash('Quiz created successfully!', 'success')
@@ -748,7 +762,15 @@ def submit_quiz(quiz_id):
     db.session.add(attempt)
     db.session.commit()
     
-    flash(f'Quiz completed! You scored {total_score}/{max_score}', 'success')
+    # Award credits for quiz completion
+    credits_earned = CourseCredit.award_quiz_credits(current_user.id, quiz_id, attempt)
+    
+    if credits_earned > 0:
+        flash(f'Quiz completed! You scored {total_score}/{max_score} and earned {credits_earned} credits!', 'success')
+    else:
+        percentage = (total_score / max_score * 100) if max_score > 0 else 0
+        flash(f'Quiz completed! You scored {total_score}/{max_score} ({percentage:.1f}%). You need {quiz.pass_threshold}% to earn credits.', 'warning')
+    
     return redirect(url_for('course_detail', course_id=quiz.course_id))
 
 # Assignment routes
@@ -766,9 +788,12 @@ def create_assignment(course_id):
         assignment = Assignment()
         assignment.title = form.title.data
         assignment.description = form.description.data
+        assignment.instructions = form.instructions.data
         assignment.course_id = course_id
         assignment.due_date = form.due_date.data
         assignment.max_points = form.max_points.data
+        assignment.max_credits = form.max_credits.data
+        assignment.pass_threshold = form.pass_threshold.data
         db.session.add(assignment)
         db.session.commit()
         flash('Assignment created successfully!', 'success')
@@ -1055,9 +1080,43 @@ def admin_settings():
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# Credit tracking routes
+@app.route('/courses/<int:course_id>/credits')
+@login_required
+def course_credits(course_id):
+    """View credit progress for a specific course"""
+    course = Course.query.get_or_404(course_id)
+    
+    # Check if user is enrolled
+    if not current_user.can_access_course(course):
+        flash('You need to enroll in this course first', 'warning')
+        return redirect(url_for('course_detail', course_id=course_id))
+    
+    # Get user's credits for this course
+    credits = CourseCredit.query.filter_by(
+        user_id=current_user.id,
+        course_id=course_id
+    ).all()
+    
+    # Calculate totals
+    total_earned = sum(credit.credits_earned for credit in credits)
+    quiz_credits = sum(credit.credits_earned for credit in credits if credit.item_type == 'quiz')
+    assignment_credits = sum(credit.credits_earned for credit in credits if credit.item_type == 'assignment')
+    
+    # Check completion status
+    can_get_certificate = check_course_completion(current_user.id, course_id)
+    
+    return render_template('courses/credits.html', 
+                         course=course, 
+                         credits=credits,
+                         total_earned=total_earned,
+                         quiz_credits=quiz_credits,
+                         assignment_credits=assignment_credits,
+                         can_get_certificate=can_get_certificate)
+
 # Certificate functionality
 def check_course_completion(user_id, course_id):
-    """Check if a user has completed all requirements for a course"""
+    """Check if a user has completed all requirements for a course based on credits"""
     course = Course.query.get(course_id)
     if not course:
         return False
@@ -1071,14 +1130,16 @@ def check_course_completion(user_id, course_id):
     if not enrollment:
         return False
     
-    # Check if all lessons have been accessed (basic completion check)
-    total_lessons = course.lessons.count()
-    if total_lessons == 0:
-        return True  # Course with no lessons is considered complete
+    # Calculate total credits earned by the user for this course
+    total_credits = db.session.query(db.func.sum(CourseCredit.credits_earned)).filter_by(
+        user_id=user_id,
+        course_id=course_id
+    ).scalar() or 0
     
-    # For now, we'll consider a course complete if user is enrolled
-    # In a full implementation, you'd track lesson progress, quiz scores, etc.
-    return True
+    # Check if user has earned minimum required credits
+    min_credits_required = course.min_credits_for_certificate or 70
+    
+    return total_credits >= min_credits_required
 
 def issue_certificate(user_id, course_id):
     """Issue a certificate for course completion"""

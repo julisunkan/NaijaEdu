@@ -21,6 +21,9 @@ class CourseForm(FlaskForm):
     price = FloatField('Price (₦)', validators=[DataRequired(), NumberRange(min=0)])
     category = StringField('Category', validators=[Optional(), Length(max=100)])
     is_active = BooleanField('Active Status', default=True)
+    # Credit system fields
+    min_credits_for_certificate = IntegerField('Minimum Credits for Certificate', validators=[DataRequired(), NumberRange(min=1)], default=70)
+    total_available_credits = IntegerField('Total Available Credits', validators=[DataRequired(), NumberRange(min=1)], default=100)
 
 class LessonForm(FlaskForm):
     title = StringField('Lesson Title', validators=[DataRequired(), Length(max=200)])
@@ -54,6 +57,9 @@ class QuizForm(FlaskForm):
     description = TextAreaField('Description')
     time_limit = IntegerField('Time Limit (minutes)', validators=[DataRequired(), NumberRange(min=1)])
     max_attempts = IntegerField('Maximum Attempts', validators=[DataRequired(), NumberRange(min=1)])
+    # Credit system fields
+    max_credits = IntegerField('Maximum Credits', validators=[DataRequired(), NumberRange(min=1)], default=10)
+    pass_threshold = FloatField('Pass Threshold (%)', validators=[DataRequired(), NumberRange(min=0, max=100)], default=70.0)
 
 class QuizQuestionForm(FlaskForm):
     question = TextAreaField('Question', validators=[DataRequired()])
@@ -70,6 +76,9 @@ class AssignmentForm(FlaskForm):
     instructions = TextAreaField('Detailed Instructions', validators=[Optional()])
     due_date = DateTimeField('Due Date', format='%Y-%m-%d %H:%M:%S', validators=[Optional()])
     max_points = IntegerField('Maximum Points', validators=[DataRequired(), NumberRange(min=1)], default=100)
+    # Credit system fields
+    max_credits = IntegerField('Maximum Credits', validators=[DataRequired(), NumberRange(min=1)], default=15)
+    pass_threshold = FloatField('Pass Threshold (%)', validators=[DataRequired(), NumberRange(min=0, max=100)], default=60.0)
 
 class UserManagementForm(FlaskForm):
     role = SelectField('Role', choices=[('student', 'Student'), ('instructor', 'Instructor'), ('admin', 'Admin')])

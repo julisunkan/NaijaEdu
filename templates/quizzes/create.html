@@ -66,6 +66,37 @@
                         </div>
                     </div>
                     
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.max_credits.label(class="form-label") }}
+                                {{ form.max_credits(class="form-control") }}
+                                {% if form.max_credits.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.max_credits.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Credits students can earn</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.pass_threshold.label(class="form-label") }}
+                                {{ form.pass_threshold(class="form-control") }}
+                                {% if form.pass_threshold.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.pass_threshold.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Minimum score % to earn credits</small>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="alert alert-info">
                         <h6><i data-feather="info" class="me-2"></i>Next Steps</h6>
                         <p class="mb-0">After creating the quiz, you'll be able to add questions with multiple choice answers.</p>

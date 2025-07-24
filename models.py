@@ -31,6 +31,7 @@ class User(UserMixin, db.Model):
     wallet_transactions = db.relationship('WalletTransaction', backref='user', lazy='dynamic')
     quiz_attempts = db.relationship('QuizAttempt', backref='user', lazy='dynamic')
     assignment_submissions = db.relationship('AssignmentSubmission', backref='user', lazy='dynamic')
+    course_credits = db.relationship('CourseCredit', backref='student_credit', lazy='dynamic')
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -83,6 +84,9 @@ class Course(db.Model):
     price = db.Column(db.Float, nullable=False, default=0.0)
     instructor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
+    # Credit system fields
+    min_credits_for_certificate = db.Column(db.Integer, default=70)  # Minimum credits needed for certificate
+    total_available_credits = db.Column(db.Integer, default=100)     # Total credits available in course
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -91,6 +95,19 @@ class Course(db.Model):
     enrollments = db.relationship('Enrollment', backref='course', lazy='dynamic', cascade='all, delete-orphan')
     quizzes = db.relationship('Quiz', backref='course', lazy='dynamic', cascade='all, delete-orphan')
     assignments = db.relationship('Assignment', backref='course', lazy='dynamic', cascade='all, delete-orphan')
+    course_credits = db.relationship('CourseCredit', backref='course', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def get_student_credits(self, user_id):
+        """Get total credits earned by a student in this course"""
+        total_credits = db.session.query(db.func.sum(CourseCredit.credits_earned)).filter_by(
+            user_id=user_id, course_id=self.id
+        ).scalar() or 0
+        return total_credits
+    
+    def is_eligible_for_certificate(self, user_id):
+        """Check if student has earned enough credits for certificate"""
+        earned_credits = self.get_student_credits(user_id)
+        return earned_credits >= self.min_credits_for_certificate
 
 class Lesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -174,10 +191,25 @@ class Quiz(db.Model):
     time_limit = db.Column(db.Integer, default=30)  # minutes
     max_attempts = db.Column(db.Integer, default=3)
     is_active = db.Column(db.Boolean, default=True)
+    # Credit system fields
+    max_credits = db.Column(db.Integer, default=10)  # Maximum credits for this quiz
+    pass_threshold = db.Column(db.Float, default=70.0)  # Minimum percentage to earn credits
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     questions = db.relationship('QuizQuestion', backref='quiz', lazy='dynamic', cascade='all, delete-orphan')
     attempts = db.relationship('QuizAttempt', backref='quiz', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def calculate_credits_earned(self, score, total_points):
+        """Calculate credits earned based on quiz performance"""
+        if not score or not total_points or total_points == 0:
+            return 0
+        
+        percentage = (score / total_points) * 100
+        if percentage >= self.pass_threshold:
+            # Award credits proportional to performance
+            credit_percentage = percentage / 100
+            return int(self.max_credits * credit_percentage)
+        return 0
 
 class QuizQuestion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -209,9 +241,24 @@ class Assignment(db.Model):
     due_date = db.Column(db.DateTime)
     max_points = db.Column(db.Integer, default=100)
     is_active = db.Column(db.Boolean, default=True)
+    # Credit system fields
+    max_credits = db.Column(db.Integer, default=15)  # Maximum credits for this assignment
+    pass_threshold = db.Column(db.Float, default=60.0)  # Minimum percentage to earn credits
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     submissions = db.relationship('AssignmentSubmission', backref='assignment', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def calculate_credits_earned(self, score, max_points):
+        """Calculate credits earned based on score"""
+        if not score or not max_points or max_points == 0:
+            return 0
+        
+        percentage = (score / max_points) * 100
+        if percentage >= self.pass_threshold:
+            # Award credits proportional to performance above threshold
+            credit_percentage = percentage / 100
+            return int(self.max_credits * credit_percentage)
+        return 0
 
 class AssignmentSubmission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -223,6 +270,108 @@ class AssignmentSubmission(db.Model):
     feedback = db.Column(db.Text)
     submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
     graded_at = db.Column(db.DateTime)
+
+class CourseCredit(db.Model):
+    """Track credits earned by students for quizzes and assignments"""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    item_type = db.Column(db.String(20), nullable=False)  # 'quiz' or 'assignment'
+    item_id = db.Column(db.Integer, nullable=False)  # quiz_id or assignment_id
+    credits_earned = db.Column(db.Integer, default=0)
+    max_credits = db.Column(db.Integer, default=0)
+    score_percentage = db.Column(db.Float, default=0.0)
+    earned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Create composite unique constraint to prevent duplicate credit records
+    __table_args__ = (db.UniqueConstraint('user_id', 'course_id', 'item_type', 'item_id'),)
+    
+    # Relationships are handled by backref in User model
+    
+    @staticmethod
+    def award_quiz_credits(user_id, quiz_id, quiz_attempt):
+        """Award credits for a completed quiz"""
+        quiz = Quiz.query.get(quiz_id)
+        if not quiz:
+            return 0
+            
+        # Calculate percentage score
+        percentage = (quiz_attempt.score / quiz_attempt.total_points * 100) if quiz_attempt.total_points > 0 else 0
+        
+        # Check if student passed the threshold
+        credits_earned = 0
+        if percentage >= quiz.pass_threshold:
+            # Award credits proportional to performance
+            credit_percentage = percentage / 100
+            credits_earned = int(quiz.max_credits * credit_percentage)
+        
+        # Create or update credit record
+        credit_record = CourseCredit.query.filter_by(
+            user_id=user_id,
+            course_id=quiz.course_id,
+            item_type='quiz',
+            item_id=quiz_id
+        ).first()
+        
+        if credit_record:
+            # Update existing record with best performance
+            if credits_earned > credit_record.credits_earned:
+                credit_record.credits_earned = credits_earned
+                credit_record.score_percentage = percentage
+                credit_record.earned_at = datetime.utcnow()
+        else:
+            # Create new credit record
+            credit_record = CourseCredit()
+            credit_record.user_id = user_id
+            credit_record.course_id = quiz.course_id
+            credit_record.item_type = 'quiz'
+            credit_record.item_id = quiz_id
+            credit_record.credits_earned = credits_earned
+            credit_record.max_credits = quiz.max_credits
+            credit_record.score_percentage = percentage
+            db.session.add(credit_record)
+        
+        db.session.commit()
+        return credits_earned
+    
+    @staticmethod
+    def award_assignment_credits(user_id, assignment_id, submission):
+        """Award credits for a graded assignment"""
+        assignment = Assignment.query.get(assignment_id)
+        if not assignment or not submission.score:
+            return 0
+        
+        # Calculate credits earned
+        credits_earned = assignment.calculate_credits_earned(submission.score, assignment.max_points)
+        percentage = (submission.score / assignment.max_points * 100) if assignment.max_points > 0 else 0
+        
+        # Create or update credit record
+        credit_record = CourseCredit.query.filter_by(
+            user_id=user_id,
+            course_id=assignment.course_id,
+            item_type='assignment',
+            item_id=assignment_id
+        ).first()
+        
+        if credit_record:
+            # Update existing record
+            credit_record.credits_earned = credits_earned
+            credit_record.score_percentage = percentage
+            credit_record.earned_at = datetime.utcnow()
+        else:
+            # Create new credit record
+            credit_record = CourseCredit()
+            credit_record.user_id = user_id
+            credit_record.course_id = assignment.course_id
+            credit_record.item_type = 'assignment'
+            credit_record.item_id = assignment_id
+            credit_record.credits_earned = credits_earned
+            credit_record.max_credits = assignment.max_credits
+            credit_record.score_percentage = percentage
+            db.session.add(credit_record)
+        
+        db.session.commit()
+        return credits_earned
 
 class SystemSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
