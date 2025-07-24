@@ -20,10 +20,21 @@
     
     <title>{% block title %}Nigerian E-Learning Platform{% endblock %}</title>
     
-    <!-- Stylesheets -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <!-- Critical CSS inline -->
+    {% set critical_css = get_critical_css() %}
+    {% if critical_css %}
+    <style>{{ critical_css | safe }}</style>
+    {% endif %}
+    
+    <!-- Non-critical CSS with preload -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></noscript>
+    <link rel="preload" href="{{ url_for('static', filename='css/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet"></noscript>
+    
+    <!-- DNS prefetch for external resources -->
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//unpkg.com">
     
     <!-- Google Analytics -->
     {% include 'components/analytics.html' %}
@@ -309,9 +320,11 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="{{ url_for('static', filename='js/pwa.js') }}"></script>
+    <!-- Performance optimized scripts -->
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="https://unpkg.com/feather-icons" defer></script>
+    <script src="{{ url_for('static', filename='js/pwa.js') }}" defer></script>
     
     <script>
         feather.replace();

@@ -37,6 +37,9 @@ def create_app():
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
         "pool_pre_ping": True,
+        "pool_size": 10,
+        "max_overflow": 20,
+        "echo": False,  # Disable SQL query logging in production
     }
     
     # File upload configuration
@@ -66,6 +69,19 @@ def create_app():
         if amount is None:
             return "₦0.00"
         return f"₦{amount:,.2f}"
+    
+    # Add critical CSS function
+    @app.template_global()
+    def get_critical_css():
+        """Load critical CSS inline for performance"""
+        try:
+            if app.static_folder:
+                css_path = os.path.join(app.static_folder, 'css', 'critical.css')
+                with open(css_path, 'r') as f:
+                    return f.read()
+        except (FileNotFoundError, TypeError):
+            pass
+        return ""
     
     return app
 

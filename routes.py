@@ -9,10 +9,19 @@ from app import app, db
 from models import *
 from forms import *
 from utils import admin_required, instructor_required
+from cache import cache
 
 @app.route('/')
 def index():
-    courses = Course.query.filter_by(is_active=True, approval_status='approved').all()
+    # Check cache first
+    cached_courses = cache.get('homepage_courses', 300)  # 5 minutes cache
+    if cached_courses is None:
+        # Optimize with limit for better performance
+        courses = Course.query.filter_by(is_active=True, approval_status='approved')\
+                        .limit(12).all()
+        cache.set('homepage_courses', courses)
+    else:
+        courses = cached_courses
     return render_template('index.html', courses=courses)
 
 # Authentication routes
