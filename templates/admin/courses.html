@@ -34,7 +34,7 @@
                                     <strong>{{ course.title }}</strong>
                                     <br><small class="text-muted">{{ course.description[:100] }}...</small>
                                 </td>
-                                <td>₦{{ "{:,.0f}".format(course.price) }}</td>
+                                <td>{{ course.price|currency }}</td>
                                 <td>
                                     <span class="badge bg-{{ 'success' if course.is_active else 'secondary' }}">
                                         {{ 'Active' if course.is_active else 'Inactive' }}

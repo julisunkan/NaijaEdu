@@ -134,6 +134,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 24, 2025 - Replit Migration & Currency Formatting Enhancement
+- ✓ Successfully migrated project from Replit Agent to standard Replit environment
+- ✓ Implemented comma separators for all currency displays (₦25,000.00 format)
+- ✓ Added custom currency filter to Jinja2 templates
+- ✓ Updated all templates to use consistent comma-separated currency formatting
+- ✓ Enhanced JavaScript currency formatting with Nigerian locale
+- ✓ Confirmed comprehensive admin course editing functionality is fully operational
+- ✓ Admin can edit courses, lessons, quizzes, questions, and assignments through dedicated interfaces
+
 ### July 24, 2025 - Render Deployment Preparation
 - ✓ Created production deployment configuration files (render.yaml, Procfile, runtime.txt)
 - ✓ Updated app.py for environment-aware database configuration
