@@ -44,13 +44,12 @@ def register():
         elif User.query.filter_by(email=form.email.data).first():
             flash('Email already registered', 'danger')
         else:
-            user = User(
-                username=form.username.data,
-                email=form.email.data,
-                first_name=form.first_name.data,
-                last_name=form.last_name.data,
-                role=form.role.data
-            )
+            user = User()
+            user.username = form.username.data
+            user.email = form.email.data
+            user.first_name = form.first_name.data
+            user.last_name = form.last_name.data
+            user.role = form.role.data
             user.set_password(form.password.data)
             db.session.add(user)
             db.session.commit()
@@ -141,12 +140,11 @@ def create_lesson(course_id):
     
     form = LessonForm()
     if form.validate_on_submit():
-        lesson = Lesson(
-            title=form.title.data,
-            content_type=form.content_type.data,
-            order=form.order.data or 0,
-            course_id=course_id
-        )
+        lesson = Lesson()
+        lesson.title = form.title.data
+        lesson.content_type = form.content_type.data
+        lesson.order = form.order.data or 0
+        lesson.course_id = course_id
         
         if form.content_type.data == 'text':
             lesson.content = form.content.data
@@ -212,21 +210,19 @@ def enroll_course(course_id):
             file_path = None
         
         # Create payment record
-        payment = Payment(
-            user_id=current_user.id,
-            course_id=course_id,
-            amount=form.amount.data,
-            payment_type='course',
-            proof_file=file_path
-        )
+        payment = Payment()
+        payment.user_id = current_user.id
+        payment.course_id = course_id
+        payment.amount = form.amount.data
+        payment.payment_type = 'course'
+        payment.proof_file = file_path
         db.session.add(payment)
         
         # Create enrollment record
-        enrollment = Enrollment(
-            user_id=current_user.id,
-            course_id=course_id,
-            enrollment_method='payment'
-        )
+        enrollment = Enrollment()
+        enrollment.user_id = current_user.id
+        enrollment.course_id = course_id
+        enrollment.enrollment_method = 'payment'
         db.session.add(enrollment)
         
         db.session.commit()
@@ -263,12 +259,11 @@ def approve_payment(payment_id):
         # Add to wallet
         user = payment.user
         user.wallet_balance += payment.amount
-        transaction = WalletTransaction(
-            user_id=user.id,
-            amount=payment.amount,
-            transaction_type='credit',
-            description='Wallet top-up approved'
-        )
+        transaction = WalletTransaction()
+        transaction.user_id = user.id
+        transaction.amount = payment.amount
+        transaction.transaction_type = 'credit'
+        transaction.description = 'Wallet top-up approved'
         db.session.add(transaction)
     
     db.session.commit()
@@ -304,13 +299,12 @@ def reject_payment(payment_id):
 def create_voucher():
     form = VoucherForm()
     if form.validate_on_submit():
-        voucher = Voucher(
-            code=form.code.data.upper() if form.code.data else '',
-            discount_type=form.discount_type.data,
-            discount_value=form.discount_value.data,
-            max_uses=form.max_uses.data,
-            expires_at=form.expires_at.data
-        )
+        voucher = Voucher()
+        voucher.code = form.code.data.upper() if form.code.data else ''
+        voucher.discount_type = form.discount_type.data
+        voucher.discount_value = form.discount_value.data
+        voucher.max_uses = form.max_uses.data
+        voucher.expires_at = form.expires_at.data
         db.session.add(voucher)
         db.session.commit()
         flash('Voucher created successfully!', 'success')
@@ -532,13 +526,12 @@ def redeem_voucher(course_id):
             final_amount = course.price - discount
             
             # Create enrollment
-            enrollment = Enrollment(
-                user_id=current_user.id,
-                course_id=course_id,
-                enrollment_method='voucher',
-                status='approved' if final_amount == 0 else 'pending',
-                approved_at=datetime.utcnow() if final_amount == 0 else None
-            )
+            enrollment = Enrollment()
+            enrollment.user_id = current_user.id
+            enrollment.course_id = course_id
+            enrollment.enrollment_method = 'voucher'
+            enrollment.status = 'approved' if final_amount == 0 else 'pending'
+            enrollment.approved_at = datetime.utcnow() if final_amount == 0 else None
             db.session.add(enrollment)
             
             # Update voucher usage
@@ -572,12 +565,11 @@ def wallet_topup():
             file_path = None
         
         # Create payment record
-        payment = Payment(
-            user_id=current_user.id,
-            amount=form.amount.data,
-            payment_type='wallet_topup',
-            proof_file=file_path
-        )
+        payment = Payment()
+        payment.user_id = current_user.id
+        payment.amount = form.amount.data
+        payment.payment_type = 'wallet_topup'
+        payment.proof_file = file_path
         db.session.add(payment)
         db.session.commit()
         
@@ -604,13 +596,12 @@ def create_quiz(course_id):
     
     form = QuizForm()
     if form.validate_on_submit():
-        quiz = Quiz(
-            title=form.title.data,
-            description=form.description.data,
-            course_id=course_id,
-            time_limit=form.time_limit.data,
-            max_attempts=form.max_attempts.data
-        )
+        quiz = Quiz()
+        quiz.title = form.title.data
+        quiz.description = form.description.data
+        quiz.course_id = course_id
+        quiz.time_limit = form.time_limit.data
+        quiz.max_attempts = form.max_attempts.data
         db.session.add(quiz)
         db.session.commit()
         flash('Quiz created successfully!', 'success')
@@ -663,13 +654,12 @@ def submit_quiz(quiz_id):
             total_score += 1
     
     # Save attempt
-    attempt = QuizAttempt(
-        user_id=current_user.id,
-        quiz_id=quiz_id,
-        score=total_score,
-        max_score=max_score,
-        completed_at=datetime.utcnow()
-    )
+    attempt = QuizAttempt()
+    attempt.user_id = current_user.id
+    attempt.quiz_id = quiz_id
+    attempt.score = total_score
+    attempt.max_score = max_score
+    attempt.completed_at = datetime.utcnow()
     db.session.add(attempt)
     db.session.commit()
     
@@ -688,13 +678,12 @@ def create_assignment(course_id):
     
     form = AssignmentForm()
     if form.validate_on_submit():
-        assignment = Assignment(
-            title=form.title.data,
-            description=form.description.data,
-            course_id=course_id,
-            due_date=form.due_date.data,
-            max_points=form.max_points.data
-        )
+        assignment = Assignment()
+        assignment.title = form.title.data
+        assignment.description = form.description.data
+        assignment.course_id = course_id
+        assignment.due_date = form.due_date.data
+        assignment.max_points = form.max_points.data
         db.session.add(assignment)
         db.session.commit()
         flash('Assignment created successfully!', 'success')
@@ -730,12 +719,11 @@ def submit_assignment(assignment_id):
             existing_submission.file_path = file_path
             existing_submission.submitted_at = datetime.utcnow()
         else:
-            submission = AssignmentSubmission(
-                user_id=current_user.id,
-                assignment_id=assignment_id,
-                content=form.content.data,
-                file_path=file_path
-            )
+            submission = AssignmentSubmission()
+            submission.user_id = current_user.id
+            submission.assignment_id = assignment_id
+            submission.content = form.content.data
+            submission.file_path = file_path
             db.session.add(submission)
         
         db.session.commit()
@@ -941,16 +929,15 @@ def delete_assignment(assignment_id):
 def add_question(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
     
-    question = QuizQuestion(
-        quiz_id=quiz_id,
-        question=request.form['question'],
-        option_a=request.form['option_a'],
-        option_b=request.form['option_b'],
-        option_c=request.form['option_c'],
-        option_d=request.form['option_d'],
-        correct_answer=request.form['correct_answer'],
-        points=int(request.form.get('points', 1))
-    )
+    question = QuizQuestion()
+    question.quiz_id = quiz_id
+    question.question = request.form['question']
+    question.option_a = request.form['option_a']
+    question.option_b = request.form['option_b']
+    question.option_c = request.form['option_c']
+    question.option_d = request.form['option_d']
+    question.correct_answer = request.form['correct_answer']
+    question.points = int(request.form.get('points', 1))
     
     db.session.add(question)
     db.session.commit()
