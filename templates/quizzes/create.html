@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Create Quiz - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Create Quiz for: {{ course.title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                        {% if form.title.errors %}
+                        <div class="text-danger">
+                            {% for error in form.title.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows="4") }}
+                        <small class="form-text text-muted">Describe what this quiz covers</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.time_limit.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.time_limit(class="form-control") }}
+                                    <span class="input-group-text">minutes</span>
+                                </div>
+                                {% if form.time_limit.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.time_limit.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">How long students have to complete the quiz</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.max_attempts.label(class="form-label") }}
+                                {{ form.max_attempts(class="form-control") }}
+                                {% if form.max_attempts.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.max_attempts.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Number of times a student can take this quiz</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i data-feather="info" class="me-2"></i>Next Steps</h6>
+                        <p class="mb-0">After creating the quiz, you'll be able to add questions with multiple choice answers.</p>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create Quiz</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Quiz Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i data-feather="check-circle" class="text-success me-2"></i>
+                        <strong>Multiple Choice:</strong> All questions are multiple choice (A, B, C, D)
+                    </li>
+                    <li class="mb-2">
+                        <i data-feather="check-circle" class="text-success me-2"></i>
+                        <strong>Auto-graded:</strong> Quizzes are automatically graded when submitted
+                    </li>
+                    <li class="mb-2">
+                        <i data-feather="check-circle" class="text-success me-2"></i>
+                        <strong>Time Limit:</strong> Students must complete within the specified time
+                    </li>
+                    <li class="mb-2">
+                        <i data-feather="check-circle" class="text-success me-2"></i>
+                        <strong>Attempts:</strong> Limited number of attempts per student
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

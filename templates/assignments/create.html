@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Create Assignment - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Create Assignment for: {{ course.title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                        {% if form.title.errors %}
+                        <div class="text-danger">
+                            {% for error in form.title.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows="6") }}
+                        {% if form.description.errors %}
+                        <div class="text-danger">
+                            {% for error in form.description.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Provide detailed instructions for the assignment</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.due_date.label(class="form-label") }}
+                                {{ form.due_date(class="form-control") }}
+                                <small class="form-text text-muted">Format: YYYY-MM-DD HH:MM:SS (optional)</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.max_points.label(class="form-label") }}
+                                {{ form.max_points(class="form-control") }}
+                                {% if form.max_points.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.max_points.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Total points for this assignment</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i data-feather="info" class="me-2"></i>Assignment Features</h6>
+                        <ul class="mb-0">
+                            <li>Students can submit text responses and file uploads</li>
+                            <li>Assignments require manual grading by instructors</li>
+                            <li>Due dates are optional but recommended</li>
+                            <li>Supported file types: PDF, DOC, DOCX, TXT</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create Assignment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Assignment Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>For Instructors:</h6>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1">• Provide clear, detailed instructions</li>
+                            <li class="mb-1">• Set realistic due dates</li>
+                            <li class="mb-1">• Specify grading criteria</li>
+                            <li class="mb-1">• Include example submissions if helpful</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Student Submission Types:</h6>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1">• Text responses (essays, answers)</li>
+                            <li class="mb-1">• File uploads (documents, projects)</li>
+                            <li class="mb-1">• Both text and file combined</li>
+                            <li class="mb-1">• Resubmission allowed until due date</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

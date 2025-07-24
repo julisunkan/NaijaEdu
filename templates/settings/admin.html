@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings - Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>System Settings</h2>
+        <p class="text-muted">Configure your e-learning platform</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2">General Settings</h5>
+                    
+                    <div class="mb-3">
+                        {{ form.site_name.label(class="form-label") }}
+                        {{ form.site_name(class="form-control") }}
+                        {% if form.site_name.errors %}
+                        <div class="text-danger">
+                            {% for error in form.site_name.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.site_description.label(class="form-label") }}
+                        {{ form.site_description(class="form-control", rows="3") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.admin_email.label(class="form-label") }}
+                        {{ form.admin_email(class="form-control") }}
+                        {% if form.admin_email.errors %}
+                        <div class="text-danger">
+                            {% for error in form.admin_email.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5 class="border-bottom pb-2">Bank Account Details</h5>
+                    
+                    <div class="mb-3">
+                        {{ form.bank_name.label(class="form-label") }}
+                        {{ form.bank_name(class="form-control") }}
+                        <small class="form-text text-muted">Name of the bank for payments</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.bank_account_name.label(class="form-label") }}
+                        {{ form.bank_account_name(class="form-control") }}
+                        <small class="form-text text-muted">Account holder name</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.bank_account_number.label(class="form-label") }}
+                        {{ form.bank_account_number(class="form-control") }}
+                        <small class="form-text text-muted">Bank account number for payments</small>
+                    </div>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2">Email Configuration (SMTP)</h5>
+                    <p class="text-muted small">Configure email settings for notifications</p>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.smtp_server.label(class="form-label") }}
+                        {{ form.smtp_server(class="form-control") }}
+                        <small class="form-text text-muted">e.g., smtp.gmail.com</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.smtp_port.label(class="form-label") }}
+                        {{ form.smtp_port(class="form-control") }}
+                        {% if form.smtp_port.errors %}
+                        <div class="text-danger">
+                            {% for error in form.smtp_port.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Common ports: 587 (TLS), 465 (SSL), 25 (plain)</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.smtp_username.label(class="form-label") }}
+                        {{ form.smtp_username(class="form-control") }}
+                        <small class="form-text text-muted">Usually your email address</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.smtp_password.label(class="form-label") }}
+                        {{ form.smtp_password(class="form-control") }}
+                        <small class="form-text text-muted">App password or email password</small>
+                    </div>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2">Legal Pages Content</h5>
+                    <p class="text-muted small">Configure content for legal pages</p>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        {{ form.terms_content.label(class="form-label") }}
+                        {{ form.terms_content(class="form-control", rows="8") }}
+                        <small class="form-text text-muted">Terms of Service content</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        {{ form.privacy_content.label(class="form-label") }}
+                        {{ form.privacy_content(class="form-control", rows="8") }}
+                        <small class="form-text text-muted">Privacy Policy content</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        {{ form.about_content.label(class="form-label") }}
+                        {{ form.about_content(class="form-control", rows="8") }}
+                        <small class="form-text text-muted">About Us page content</small>
+                    </div>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Current Platform Status</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <strong>Currency:</strong> Nigerian Naira (₦)
+                    </li>
+                    <li class="mb-2">
+                        <strong>Payment Method:</strong> Manual Bank Transfer
+                    </li>
+                    <li class="mb-2">
+                        <strong>Upload Directory:</strong> uploads/
+                    </li>
+                    <li class="mb-2">
+                        <strong>Max File Size:</strong> 16MB
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('manage_payments') }}" class="btn btn-warning">Review Pending Payments</a>
+                    <a href="{{ url_for('create_voucher') }}" class="btn btn-success">Create New Voucher</a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.title }} - Quiz{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4>{{ quiz.title }}</h4>
+                <div id="timer" class="badge bg-warning fs-6">
+                    <i data-feather="clock" class="me-1"></i>
+                    <span id="time-remaining">{{ quiz.time_limit }}:00</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if quiz.description %}
+                <div class="alert alert-info">
+                    <h6>Quiz Description</h6>
+                    <p class="mb-0">{{ quiz.description }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="alert alert-warning">
+                    <h6><i data-feather="alert-triangle" class="me-2"></i>Important Instructions</h6>
+                    <ul class="mb-0">
+                        <li>You have {{ quiz.time_limit }} minutes to complete this quiz</li>
+                        <li>Make sure to select one answer for each question</li>
+                        <li>Click "Submit Quiz" when you're finished</li>
+                        <li>The quiz will auto-submit when time runs out</li>
+                    </ul>
+                </div>
+                
+                <form id="quizForm" method="POST" action="{{ url_for('submit_quiz', quiz_id=quiz.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    
+                    {% for question in questions %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6>Question {{ loop.index }} ({{ question.points }} points)</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>{{ question.question }}</strong></p>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
+                                       value="A" id="q{{ question.id }}_a">
+                                <label class="form-check-label" for="q{{ question.id }}_a">
+                                    A) {{ question.option_a }}
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
+                                       value="B" id="q{{ question.id }}_b">
+                                <label class="form-check-label" for="q{{ question.id }}_b">
+                                    B) {{ question.option_b }}
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
+                                       value="C" id="q{{ question.id }}_c">
+                                <label class="form-check-label" for="q{{ question.id }}_c">
+                                    C) {{ question.option_c }}
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="question_{{ question.id }}" 
+                                       value="D" id="q{{ question.id }}_d">
+                                <label class="form-check-label" for="q{{ question.id }}_d">
+                                    D) {{ question.option_d }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if questions %}
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                            <i data-feather="check-circle" class="me-2"></i>
+                            Submit Quiz
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning text-center">
+                        <h5>No Questions Available</h5>
+                        <p>This quiz doesn't have any questions yet. Please contact your instructor.</p>
+                        <a href="{{ url_for('course_detail', course_id=quiz.course_id) }}" class="btn btn-primary">
+                            Back to Course
+                        </a>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Quiz timer functionality
+let timeLimit = {{ quiz.time_limit }} * 60; // Convert minutes to seconds
+let timeRemaining = timeLimit;
+
+function updateTimer() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    const timeDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    document.getElementById('time-remaining').textContent = timeDisplay;
+    
+    // Change color based on time remaining
+    const timerElement = document.getElementById('timer');
+    if (timeRemaining <= 300) { // 5 minutes
+        timerElement.className = 'badge bg-danger fs-6';
+    } else if (timeRemaining <= 600) { // 10 minutes
+        timerElement.className = 'badge bg-warning fs-6';
+    }
+    
+    if (timeRemaining <= 0) {
+        // Auto-submit the quiz
+        document.getElementById('quizForm').submit();
+        return;
+    }
+    
+    timeRemaining--;
+}
+
+// Start the timer
+const timerInterval = setInterval(updateTimer, 1000);
+
+// Handle form submission
+document.getElementById('quizForm').addEventListener('submit', function(e) {
+    clearInterval(timerInterval);
+    
+    // Confirm submission
+    if (!confirm('Are you sure you want to submit your quiz? You cannot change your answers after submission.')) {
+        e.preventDefault();
+        // Restart timer if cancelled
+        const timer = setInterval(updateTimer, 1000);
+    } else {
+        // Disable submit button
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('submitBtn').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+    }
+});
+
+// Warn before leaving page
+window.addEventListener('beforeunload', function(e) {
+    e.preventDefault();
+    e.returnValue = 'Are you sure you want to leave? Your quiz progress will be lost.';
+});
+</script>
+{% endblock %}

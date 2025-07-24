@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }} - Nigerian E-Learning Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <h1>{{ course.title }}</h1>
+                <p class="text-muted mb-3">By {{ course.instructor.first_name }} {{ course.instructor.last_name }}</p>
+                
+                {% if course.description %}
+                <div class="mb-4">
+                    <h5>Course Description</h5>
+                    <p>{{ course.description|safe }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="mb-4">
+                    <h5>Course Content</h5>
+                    {% set lessons = course.lessons.order_by('order').all() %}
+                    {% if lessons %}
+                    <div class="list-group">
+                        {% for lesson in lessons %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ lesson.title }}</h6>
+                                <small class="text-muted">
+                                    {% if lesson.content_type == 'text' %}
+                                    <i data-feather="file-text"></i> Text Content
+                                    {% elif lesson.content_type == 'pdf' %}
+                                    <i data-feather="file"></i> PDF Document
+                                    {% elif lesson.content_type == 'video' %}
+                                    <i data-feather="play-circle"></i> Video
+                                    {% endif %}
+                                </small>
+                            </div>
+                            {% if user_enrolled %}
+                            <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                            {% else %}
+                            <i data-feather="lock" class="text-muted"></i>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No lessons available yet.</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Quizzes and Assignments -->
+                {% if user_enrolled %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Quizzes</h6>
+                        {% set quizzes = course.quizzes.filter_by(is_active=True).all() %}
+                        {% if quizzes %}
+                        <ul class="list-unstyled">
+                            {% for quiz in quizzes %}
+                            <li class="mb-2">
+                                <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}">{{ quiz.title }}</a>
+                                <small class="text-muted d-block">{{ quiz.time_limit }} minutes</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted">No quizzes available.</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Assignments</h6>
+                        {% set assignments = course.assignments.filter_by(is_active=True).all() %}
+                        {% if assignments %}
+                        <ul class="list-unstyled">
+                            {% for assignment in assignments %}
+                            <li class="mb-2">
+                                <a href="{{ url_for('submit_assignment', assignment_id=assignment.id) }}">{{ assignment.title }}</a>
+                                {% if assignment.due_date %}
+                                <small class="text-muted d-block">Due: {{ assignment.due_date.strftime('%Y-%m-%d') }}</small>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted">No assignments available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Instructor Tools -->
+        {% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.id == course.instructor_id) %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Instructor Tools</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('create_lesson', course_id=course.id) }}" class="btn btn-primary">Add Lesson</a>
+                            <a href="{{ url_for('create_quiz', course_id=course.id) }}" class="btn btn-success">Add Quiz</a>
+                            <a href="{{ url_for('create_assignment', course_id=course.id) }}" class="btn btn-warning">Add Assignment</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 class="text-success">₦{{ "%.2f"|format(course.price) }}</h3>
+                <p class="text-muted">Course Price</p>
+                
+                {% if current_user.is_authenticated %}
+                    {% if user_enrolled %}
+                    <div class="alert alert-success">
+                        <i data-feather="check-circle"></i>
+                        You are enrolled in this course!
+                    </div>
+                    <a href="#lessons" class="btn btn-primary">Continue Learning</a>
+                    {% else %}
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('enroll_course', course_id=course.id) }}" class="btn btn-primary">Enroll Now</a>
+                        <a href="{{ url_for('redeem_voucher', course_id=course.id) }}" class="btn btn-outline-success">Use Voucher</a>
+                    </div>
+                    
+                    {% if current_user.wallet_balance >= course.price %}
+                    <div class="alert alert-info mt-3">
+                        <small>You have sufficient wallet balance to purchase this course!</small>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                {% else %}
+                <p class="text-muted mb-3">Please log in to enroll</p>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary">Register</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6>Course Info</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i data-feather="book-open" class="me-2"></i>
+                        {{ course.lessons.count() }} Lessons
+                    </li>
+                    <li class="mb-2">
+                        <i data-feather="users" class="me-2"></i>
+                        {{ course.enrollments.filter_by(status='approved').count() }} Students
+                    </li>
+                    <li class="mb-2">
+                        <i data-feather="calendar" class="me-2"></i>
+                        Created {{ course.created_at.strftime('%B %Y') }}
+                    </li>
+                    <li class="mb-2">
+                        <i data-feather="user" class="me-2"></i>
+                        {{ course.instructor.first_name }} {{ course.instructor.last_name }}
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6>Payment Methods</h6>
+                <ul class="list-unstyled small">
+                    <li>✓ Bank Transfer</li>
+                    <li>✓ Wallet Balance</li>
+                    <li>✓ Voucher Codes</li>
+                    <li>✓ Course Credits</li>
+                </ul>
+                <p class="small text-muted"><strong>All payments in Nigerian Naira (₦)</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

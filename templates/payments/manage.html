@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Payments - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Pending Payments</h2>
+    <span class="badge bg-warning">{{ payments|length }} pending</span>
+</div>
+
+{% if payments %}
+<div class="row">
+    {% for payment in payments %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Payment #{{ payment.id }}</h5>
+                <span class="badge bg-warning">Pending</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Student:</strong> {{ payment.user.username }}<br>
+                        <strong>Email:</strong> {{ payment.user.email }}<br>
+                        <strong>Amount:</strong> <span class="text-success">₦{{ "%.2f"|format(payment.amount) }}</span><br>
+                        <strong>Type:</strong> {{ payment.payment_type.replace('_', ' ').title() }}<br>
+                        {% if payment.course %}
+                        <strong>Course:</strong> {{ payment.course.title }}<br>
+                        {% endif %}
+                        <strong>Date:</strong> {{ payment.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </div>
+                    <div class="col-md-6">
+                        {% if payment.proof_file %}
+                        <div class="text-center">
+                            <strong>Payment Proof:</strong><br>
+                            <a href="{{ url_for('uploaded_file', filename=payment.proof_file.replace('uploads/', '')) }}" 
+                               target="_blank" class="btn btn-outline-primary btn-sm mt-2">
+                                <i data-feather="eye" class="me-1"></i>
+                                View Proof
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-md-8">
+                        <form method="POST" action="{{ url_for('reject_payment', payment_id=payment.id) }}" class="d-inline">
+                            <div class="input-group">
+                                <input type="text" name="notes" class="form-control form-control-sm" 
+                                       placeholder="Rejection reason (optional)">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i data-feather="x" class="me-1"></i>Reject
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{{ url_for('approve_payment', payment_id=payment.id) }}" 
+                           class="btn btn-success btn-sm"
+                           onclick="return confirm('Are you sure you want to approve this payment?')">
+                            <i data-feather="check" class="me-1"></i>Approve
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i data-feather="check-circle" style="width: 64px; height: 64px;" class="text-success mb-3"></i>
+    <h4>No pending payments</h4>
+    <p class="text-muted">All payments have been processed.</p>
+</div>
+{% endif %}
+{% endblock %}

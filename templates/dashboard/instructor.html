@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Instructor Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Instructor Dashboard</h2>
+        <p class="text-muted">Manage your courses and students</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="book" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>{{ current_user.courses_created.count() }}</h5>
+                <p class="text-muted">My Courses</p>
+                <a href="{{ url_for('manage_courses') }}" class="btn btn-primary btn-sm">Manage</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="users" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>Students</h5>
+                <p class="text-muted">Total enrollments</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="dollar-sign" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>Earnings</h5>
+                <p class="text-muted">Course revenue</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('create_course') }}" class="btn btn-primary">Create New Course</a>
+                    <a href="{{ url_for('manage_courses') }}" class="btn btn-secondary">Manage Courses</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>My Courses</h5>
+            </div>
+            <div class="card-body">
+                {% if current_user.courses_created.count() > 0 %}
+                <ul class="list-unstyled">
+                    {% for course in current_user.courses_created.limit(5) %}
+                    <li class="mb-2">
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}">{{ course.title }}</a>
+                        <small class="text-muted d-block">₦{{ "%.2f"|format(course.price) }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">You haven't created any courses yet.</p>
+                <a href="{{ url_for('create_course') }}" class="btn btn-primary btn-sm">Create Your First Course</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+# This file ensures the uploads directory is tracked by git
+# The uploads directory is used for storing user-uploaded files:
+# - Payment proof images/PDFs
+# - Course lesson PDFs
+# - Assignment submissions
+# - Profile pictures (if implemented)
+
+# Files in this directory should not be committed to version control
+# except for this .gitkeep file

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Admin Dashboard</h2>
+        <p class="text-muted">Manage your e-learning platform</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="users" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>Manage Users</h5>
+                <p class="text-muted">View and manage user accounts</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="book" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>{{ current_user.courses_created.count() }}</h5>
+                <p class="text-muted">Total Courses</p>
+                <a href="{{ url_for('manage_courses') }}" class="btn btn-primary btn-sm">Manage</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="credit-card" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>Payments</h5>
+                <p class="text-muted">Review pending payments</p>
+                <a href="{{ url_for('manage_payments') }}" class="btn btn-warning btn-sm">Review</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="gift" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>Vouchers</h5>
+                <p class="text-muted">Create discount vouchers</p>
+                <a href="{{ url_for('create_voucher') }}" class="btn btn-success btn-sm">Create</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('create_course') }}" class="btn btn-primary">Create New Course</a>
+                    <a href="{{ url_for('create_voucher') }}" class="btn btn-success">Create Voucher</a>
+                    <a href="{{ url_for('admin_settings') }}" class="btn btn-secondary">System Settings</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Recent platform activities will be displayed here.</p>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i data-feather="user-plus" class="me-2"></i>
+                        New user registrations
+                    </li>
+                    <li class="mb-2">
+                        <i data-feather="credit-card" class="me-2"></i>
+                        Pending payments to review
+                    </li>
+                    <li class="mb-2">
+                        <i data-feather="book" class="me-2"></i>
+                        New course enrollments
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Wallet Top-up - Nigerian E-Learning Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Top-up Your Wallet</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5>Current Balance</h5>
+                                <h2 class="text-success">₦{{ "%.2f"|format(current_user.wallet_balance) }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h6>Why Top-up Your Wallet?</h6>
+                                <ul class="list-unstyled small">
+                                    <li>• Instant course purchases</li>
+                                    <li>• No need to upload payment proof</li>
+                                    <li>• Secure and convenient</li>
+                                    <li>• Track all transactions</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <h5><i data-feather="info" class="me-2"></i>Top-up Instructions</h5>
+                    <p>To add funds to your wallet:</p>
+                    <ol>
+                        <li>Choose the amount you want to add</li>
+                        <li>Transfer the amount to our bank account</li>
+                        <li>Upload proof of payment below</li>
+                        <li>Wait for admin verification (funds will be added after approval)</li>
+                    </ol>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Bank Details for Wallet Top-up</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Bank Name:</strong><br>
+                                First Bank of Nigeria<br><br>
+                                <strong>Account Name:</strong><br>
+                                Nigerian E-Learning Platform<br><br>
+                                <strong>Account Number:</strong><br>
+                                1234567890
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Reference Format:</strong><br>
+                                WALLET-{{ current_user.username }}-[AMOUNT]<br><br>
+                                <strong>Example:</strong><br>
+                                WALLET-{{ current_user.username }}-5000
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.amount.label(class="form-label") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">₦</span>
+                                    {{ form.amount(class="form-control", placeholder="Enter amount") }}
+                                </div>
+                                {% if form.amount.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.amount.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Minimum: ₦500, Maximum: ₦100,000</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.payment_type.label(class="form-label") }}
+                                {{ form.payment_type(class="form-select", readonly=true) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.proof_file.label(class="form-label") }}
+                        {{ form.proof_file(class="form-control") }}
+                        <small class="form-text text-muted">
+                            Upload a clear image or PDF of your bank transfer receipt/screenshot
+                        </small>
+                        {% if form.proof_file.errors %}
+                        <div class="text-danger">
+                            {% for error in form.proof_file.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Important:</strong> 
+                        <ul class="mb-0">
+                            <li>Make sure to transfer the exact amount you specify above</li>
+                            <li>Include "WALLET-{{ current_user.username }}-[AMOUNT]" in your transfer reference</li>
+                            <li>Funds will be added to your wallet after admin verification</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('wallet_history') }}" class="btn btn-secondary">View History</a>
+                        <button type="submit" class="btn btn-primary">Submit Top-up Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Courses{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Manage Courses</h2>
+    <a href="{{ url_for('create_course') }}" class="btn btn-primary">Create New Course</a>
+</div>
+
+{% if courses %}
+<div class="row">
+    {% for course in courses %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="card-text text-muted">{{ course.description[:100] }}{% if course.description|length > 100 %}...{% endif %}</p>
+                    </div>
+                    <span class="badge {% if course.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                        {% if course.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+                
+                <div class="row text-center border-top pt-3">
+                    <div class="col-4">
+                        <strong>₦{{ "%.2f"|format(course.price) }}</strong>
+                        <small class="text-muted d-block">Price</small>
+                    </div>
+                    <div class="col-4">
+                        <strong>{{ course.lessons.count() }}</strong>
+                        <small class="text-muted d-block">Lessons</small>
+                    </div>
+                    <div class="col-4">
+                        <strong>{{ course.enrollments.filter_by(status='approved').count() }}</strong>
+                        <small class="text-muted d-block">Students</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary btn-sm">View</a>
+                    <a href="{{ url_for('create_lesson', course_id=course.id) }}" class="btn btn-success btn-sm">Add Lesson</a>
+                    <a href="{{ url_for('create_quiz', course_id=course.id) }}" class="btn btn-warning btn-sm">Add Quiz</a>
+                    <a href="{{ url_for('create_assignment', course_id=course.id) }}" class="btn btn-info btn-sm">Add Assignment</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i data-feather="book" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
+    <h4>No courses created yet</h4>
+    <p class="text-muted">Create your first course to start teaching!</p>
+    <a href="{{ url_for('create_course') }}" class="btn btn-primary">Create Your First Course</a>
+</div>
+{% endif %}
+{% endblock %}

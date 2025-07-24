@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Courses - Nigerian E-Learning Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Available Courses</h2>
+        <p class="text-muted">Discover quality education with courses priced in Nigerian Naira (₦)</p>
+    </div>
+</div>
+
+{% if courses %}
+<div class="row">
+    {% for course in courses %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ course.title }}</h5>
+                <p class="card-text">{{ course.description[:120] }}{% if course.description|length > 120 %}...{% endif %}</p>
+                
+                <div class="mb-2">
+                    <span class="badge bg-primary">{{ course.lessons.count() }} Lessons</span>
+                    <span class="badge bg-secondary">{{ course.enrollments.filter_by(status='approved').count() }} Students</span>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="text-success mb-0">₦{{ "%.2f"|format(course.price) }}</h4>
+                    <small class="text-muted">By {{ course.instructor.first_name }} {{ course.instructor.last_name }}</small>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-grid">
+                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i data-feather="book" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
+    <h4>No courses available yet</h4>
+    <p class="text-muted">Check back soon for exciting new courses!</p>
+    {% if current_user.is_authenticated and current_user.role in ['admin', 'instructor'] %}
+    <a href="{{ url_for('create_course') }}" class="btn btn-primary">Create the First Course</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if current_user.is_authenticated %}
+<div class="row mt-5">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Payment Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>All course prices are in Nigerian Naira (₦)</strong></p>
+                <ul class="list-unstyled">
+                    <li>• Secure bank transfer payments</li>
+                    <li>• Manual payment verification</li>
+                    <li>• Wallet system for easy payments</li>
+                    <li>• Voucher codes for discounts</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Your Wallet</h5>
+            </div>
+            <div class="card-body text-center">
+                <h4 class="text-success">₦{{ "%.2f"|format(current_user.wallet_balance) }}</h4>
+                <p class="text-muted">Available Balance</p>
+                {% if current_user.wallet_balance > 0 %}
+                <p class="small text-success">You can use your wallet balance to purchase courses!</p>
+                {% else %}
+                <a href="{{ url_for('wallet_topup') }}" class="btn btn-success btn-sm">Top Up Wallet</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

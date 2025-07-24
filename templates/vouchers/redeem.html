@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Redeem Voucher - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Redeem Voucher Code</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5><i data-feather="gift" class="me-2"></i>Course: {{ course.title }}</h5>
+                    <p><strong>Regular Price:</strong> <span class="text-success">₦{{ "%.2f"|format(course.price) }}</span></p>
+                    <p class="mb-0">Enter your voucher code below to apply a discount.</p>
+                </div>
+                
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.voucher_code.label(class="form-label") }}
+                        {{ form.voucher_code(class="form-control form-control-lg text-uppercase") }}
+                        {% if form.voucher_code.errors %}
+                        <div class="text-danger">
+                            {% for error in form.voucher_code.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Enter the voucher code you received</small>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">Apply Voucher</button>
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-outline-secondary">Back to Course</a>
+                    </div>
+                </form>
+                
+                <hr>
+                <div class="text-center">
+                    <p class="text-muted">Don't have a voucher?</p>
+                    <a href="{{ url_for('enroll_course', course_id=course.id) }}" class="btn btn-primary">Pay Full Price</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6>About Vouchers</h6>
+                <ul class="list-unstyled small text-muted">
+                    <li>• Vouchers can provide percentage or fixed amount discounts</li>
+                    <li>• Some vouchers provide completely free access</li>
+                    <li>• Voucher codes are case-insensitive</li>
+                    <li>• Each voucher has limited uses and may expire</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-convert to uppercase
+document.getElementById('voucher_code').addEventListener('input', function() {
+    this.value = this.value.toUpperCase();
+});
+</script>
+{% endblock %}

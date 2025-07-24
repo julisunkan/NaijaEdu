@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Student Dashboard</h2>
+        <p class="text-muted">Welcome back, {{ current_user.first_name or current_user.username }}!</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="book-open" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>{{ current_user.enrollments.filter_by(status='approved').count() }}</h5>
+                <p class="text-muted">Enrolled Courses</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="credit-card" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>₦{{ "%.2f"|format(current_user.wallet_balance) }}</h5>
+                <p class="text-muted">Wallet Balance</p>
+                <a href="{{ url_for('wallet_topup') }}" class="btn btn-success btn-sm">Top Up</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="award" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>{{ current_user.course_credits }}</h5>
+                <p class="text-muted">Course Credits</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>My Courses</h5>
+            </div>
+            <div class="card-body">
+                {% set enrolled_courses = current_user.enrollments.filter_by(status='approved').all() %}
+                {% if enrolled_courses %}
+                <div class="row">
+                    {% for enrollment in enrolled_courses %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ enrollment.course.title }}</h6>
+                                <p class="card-text small text-muted">{{ enrollment.course.description[:50] }}...</p>
+                                <a href="{{ url_for('course_detail', course_id=enrollment.course.id) }}" class="btn btn-primary btn-sm">Continue Learning</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i data-feather="book" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
+                    <h6>No enrolled courses yet</h6>
+                    <p class="text-muted">Start your learning journey by browsing our course catalog.</p>
+                    <a href="{{ url_for('courses') }}" class="btn btn-primary">Browse Courses</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('courses') }}" class="btn btn-primary">Browse Courses</a>
+                    <a href="{{ url_for('wallet_topup') }}" class="btn btn-success">Top Up Wallet</a>
+                    <a href="{{ url_for('wallet_history') }}" class="btn btn-secondary">Wallet History</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6>Payment Options</h6>
+            </div>
+            <div class="card-body">
+                <small class="text-muted">
+                    <p>You can pay for courses using:</p>
+                    <ul class="list-unstyled">
+                        <li>• Bank Transfer</li>
+                        <li>• Wallet Balance</li>
+                        <li>• Voucher Codes</li>
+                        <li>• Course Credits</li>
+                    </ul>
+                    <p><strong>All payments in Nigerian Naira (₦)</strong></p>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

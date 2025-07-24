@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Create Voucher - Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Create Voucher Code</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.code.label(class="form-label") }}
+                        {{ form.code(class="form-control") }}
+                        {% if form.code.errors %}
+                        <div class="text-danger">
+                            {% for error in form.code.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Use uppercase letters and numbers (e.g., SAVE20, WELCOME2024)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.discount_type.label(class="form-label") }}
+                        {{ form.discount_type(class="form-select", id="discountType") }}
+                    </div>
+                    
+                    <div class="mb-3" id="discountValueGroup">
+                        {{ form.discount_value.label(class="form-label") }}
+                        <div class="input-group">
+                            <span class="input-group-text" id="discountPrefix">₦</span>
+                            {{ form.discount_value(class="form-control") }}
+                            <span class="input-group-text" id="discountSuffix" style="display: none;">%</span>
+                        </div>
+                        {% if form.discount_value.errors %}
+                        <div class="text-danger">
+                            {% for error in form.discount_value.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted" id="discountHelp">Enter the discount amount in Naira</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.max_uses.label(class="form-label") }}
+                        {{ form.max_uses(class="form-control") }}
+                        {% if form.max_uses.errors %}
+                        <div class="text-danger">
+                            {% for error in form.max_uses.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.expires_at.label(class="form-label") }}
+                        {{ form.expires_at(class="form-control") }}
+                        <small class="form-text text-muted">Format: YYYY-MM-DD HH:MM:SS (leave empty for no expiry)</small>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create Voucher</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('discountType').addEventListener('change', function() {
+    const discountType = this.value;
+    const prefix = document.getElementById('discountPrefix');
+    const suffix = document.getElementById('discountSuffix');
+    const help = document.getElementById('discountHelp');
+    const valueGroup = document.getElementById('discountValueGroup');
+    
+    if (discountType === 'percentage') {
+        prefix.style.display = 'none';
+        suffix.style.display = 'block';
+        help.textContent = 'Enter the discount percentage (e.g., 20 for 20%)';
+    } else if (discountType === 'fixed') {
+        prefix.style.display = 'block';
+        suffix.style.display = 'none';
+        help.textContent = 'Enter the discount amount in Naira';
+    } else if (discountType === 'free') {
+        valueGroup.style.display = 'none';
+    } else {
+        prefix.style.display = 'block';
+        suffix.style.display = 'none';
+        help.textContent = 'Enter the discount amount in Naira';
+        valueGroup.style.display = 'block';
+    }
+    
+    if (discountType !== 'free') {
+        valueGroup.style.display = 'block';
+    }
+});
+
+// Initialize
+document.getElementById('discountType').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

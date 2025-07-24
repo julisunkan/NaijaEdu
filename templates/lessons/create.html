@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Create Lesson - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Add Lesson to: {{ course.title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                        {% if form.title.errors %}
+                        <div class="text-danger">
+                            {% for error in form.title.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.content_type.label(class="form-label") }}
+                        {{ form.content_type(class="form-select", id="contentType") }}
+                    </div>
+                    
+                    <div class="mb-3" id="textContent">
+                        {{ form.content.label(class="form-label") }}
+                        {{ form.content(class="form-control", rows="8") }}
+                        <small class="form-text text-muted">You can use HTML tags for formatting</small>
+                    </div>
+                    
+                    <div class="mb-3" id="pdfContent" style="display: none;">
+                        {{ form.pdf_file.label(class="form-label") }}
+                        {{ form.pdf_file(class="form-control") }}
+                        <small class="form-text text-muted">Upload a PDF file for this lesson</small>
+                    </div>
+                    
+                    <div class="mb-3" id="videoContent" style="display: none;">
+                        {{ form.video_url.label(class="form-label") }}
+                        {{ form.video_url(class="form-control") }}
+                        <small class="form-text text-muted">Enter YouTube or Vimeo video URL</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.order.label(class="form-label") }}
+                        {{ form.order(class="form-control") }}
+                        <small class="form-text text-muted">Lesson order (leave empty for automatic ordering)</small>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create Lesson</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('contentType').addEventListener('change', function() {
+    const contentType = this.value;
+    const textContent = document.getElementById('textContent');
+    const pdfContent = document.getElementById('pdfContent');
+    const videoContent = document.getElementById('videoContent');
+    
+    // Hide all content sections
+    textContent.style.display = 'none';
+    pdfContent.style.display = 'none';
+    videoContent.style.display = 'none';
+    
+    // Show relevant section
+    if (contentType === 'text') {
+        textContent.style.display = 'block';
+    } else if (contentType === 'pdf') {
+        pdfContent.style.display = 'block';
+    } else if (contentType === 'video') {
+        videoContent.style.display = 'block';
+    }
+});
+
+// Initialize display
+document.getElementById('contentType').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

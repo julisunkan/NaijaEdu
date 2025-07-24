@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Assignment - {{ assignment.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>{{ assignment.title }}</h4>
+                <small class="text-muted">{{ assignment.course.title }}</small>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-primary">
+                    <h6>Assignment Instructions</h6>
+                    <div>{{ assignment.description|safe }}</div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Maximum Points:</strong> {{ assignment.max_points }}
+                    </div>
+                    <div class="col-md-6">
+                        {% if assignment.due_date %}
+                        <strong>Due Date:</strong> 
+                        <span class="{% if assignment.due_date < moment().datetime %}text-danger{% else %}text-success{% endif %}">
+                            {{ assignment.due_date.strftime('%Y-%m-%d %H:%M') }}
+                        </span>
+                        {% else %}
+                        <strong>Due Date:</strong> No due date set
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if submission %}
+                <div class="alert alert-success">
+                    <h6><i data-feather="check-circle" class="me-2"></i>Previous Submission</h6>
+                    <p><strong>Submitted:</strong> {{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    {% if submission.score is not none %}
+                    <p><strong>Score:</strong> {{ submission.score }}/{{ assignment.max_points }}</p>
+                    {% if submission.feedback %}
+                    <p><strong>Feedback:</strong> {{ submission.feedback }}</p>
+                    {% endif %}
+                    {% else %}
+                    <p><strong>Status:</strong> Submitted, awaiting grading</p>
+                    {% endif %}
+                    <hr>
+                    <p class="mb-0"><strong>Note:</strong> You can resubmit to update your assignment.</p>
+                </div>
+                {% endif %}
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.content.label(class="form-label") }}
+                        {{ form.content(class="form-control", rows="8", value=submission.content if submission else "") }}
+                        <small class="form-text text-muted">Enter your text response here (optional if uploading a file)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.file.label(class="form-label") }}
+                        {{ form.file(class="form-control") }}
+                        {% if form.file.errors %}
+                        <div class="text-danger">
+                            {% for error in form.file.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            Supported formats: PDF, DOC, DOCX, TXT (optional if providing text response)
+                        </small>
+                        
+                        {% if submission and submission.file_path %}
+                        <div class="mt-2">
+                            <small class="text-success">
+                                <i data-feather="file" class="me-1"></i>
+                                Previous file uploaded: 
+                                <a href="{{ url_for('uploaded_file', filename=submission.file_path.replace('uploads/', '')) }}" target="_blank">
+                                    View File
+                                </a>
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if assignment.due_date and assignment.due_date < moment().datetime %}
+                    <div class="alert alert-warning">
+                        <i data-feather="alert-triangle" class="me-2"></i>
+                        <strong>Late Submission:</strong> This assignment is past its due date. Your instructor may apply late penalties.
+                    </div>
+                    {% endif %}
+                    
+                    <div class="alert alert-info">
+                        <h6><i data-feather="info" class="me-2"></i>Submission Guidelines</h6>
+                        <ul class="mb-0">
+                            <li>You can provide a text response, upload a file, or both</li>
+                            <li>At least one form of submission is required</li>
+                            <li>You can resubmit multiple times before grading</li>
+                            <li>Make sure your submission is complete before the due date</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('course_detail', course_id=assignment.course_id) }}" class="btn btn-secondary">Back to Course</a>
+                        <button type="submit" class="btn btn-primary">
+                            {% if submission %}Update Submission{% else %}Submit Assignment{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if submission and submission.score is not none %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Grade Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h3 class="{% if submission.score >= assignment.max_points * 0.7 %}text-success{% elif submission.score >= assignment.max_points * 0.5 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ submission.score }}/{{ assignment.max_points }}
+                            </h3>
+                            <p class="text-muted">Your Score</p>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        {% if submission.feedback %}
+                        <h6>Instructor Feedback:</h6>
+                        <p>{{ submission.feedback }}</p>
+                        {% endif %}
+                        <small class="text-muted">
+                            Graded on: {{ submission.graded_at.strftime('%Y-%m-%d %H:%M') if submission.graded_at else 'Not yet graded' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
