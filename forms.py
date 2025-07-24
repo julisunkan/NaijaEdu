@@ -72,6 +72,25 @@ class AssignmentForm(FlaskForm):
     due_date = DateTimeField('Due Date', format='%Y-%m-%d %H:%M:%S', validators=[Optional()])
     max_points = IntegerField('Maximum Points', validators=[DataRequired(), NumberRange(min=1)], default=100)
 
+class UserManagementForm(FlaskForm):
+    role = SelectField('Role', choices=[('student', 'Student'), ('instructor', 'Instructor'), ('admin', 'Admin')])
+    active = BooleanField('Active Status')
+    banned = BooleanField('Banned')
+    ban_reason = TextAreaField('Ban Reason', validators=[Optional()])
+    email_verified = BooleanField('Email Verified')
+    instructor_verified = BooleanField('Instructor Verified')
+    premium_user = BooleanField('Premium User')
+    badge_level = SelectField('Badge Level', choices=[
+        ('basic', 'Basic'),
+        ('bronze', 'Bronze'), 
+        ('silver', 'Silver'),
+        ('gold', 'Gold'),
+        ('premium', 'Premium')
+    ])
+
+class BanUserForm(FlaskForm):
+    ban_reason = TextAreaField('Reason for Ban', validators=[DataRequired()], render_kw={"rows": 3})
+
 class AssignmentSubmissionForm(FlaskForm):
     content = TextAreaField('Submission Text')
     file = FileField('Upload File', validators=[FileAllowed(['pdf', 'doc', 'docx', 'txt'], 'Documents only!')])

@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Assignment Submissions - Instructor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Assignment Submissions</h2>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i data-feather="arrow-left" class="me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+{% if submissions %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Assignment</th>
+                        <th>Course</th>
+                        <th>Submitted</th>
+                        <th>Grade</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in submissions %}
+                    <tr>
+                        <td>
+                            <strong>{{ submission.user.username }}</strong>
+                            {% if submission.user.first_name or submission.user.last_name %}
+                            <br><small class="text-muted">{{ submission.user.first_name }} {{ submission.user.last_name }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ submission.assignment.title }}</strong>
+                            <br><small class="text-muted">Max: {{ submission.assignment.max_points }} points</small>
+                        </td>
+                        <td>{{ submission.assignment.course.title }}</td>
+                        <td>
+                            <small>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </td>
+                        <td>
+                            {% if submission.grade is not none %}
+                            <span class="badge bg-{% if submission.grade >= submission.assignment.max_points * 0.7 %}success{% elif submission.grade >= submission.assignment.max_points * 0.5 %}warning{% else %}danger{% endif %}">
+                                {{ submission.grade }}/{{ submission.assignment.max_points }}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary">Not Graded</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if submission.graded_at %}
+                            <span class="badge bg-success">Graded</span>
+                            <br><small class="text-muted">{{ submission.graded_at.strftime('%Y-%m-%d') }}</small>
+                            {% else %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-primary" 
+                                    data-bs-toggle="modal" data-bs-target="#gradeModal"
+                                    data-submission-id="{{ submission.id }}"
+                                    data-student-name="{{ submission.user.username }}"
+                                    data-assignment-title="{{ submission.assignment.title }}"
+                                    data-max-points="{{ submission.assignment.max_points }}"
+                                    data-current-grade="{{ submission.grade or '' }}"
+                                    data-current-feedback="{{ submission.feedback or '' }}"
+                                    data-submission-content="{{ submission.content or '' }}"
+                                    data-has-file="{{ 'yes' if submission.file_path else 'no' }}">
+                                <i data-feather="edit"></i> Grade
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i data-feather="file-text" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+    <h4 class="text-muted">No Submissions Yet</h4>
+    <p class="text-muted">Assignment submissions from your courses will appear here.</p>
+</div>
+{% endif %}
+
+<!-- Grade Submission Modal -->
+<div class="modal fade" id="gradeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Grade Assignment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="gradeForm" method="POST">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Student:</strong> <span id="modalStudentName"></span></p>
+                            <p><strong>Assignment:</strong> <span id="modalAssignmentTitle"></span></p>
+                            <p><strong>Max Points:</strong> <span id="modalMaxPoints"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="gradeInput" class="form-label">Grade (0-<span id="maxPointsLabel"></span>)</label>
+                                <input type="number" class="form-control" id="gradeInput" name="grade" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Submission Content:</label>
+                        <div class="border p-3 bg-light">
+                            <div id="submissionContent"></div>
+                            <div id="submissionFile" class="mt-2"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="feedbackTextarea" class="form-label">Feedback</label>
+                        <textarea class="form-control" id="feedbackTextarea" name="feedback" rows="4" placeholder="Provide feedback to the student..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Grade</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var gradeModal = document.getElementById('gradeModal');
+    gradeModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var submissionId = button.getAttribute('data-submission-id');
+        var studentName = button.getAttribute('data-student-name');
+        var assignmentTitle = button.getAttribute('data-assignment-title');
+        var maxPoints = button.getAttribute('data-max-points');
+        var currentGrade = button.getAttribute('data-current-grade');
+        var currentFeedback = button.getAttribute('data-current-feedback');
+        var submissionContent = button.getAttribute('data-submission-content');
+        var hasFile = button.getAttribute('data-has-file');
+        
+        document.getElementById('modalStudentName').textContent = studentName;
+        document.getElementById('modalAssignmentTitle').textContent = assignmentTitle;
+        document.getElementById('modalMaxPoints').textContent = maxPoints;
+        document.getElementById('maxPointsLabel').textContent = maxPoints;
+        document.getElementById('gradeInput').setAttribute('max', maxPoints);
+        document.getElementById('gradeInput').value = currentGrade;
+        document.getElementById('feedbackTextarea').value = currentFeedback;
+        document.getElementById('submissionContent').textContent = submissionContent || 'No written content provided';
+        
+        if (hasFile === 'yes') {
+            document.getElementById('submissionFile').innerHTML = '<small class="text-info"><i data-feather="file"></i> File attachment submitted</small>';
+        } else {
+            document.getElementById('submissionFile').innerHTML = '';
+        }
+        
+        document.getElementById('gradeForm').action = '/instructor/submissions/' + submissionId + '/grade';
+        
+        feather.replace();
+    });
+    
+    // Initialize Feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}

@@ -69,11 +69,23 @@ def logout():
 @login_required
 def dashboard():
     if current_user.role == 'admin':
-        # Get vouchers for admin dashboard
+        # Get vouchers and users for admin dashboard
         vouchers = Voucher.query.order_by(Voucher.created_at.desc()).all()
-        return render_template('dashboard/admin.html', vouchers=vouchers)
+        users = User.query.all()
+        return render_template('dashboard/admin.html', vouchers=vouchers, User=User)
     elif current_user.role == 'instructor':
-        return render_template('dashboard/instructor.html')
+        # Get instructor's courses and submissions
+        instructor_courses = Course.query.filter_by(instructor_id=current_user.id).all()
+        recent_submissions = AssignmentSubmission.query.join(Assignment).join(Course).filter(
+            Course.instructor_id == current_user.id
+        ).order_by(AssignmentSubmission.submitted_at.desc()).limit(10).all()
+        recent_quiz_attempts = QuizAttempt.query.join(Quiz).join(Course).filter(
+            Course.instructor_id == current_user.id
+        ).order_by(QuizAttempt.completed_at.desc()).limit(10).all()
+        return render_template('dashboard/instructor.html', 
+                             courses=instructor_courses,
+                             recent_submissions=recent_submissions,
+                             recent_quiz_attempts=recent_quiz_attempts)
     else:
         return render_template('dashboard/student.html')
 
@@ -329,6 +341,178 @@ def delete_voucher(voucher_id):
     
     flash(f'Voucher "{voucher_code}" has been deleted permanently!', 'success')
     return redirect(url_for('dashboard'))
+
+# User Management Routes
+@app.route('/admin/users')
+@login_required
+@admin_required
+def manage_users():
+    users = User.query.order_by(User.created_at.desc()).all()
+    return render_template('admin/users.html', users=users)
+
+@app.route('/admin/users/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_user(user_id):
+    user = User.query.get_or_404(user_id)
+    form = UserManagementForm(obj=user)
+    
+    if form.validate_on_submit():
+        user.role = form.role.data
+        user.active = form.active.data
+        user.banned = form.banned.data
+        user.ban_reason = form.ban_reason.data if form.banned.data else None
+        user.email_verified = form.email_verified.data
+        user.instructor_verified = form.instructor_verified.data
+        user.premium_user = form.premium_user.data
+        user.badge_level = form.badge_level.data
+        
+        db.session.commit()
+        flash(f'User "{user.username}" updated successfully!', 'success')
+        return redirect(url_for('manage_users'))
+    
+    return render_template('admin/edit_user.html', form=form, user=user)
+
+@app.route('/admin/users/<int:user_id>/ban', methods=['POST'])
+@login_required
+@admin_required
+def ban_user(user_id):
+    user = User.query.get_or_404(user_id)
+    ban_reason = request.form.get('ban_reason', '')
+    
+    user.banned = True
+    user.ban_reason = ban_reason
+    db.session.commit()
+    
+    flash(f'User "{user.username}" has been banned!', 'warning')
+    return redirect(url_for('manage_users'))
+
+@app.route('/admin/users/<int:user_id>/unban', methods=['POST'])
+@login_required
+@admin_required
+def unban_user(user_id):
+    user = User.query.get_or_404(user_id)
+    user.banned = False
+    user.ban_reason = None
+    db.session.commit()
+    
+    flash(f'User "{user.username}" has been unbanned!', 'success')
+    return redirect(url_for('manage_users'))
+
+@app.route('/admin/users/<int:user_id>/verify-email', methods=['POST'])
+@login_required
+@admin_required
+def verify_user_email(user_id):
+    user = User.query.get_or_404(user_id)
+    user.email_verified = True
+    db.session.commit()
+    
+    flash(f'Email verified for user "{user.username}"!', 'success')
+    return redirect(url_for('manage_users'))
+
+@app.route('/admin/users/<int:user_id>/verify-instructor', methods=['POST'])
+@login_required
+@admin_required
+def verify_instructor(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.role == 'instructor':
+        user.instructor_verified = True
+        db.session.commit()
+        flash(f'Instructor "{user.username}" verified!', 'success')
+    else:
+        flash('User must be an instructor to be verified!', 'error')
+    
+    return redirect(url_for('manage_users'))
+
+@app.route('/admin/users/<int:user_id>/toggle-premium', methods=['POST'])
+@login_required
+@admin_required
+def toggle_premium(user_id):
+    user = User.query.get_or_404(user_id)
+    user.premium_user = not user.premium_user
+    db.session.commit()
+    
+    status = "granted" if user.premium_user else "revoked"
+    flash(f'Premium status {status} for user "{user.username}"!', 'success')
+    return redirect(url_for('manage_users'))
+
+@app.route('/admin/users/<int:user_id>/change-badge', methods=['POST'])
+@login_required
+@admin_required
+def change_user_badge(user_id):
+    user = User.query.get_or_404(user_id)
+    new_badge = request.form.get('badge_level')
+    
+    if new_badge in ['basic', 'bronze', 'silver', 'gold', 'premium']:
+        user.badge_level = new_badge
+        db.session.commit()
+        flash(f'Badge level changed to {new_badge.title()} for user "{user.username}"!', 'success')
+    else:
+        flash('Invalid badge level!', 'error')
+    
+    return redirect(url_for('manage_users'))
+
+# Instructor Management Routes
+@app.route('/instructor/submissions')
+@login_required
+@instructor_required
+def instructor_submissions():
+    # Get all assignment submissions for instructor's courses
+    submissions = AssignmentSubmission.query.join(Assignment).join(Course).filter(
+        Course.instructor_id == current_user.id
+    ).order_by(AssignmentSubmission.submitted_at.desc()).all()
+    
+    return render_template('instructor/submissions.html', submissions=submissions)
+
+@app.route('/instructor/quiz-attempts')
+@login_required
+@instructor_required
+def instructor_quiz_attempts():
+    # Get all quiz attempts for instructor's courses
+    quiz_attempts = QuizAttempt.query.join(Quiz).join(Course).filter(
+        Course.instructor_id == current_user.id
+    ).order_by(QuizAttempt.completed_at.desc()).all()
+    
+    return render_template('instructor/quiz_attempts.html', quiz_attempts=quiz_attempts)
+
+@app.route('/instructor/submissions/<int:submission_id>/grade', methods=['POST'])
+@login_required
+@instructor_required
+def grade_submission(submission_id):
+    submission = AssignmentSubmission.query.get_or_404(submission_id)
+    
+    # Verify instructor owns the course
+    if submission.assignment.course.instructor_id != current_user.id:
+        flash('Unauthorized access!', 'error')
+        return redirect(url_for('instructor_submissions'))
+    
+    grade = request.form.get('grade', type=int)
+    feedback = request.form.get('feedback', '')
+    
+    if grade is not None and 0 <= grade <= submission.assignment.max_points:
+        submission.grade = grade
+        submission.feedback = feedback
+        submission.graded_at = datetime.utcnow()
+        db.session.commit()
+        flash('Assignment graded successfully!', 'success')
+    else:
+        flash('Invalid grade value!', 'error')
+    
+    return redirect(url_for('instructor_submissions'))
+
+@app.route('/instructor/courses/<int:course_id>/students')
+@login_required
+@instructor_required
+def course_students(course_id):
+    course = Course.query.get_or_404(course_id)
+    
+    # Verify instructor owns the course
+    if course.instructor_id != current_user.id:
+        flash('Unauthorized access!', 'error')
+        return redirect(url_for('dashboard'))
+    
+    enrollments = Enrollment.query.filter_by(course_id=course.id, status='approved').all()
+    return render_template('instructor/course_students.html', course=course, enrollments=enrollments)
 
 @app.route('/courses/<int:course_id>/redeem', methods=['GET', 'POST'])
 @login_required

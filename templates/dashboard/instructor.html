@@ -15,7 +15,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <i data-feather="book" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>{{ current_user.courses_created.count() }}</h5>
+                <h5>{{ courses|length }}</h5>
                 <p class="text-muted">My Courses</p>
                 <a href="{{ url_for('manage_courses') }}" class="btn btn-primary btn-sm">Manage</a>
             </div>
@@ -25,9 +25,10 @@
     <div class="col-md-4 mb-4">
         <div class="card text-center">
             <div class="card-body">
-                <i data-feather="users" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>Students</h5>
-                <p class="text-muted">Total enrollments</p>
+                <i data-feather="file-text" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>{{ recent_submissions|length }}</h5>
+                <p class="text-muted">Recent Submissions</p>
+                <a href="{{ url_for('instructor_submissions') }}" class="btn btn-warning btn-sm">Review</a>
             </div>
         </div>
     </div>
@@ -35,9 +36,10 @@
     <div class="col-md-4 mb-4">
         <div class="card text-center">
             <div class="card-body">
-                <i data-feather="dollar-sign" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>Earnings</h5>
-                <p class="text-muted">Course revenue</p>
+                <i data-feather="help-circle" class="mb-2" style="width: 48px; height: 48px;"></i>
+                <h5>{{ recent_quiz_attempts|length }}</h5>
+                <p class="text-muted">Quiz Attempts</p>
+                <a href="{{ url_for('instructor_quiz_attempts') }}" class="btn btn-info btn-sm">View</a>
             </div>
         </div>
     </div>
@@ -64,12 +66,12 @@
                 <h5>My Courses</h5>
             </div>
             <div class="card-body">
-                {% if current_user.courses_created.count() > 0 %}
+                {% if courses %}
                 <ul class="list-unstyled">
-                    {% for course in current_user.courses_created.limit(5) %}
+                    {% for course in courses[:5] %}
                     <li class="mb-2">
                         <a href="{{ url_for('course_detail', course_id=course.id) }}">{{ course.title }}</a>
-                        <small class="text-muted d-block">₦{{ "%.2f"|format(course.price) }}</small>
+                        <small class="text-muted d-block">₦{{ "{:,.2f}".format(course.price) }}</small>
                     </li>
                     {% endfor %}
                 </ul>
@@ -81,4 +83,85 @@
         </div>
     </div>
 </div>
+
+<!-- Recent Activity Section -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6>Recent Assignment Submissions</h6>
+                <a href="{{ url_for('instructor_submissions') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_submissions %}
+                <div class="list-group list-group-flush">
+                    {% for submission in recent_submissions[:5] %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ submission.user.username }}</strong>
+                                <br><small class="text-muted">{{ submission.assignment.title }}</small>
+                                <br><small class="text-info">{{ submission.assignment.course.title }}</small>
+                            </div>
+                            <div class="text-end">
+                                {% if submission.grade is not none %}
+                                <span class="badge bg-success">{{ submission.grade }}/{{ submission.assignment.max_points }}</span>
+                                {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                                <br><small class="text-muted">{{ submission.submitted_at.strftime('%m/%d') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No recent submissions</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6>Recent Quiz Attempts</h6>
+                <a href="{{ url_for('instructor_quiz_attempts') }}" class="btn btn-sm btn-outline-info">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_quiz_attempts %}
+                <div class="list-group list-group-flush">
+                    {% for attempt in recent_quiz_attempts[:5] %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ attempt.user.username }}</strong>
+                                <br><small class="text-muted">{{ attempt.quiz.title }}</small>
+                                <br><small class="text-info">{{ attempt.quiz.course.title }}</small>
+                            </div>
+                            <div class="text-end">
+                                {% if attempt.score is not none %}
+                                <span class="badge bg-{% if attempt.score >= 70 %}success{% elif attempt.score >= 50 %}warning{% else %}danger{% endif %}">{{ attempt.score }}%</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Incomplete</span>
+                                {% endif %}
+                                <br><small class="text-muted">{{ attempt.completed_at.strftime('%m/%d') if attempt.completed_at else 'In Progress' }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No recent quiz attempts</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+});
+</script>
 {% endblock %}

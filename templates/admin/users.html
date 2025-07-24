@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>User Management</h2>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i data-feather="arrow-left" class="me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Badges</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr class="{% if user.banned %}table-danger{% elif not user.active %}table-warning{% endif %}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="me-2">
+                                    {% set badge_info = user.get_badge_info() %}
+                                    <span class="badge bg-{{ badge_info.color }}">
+                                        <i data-feather="{{ badge_info.icon }}" class="me-1" style="width: 12px; height: 12px;"></i>
+                                        {{ badge_info.name }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <strong>{{ user.username }}</strong>
+                                    {% if user.first_name or user.last_name %}
+                                    <br><small class="text-muted">{{ user.first_name }} {{ user.last_name }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {{ user.email }}
+                            {% if user.email_verified %}
+                            <i data-feather="check-circle" class="text-success ms-1" style="width: 14px; height: 14px;" title="Email Verified"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if user.role == 'admin' %}danger{% elif user.role == 'instructor' %}primary{% else %}secondary{% endif %}">
+                                {{ user.role.title() }}
+                            </span>
+                            {% if user.role == 'instructor' and user.instructor_verified %}
+                            <i data-feather="award" class="text-primary ms-1" style="width: 14px; height: 14px;" title="Verified Instructor"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.banned %}
+                            <span class="badge bg-danger">Banned</span>
+                            {% if user.ban_reason %}
+                            <br><small class="text-muted">{{ user.ban_reason[:30] }}...</small>
+                            {% endif %}
+                            {% elif not user.active %}
+                            <span class="badge bg-warning">Inactive</span>
+                            {% else %}
+                            <span class="badge bg-success">Active</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% for badge in user.get_verification_badges() %}
+                            <span class="badge bg-{{ badge.color }} me-1">
+                                <i data-feather="{{ badge.icon }}" style="width: 10px; height: 10px;"></i>
+                                {{ badge.name }}
+                            </span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <small>{{ user.created_at.strftime('%Y-%m-%d') }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-primary" title="Edit User">
+                                    <i data-feather="edit"></i>
+                                </a>
+                                
+                                {% if not user.email_verified %}
+                                <form method="POST" action="{{ url_for('verify_user_email', user_id=user.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Verify Email">
+                                        <i data-feather="mail"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                
+                                {% if user.role == 'instructor' and not user.instructor_verified %}
+                                <form method="POST" action="{{ url_for('verify_instructor', user_id=user.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-info" title="Verify Instructor">
+                                        <i data-feather="book"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                
+                                <form method="POST" action="{{ url_for('toggle_premium', user_id=user.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Toggle Premium">
+                                        <i data-feather="{% if user.premium_user %}star{% else %}star{% endif %}"></i>
+                                    </button>
+                                </form>
+                                
+                                {% if user.banned %}
+                                <form method="POST" action="{{ url_for('unban_user', user_id=user.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Unban User">
+                                        <i data-feather="unlock"></i>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Ban User" 
+                                        data-bs-toggle="modal" data-bs-target="#banModal" 
+                                        data-user-id="{{ user.id }}" data-username="{{ user.username }}">
+                                    <i data-feather="lock"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Badge Change Modal -->
+<div class="modal fade" id="badgeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change User Badge</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="badgeForm" method="POST">
+                <div class="modal-body">
+                    <p>Change badge level for user <strong id="badgeUsername"></strong>:</p>
+                    <select name="badge_level" class="form-select">
+                        <option value="basic">Basic</option>
+                        <option value="bronze">Bronze</option>
+                        <option value="silver">Silver</option>
+                        <option value="gold">Gold</option>
+                        <option value="premium">Premium</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Badge</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Ban User Modal -->
+<div class="modal fade" id="banModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ban User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="banForm" method="POST">
+                <div class="modal-body">
+                    <p>Are you sure you want to ban user <strong id="banUsername"></strong>?</p>
+                    <div class="mb-3">
+                        <label for="banReason" class="form-label">Reason for Ban:</label>
+                        <textarea name="ban_reason" id="banReason" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <p class="text-danger">
+                        <i data-feather="alert-triangle" class="me-1"></i>
+                        This will prevent the user from logging in.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Ban User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle ban modal
+document.addEventListener('DOMContentLoaded', function() {
+    var banModal = document.getElementById('banModal');
+    banModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var userId = button.getAttribute('data-user-id');
+        var username = button.getAttribute('data-username');
+        
+        document.getElementById('banUsername').textContent = username;
+        document.getElementById('banForm').action = '/admin/users/' + userId + '/ban';
+    });
+    
+    // Initialize Feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}

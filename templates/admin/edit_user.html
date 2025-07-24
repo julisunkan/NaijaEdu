@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Edit User: {{ user.username }}</h2>
+    <a href="{{ url_for('manage_users') }}" class="btn btn-secondary">
+        <i data-feather="arrow-left" class="me-1"></i>Back to Users
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>User Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.role.label(class="form-label") }}
+                                {{ form.role(class="form-select") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.badge_level.label(class="form-label") }}
+                                {{ form.badge_level(class="form-select") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">User Status</label>
+                                <div class="form-check">
+                                    {{ form.active(class="form-check-input") }}
+                                    {{ form.active.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">Verification Status</label>
+                                <div class="form-check">
+                                    {{ form.email_verified(class="form-check-input") }}
+                                    {{ form.email_verified.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.instructor_verified(class="form-check-input") }}
+                                    {{ form.instructor_verified.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.premium_user(class="form-check-input") }}
+                                    {{ form.premium_user.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">Ban Status</label>
+                                <div class="form-check">
+                                    {{ form.banned(class="form-check-input", id="bannedCheck") }}
+                                    {{ form.banned.label(class="form-check-label") }}
+                                </div>
+                                <div id="banReasonDiv" class="mt-2" style="display: {% if user.banned %}block{% else %}none{% endif %};">
+                                    {{ form.ban_reason.label(class="form-label") }}
+                                    {{ form.ban_reason(class="form-control", rows="3") }}
+                                    <small class="form-text text-muted">Provide reason for banning this user</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('manage_users') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Update User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>User Summary</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Current Role:</strong></td>
+                        <td>
+                            <span class="badge bg-{% if user.role == 'admin' %}danger{% elif user.role == 'instructor' %}primary{% else %}secondary{% endif %}">
+                                {{ user.role.title() }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Wallet Balance:</strong></td>
+                        <td>₦{{ "{:,.2f}".format(user.wallet_balance) }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Courses Created:</strong></td>
+                        <td>{{ user.courses_created.count() }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Enrollments:</strong></td>
+                        <td>{{ user.enrollments.count() }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Joined:</strong></td>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Last Login:</strong></td>
+                        <td>
+                            {% if user.last_login %}
+                                {{ user.last_login.strftime('%Y-%m-%d') }}
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6>Current Badges</h6>
+            </div>
+            <div class="card-body">
+                {% set badge_info = user.get_badge_info() %}
+                <div class="mb-2">
+                    <span class="badge bg-{{ badge_info.color }}">
+                        <i data-feather="{{ badge_info.icon }}" class="me-1" style="width: 12px; height: 12px;"></i>
+                        {{ badge_info.name }}
+                    </span>
+                </div>
+                
+                {% for badge in user.get_verification_badges() %}
+                <div class="mb-2">
+                    <span class="badge bg-{{ badge.color }}">
+                        <i data-feather="{{ badge.icon }}" class="me-1" style="width: 12px; height: 12px;"></i>
+                        {{ badge.name }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bannedCheck = document.getElementById('bannedCheck');
+    const banReasonDiv = document.getElementById('banReasonDiv');
+    
+    if (bannedCheck) {
+        bannedCheck.addEventListener('change', function() {
+            banReasonDiv.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Initialize Feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}

@@ -12,9 +12,17 @@ class User(UserMixin, db.Model):
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50))
     active = db.Column(db.Boolean, default=True)
+    banned = db.Column(db.Boolean, default=False)
+    ban_reason = db.Column(db.Text)
+    email_verified = db.Column(db.Boolean, default=False)
+    verification_token = db.Column(db.String(100))
+    premium_user = db.Column(db.Boolean, default=False)
+    instructor_verified = db.Column(db.Boolean, default=False)
+    badge_level = db.Column(db.String(20), default='basic')  # basic, bronze, silver, gold, premium
     wallet_balance = db.Column(db.Float, default=0.0)
     course_credits = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime)
     
     # Relationships
     courses_created = db.relationship('Course', backref='instructor', lazy='dynamic')
@@ -46,7 +54,27 @@ class User(UserMixin, db.Model):
     # Override UserMixin's is_active property to use our database field
     @property
     def is_active(self):
-        return self.active
+        return self.active and not self.banned
+    
+    def get_badge_info(self):
+        badges = {
+            'basic': {'name': 'Basic', 'color': 'secondary', 'icon': 'user'},
+            'bronze': {'name': 'Bronze', 'color': 'warning', 'icon': 'award'},
+            'silver': {'name': 'Silver', 'color': 'info', 'icon': 'star'},
+            'gold': {'name': 'Gold', 'color': 'warning', 'icon': 'crown'},
+            'premium': {'name': 'Premium', 'color': 'success', 'icon': 'zap'}
+        }
+        return badges.get(self.badge_level, badges['basic'])
+    
+    def get_verification_badges(self):
+        badges = []
+        if self.email_verified:
+            badges.append({'name': 'Verified Email', 'color': 'success', 'icon': 'check-circle'})
+        if self.instructor_verified and self.role == 'instructor':
+            badges.append({'name': 'Verified Instructor', 'color': 'primary', 'icon': 'book'})
+        if self.premium_user:
+            badges.append({'name': 'Premium', 'color': 'warning', 'icon': 'star'})
+        return badges
 
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)

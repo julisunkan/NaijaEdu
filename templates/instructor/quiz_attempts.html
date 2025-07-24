@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Attempts - Instructor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Quiz Attempts</h2>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i data-feather="arrow-left" class="me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+{% if quiz_attempts %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Quiz</th>
+                        <th>Course</th>
+                        <th>Score</th>
+                        <th>Time Taken</th>
+                        <th>Attempt</th>
+                        <th>Completed</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in quiz_attempts %}
+                    <tr>
+                        <td>
+                            <strong>{{ attempt.user.username }}</strong>
+                            {% if attempt.user.first_name or attempt.user.last_name %}
+                            <br><small class="text-muted">{{ attempt.user.first_name }} {{ attempt.user.last_name }}</small>
+                            {% endif %}
+                            
+                            <!-- Display user badges -->
+                            <div class="mt-1">
+                                {% for badge in attempt.user.get_verification_badges() %}
+                                <span class="badge bg-{{ badge.color }} me-1" style="font-size: 0.7em;">
+                                    <i data-feather="{{ badge.icon }}" style="width: 8px; height: 8px;"></i>
+                                    {{ badge.name }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <strong>{{ attempt.quiz.title }}</strong>
+                            <br><small class="text-muted">{{ attempt.quiz.questions.count() }} questions</small>
+                        </td>
+                        <td>{{ attempt.quiz.course.title }}</td>
+                        <td>
+                            {% if attempt.score is not none %}
+                            <span class="badge bg-{% if attempt.score >= 70 %}success{% elif attempt.score >= 50 %}warning{% else %}danger{% endif %}">
+                                {{ attempt.score }}%
+                            </span>
+                            <br><small class="text-muted">{{ attempt.correct_answers }}/{{ attempt.total_questions }}</small>
+                            {% else %}
+                            <span class="badge bg-secondary">Incomplete</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if attempt.completed_at and attempt.started_at %}
+                            {% set duration = (attempt.completed_at - attempt.started_at).total_seconds() / 60 %}
+                            <small>{{ "%.1f"|format(duration) }} min</small>
+                            {% else %}
+                            <small class="text-muted">-</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ attempt.attempt_number }}</span>
+                            {% if attempt.attempt_number > 1 %}
+                            <br><small class="text-muted">of {{ attempt.quiz.max_attempts }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if attempt.completed_at %}
+                            <small>{{ attempt.completed_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            {% else %}
+                            <span class="badge bg-warning">In Progress</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if attempt.completed_at %}
+                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                    data-bs-toggle="modal" data-bs-target="#detailModal"
+                                    data-attempt-id="{{ attempt.id }}"
+                                    data-student-name="{{ attempt.user.username }}"
+                                    data-quiz-title="{{ attempt.quiz.title }}"
+                                    data-score="{{ attempt.score or 'N/A' }}"
+                                    data-correct="{{ attempt.correct_answers }}"
+                                    data-total="{{ attempt.total_questions }}"
+                                    data-time-taken="{{ "%.1f"|format((attempt.completed_at - attempt.started_at).total_seconds() / 60) if attempt.completed_at and attempt.started_at else 'N/A' }}">
+                                <i data-feather="eye"></i> Details
+                            </button>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i data-feather="help-circle" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+    <h4 class="text-muted">No Quiz Attempts Yet</h4>
+    <p class="text-muted">Quiz attempts from your courses will appear here.</p>
+</div>
+{% endif %}
+
+<!-- Quiz Attempt Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quiz Attempt Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Student:</strong></td>
+                                <td id="modalStudentName"></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Quiz:</strong></td>
+                                <td id="modalQuizTitle"></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Score:</strong></td>
+                                <td id="modalScore"></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Correct Answers:</strong></td>
+                                <td id="modalCorrect"></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Questions:</strong></td>
+                                <td id="modalTotal"></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Time Taken:</strong></td>
+                                <td id="modalTimeTaken"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i data-feather="info" class="me-2"></i>
+                    Detailed answer review and individual question performance tracking can be implemented for more comprehensive quiz analytics.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var detailModal = document.getElementById('detailModal');
+    detailModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var studentName = button.getAttribute('data-student-name');
+        var quizTitle = button.getAttribute('data-quiz-title');
+        var score = button.getAttribute('data-score');
+        var correct = button.getAttribute('data-correct');
+        var total = button.getAttribute('data-total');
+        var timeTaken = button.getAttribute('data-time-taken');
+        
+        document.getElementById('modalStudentName').textContent = studentName;
+        document.getElementById('modalQuizTitle').textContent = quizTitle;
+        document.getElementById('modalScore').textContent = score + '%';
+        document.getElementById('modalCorrect').textContent = correct;
+        document.getElementById('modalTotal').textContent = total;
+        document.getElementById('modalTimeTaken').textContent = timeTaken + ' minutes';
+        
+        feather.replace();
+    });
+    
+    // Initialize Feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}
