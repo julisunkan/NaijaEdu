@@ -1247,6 +1247,7 @@ def admin_courses():
 def edit_course(course_id):
     course = Course.query.get_or_404(course_id)
     form = CourseForm(obj=course)
+    form.category.choices = get_category_choices()  # Populate category choices
     
     if form.validate_on_submit():
         form.populate_obj(course)
