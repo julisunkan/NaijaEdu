@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Bulk Import Courses</h2>
+    <div>
+        <a href="{{ url_for('download_sample_import') }}" class="btn btn-outline-secondary me-2">
+            <i data-feather="download"></i> Download Sample File
+        </a>
+        <a href="{{ url_for('bulk_export_courses') }}" class="btn btn-outline-primary me-2">
+            <i data-feather="upload"></i> Bulk Export
+        </a>
+        <a href="{{ url_for('admin_courses') }}" class="btn btn-secondary">
+            <i data-feather="arrow-left"></i> Back to Courses
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Import Course Data</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.course_file.label(class="form-label") }}
+                        {{ form.course_file(class="form-control") }}
+                        <div class="form-text">Upload a JSON file containing course data. Maximum file size: 10MB</div>
+                        {% if form.course_file.errors %}
+                            {% for error in form.course_file.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.replace_existing(class="form-check-input") }}
+                            {{ form.replace_existing.label(class="form-check-label") }}
+                        </div>
+                        <div class="form-text">
+                            If checked, existing courses with the same title will be updated. 
+                            Otherwise, duplicate titles will be skipped.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>Import Instructions</h6>
+            </div>
+            <div class="card-body">
+                <h6>Required Format:</h6>
+                <ul class="small">
+                    <li>JSON file with "courses" array</li>
+                    <li>Each course must have title, description, price</li>
+                    <li>Lessons, quizzes, and assignments are optional</li>
+                    <li>Quiz questions must have 4 options (A, B, C, D)</li>
+                </ul>
+                
+                <h6 class="mt-3">Tips:</h6>
+                <ul class="small">
+                    <li>Download the sample file to see the exact format</li>
+                    <li>Start with a small test import</li>
+                    <li>Back up your data before importing</li>
+                    <li>PDF files must be uploaded separately</li>
+                </ul>
+                
+                <div class="alert alert-warning mt-3">
+                    <small>
+                        <strong>Warning:</strong> Large imports may take time to process. 
+                        Do not refresh the page during import.
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6>Sample Data Structure</h6>
+            </div>
+            <div class="card-body">
+                <pre class="small"><code>{
+  "courses": [
+    {
+      "title": "Course Title",
+      "description": "Description",
+      "price": 15000.00,
+      "category": "Programming",
+      "lessons": [...],
+      "quizzes": [...],
+      "assignments": [...]
+    }
+  ]
+}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

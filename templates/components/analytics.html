@@ -1,0 +1,96 @@
+<!-- Google Analytics Component -->
+{% if settings and settings.google_analytics_code %}
+<!-- Google Analytics -->
+{{ settings.google_analytics_code|safe }}
+
+<script>
+// Enhanced analytics tracking for e-learning platform
+function trackEvent(action, category, label, value) {
+    if (typeof gtag !== 'undefined') {
+        gtag('event', action, {
+            'event_category': category,
+            'event_label': label,
+            'value': value
+        });
+    }
+}
+
+// Track course interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Track course enrollments
+    const enrollButtons = document.querySelectorAll('[data-action="enroll"]');
+    enrollButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const courseTitle = this.dataset.courseTitle || 'Unknown Course';
+            trackEvent('enroll', 'Course', courseTitle);
+        });
+    });
+    
+    // Track lesson completions
+    const lessonCompleteButtons = document.querySelectorAll('[data-action="complete-lesson"]');
+    lessonCompleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const lessonTitle = this.dataset.lessonTitle || 'Unknown Lesson';
+            trackEvent('complete', 'Lesson', lessonTitle);
+        });
+    });
+    
+    // Track quiz attempts
+    const quizStartButtons = document.querySelectorAll('[data-action="start-quiz"]');
+    quizStartButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const quizTitle = this.dataset.quizTitle || 'Unknown Quiz';
+            trackEvent('start', 'Quiz', quizTitle);
+        });
+    });
+    
+    // Track download events
+    const downloadLinks = document.querySelectorAll('[data-action="download"]');
+    downloadLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            const fileName = this.dataset.fileName || 'Unknown File';
+            trackEvent('download', 'Content', fileName);
+        });
+    });
+    
+    // Track certificate views
+    const certificateLinks = document.querySelectorAll('[data-action="view-certificate"]');
+    certificateLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            const courseTitle = this.dataset.courseTitle || 'Unknown Course';
+            trackEvent('view', 'Certificate', courseTitle);
+        });
+    });
+    
+    // Track wallet top-ups
+    const walletTopupForms = document.querySelectorAll('[data-action="wallet-topup"]');
+    walletTopupForms.forEach(form => {
+        form.addEventListener('submit', function() {
+            const amount = this.querySelector('[name="amount"]')?.value || '0';
+            trackEvent('topup', 'Wallet', 'NGN', parseFloat(amount));
+        });
+    });
+});
+
+// Track page views with custom dimensions
+if (typeof gtag !== 'undefined') {
+    // Track user role
+    const userRole = document.body.dataset.userRole;
+    if (userRole) {
+        gtag('config', 'GA_MEASUREMENT_ID', {
+            'custom_map': {'user_role': userRole}
+        });
+    }
+    
+    // Track course pages
+    const courseId = document.body.dataset.courseId;
+    if (courseId) {
+        gtag('event', 'page_view', {
+            'page_title': document.title,
+            'page_location': window.location.href,
+            'course_id': courseId
+        });
+    }
+}
+</script>
+{% endif %}

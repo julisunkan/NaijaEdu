@@ -1,0 +1,56 @@
+<!-- Ad Banner Component -->
+{% if settings and settings.google_adsense_code %}
+<div class="ad-banner my-3">
+    <div class="text-center">
+        <small class="text-muted">Advertisement</small>
+        <div class="ad-content">
+            {{ settings.google_adsense_code|safe }}
+        </div>
+    </div>
+</div>
+
+<style>
+.ad-banner {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    margin: 20px 0;
+}
+
+.ad-banner small {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ad-content {
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive ad sizing */
+@media (max-width: 768px) {
+    .ad-banner {
+        margin: 15px 0;
+        padding: 10px;
+    }
+    
+    .ad-content {
+        min-height: 80px;
+    }
+}
+
+/* Ad blocker fallback */
+.ad-content:empty::after {
+    content: "Advertisement space";
+    color: #6c757d;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+</style>
+{% endif %}

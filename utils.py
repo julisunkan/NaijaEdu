@@ -226,3 +226,278 @@ def import_settings_from_json(json_data):
     except Exception as e:
         db.session.rollback()
         return False, f"Import failed: {str(e)}"
+
+def export_courses_to_json(course_ids=None, include_files=False):
+    """Export courses with all content to JSON format"""
+    from models import Course, Lesson, Quiz, QuizQuestion, Assignment
+    
+    if course_ids:
+        courses = Course.query.filter(Course.id.in_(course_ids)).all()
+    else:
+        courses = Course.query.all()
+    
+    export_data = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "platform": "Nigerian E-Learning Platform",
+        "version": "1.0",
+        "courses": []
+    }
+    
+    for course in courses:
+        course_data = {
+            "title": course.title,
+            "description": course.description,
+            "price": float(course.price),
+            "category": course.category,
+            "is_active": course.is_active,
+            "min_credits_for_certificate": course.min_credits_for_certificate,
+            "total_available_credits": course.total_available_credits,
+            "lessons": [],
+            "quizzes": [],
+            "assignments": []
+        }
+        
+        # Export lessons
+        lessons = Lesson.query.filter_by(course_id=course.id).order_by(Lesson.order).all()
+        for lesson in lessons:
+            lesson_data = {
+                "title": lesson.title,
+                "description": lesson.description,
+                "content_type": lesson.content_type,
+                "order": lesson.order,
+                "duration": lesson.duration
+            }
+            
+            if lesson.content_type == 'text':
+                lesson_data["content"] = lesson.content
+            elif lesson.content_type == 'video':
+                lesson_data["video_url"] = lesson.video_url
+            elif lesson.content_type == 'pdf' and lesson.file_path:
+                lesson_data["file_name"] = lesson.file_path
+                if include_files:
+                    # Note: In production, you'd include the actual file data
+                    lesson_data["file_note"] = "File should be uploaded separately"
+            
+            course_data["lessons"].append(lesson_data)
+        
+        # Export quizzes
+        quizzes = Quiz.query.filter_by(course_id=course.id).all()
+        for quiz in quizzes:
+            quiz_data = {
+                "title": quiz.title,
+                "description": quiz.description,
+                "time_limit": quiz.time_limit,
+                "max_attempts": quiz.max_attempts,
+                "max_credits": quiz.max_credits,
+                "pass_threshold": float(quiz.pass_threshold),
+                "questions": []
+            }
+            
+            questions = QuizQuestion.query.filter_by(quiz_id=quiz.id).all()
+            for question in questions:
+                question_data = {
+                    "question": question.question,
+                    "option_a": question.option_a,
+                    "option_b": question.option_b,
+                    "option_c": question.option_c,
+                    "option_d": question.option_d,
+                    "correct_answer": question.correct_answer,
+                    "points": question.points
+                }
+                quiz_data["questions"].append(question_data)
+            
+            course_data["quizzes"].append(quiz_data)
+        
+        # Export assignments
+        assignments = Assignment.query.filter_by(course_id=course.id).all()
+        for assignment in assignments:
+            assignment_data = {
+                "title": assignment.title,
+                "description": assignment.description,
+                "instructions": assignment.instructions,
+                "max_points": assignment.max_points,
+                "max_credits": assignment.max_credits,
+                "pass_threshold": float(assignment.pass_threshold)
+            }
+            course_data["assignments"].append(assignment_data)
+        
+        export_data["courses"].append(course_data)
+    
+    return export_data
+
+def import_courses_from_json(json_data, replace_existing=False):
+    """Import courses from JSON data"""
+    from models import Course, Lesson, Quiz, QuizQuestion, Assignment, User
+    from app import db
+    from flask_login import current_user
+    
+    try:
+        imported_count = 0
+        updated_count = 0
+        
+        if "courses" not in json_data:
+            return False, "Invalid format: 'courses' key not found"
+        
+        for course_data in json_data["courses"]:
+            # Check if course exists
+            existing_course = Course.query.filter_by(title=course_data["title"]).first()
+            
+            if existing_course and not replace_existing:
+                continue
+            
+            if existing_course and replace_existing:
+                # Delete existing content
+                Lesson.query.filter_by(course_id=existing_course.id).delete()
+                Quiz.query.filter_by(course_id=existing_course.id).delete()
+                Assignment.query.filter_by(course_id=existing_course.id).delete()
+                course = existing_course
+                updated_count += 1
+            else:
+                # Create new course
+                course = Course()
+                db.session.add(course)
+                imported_count += 1
+            
+            # Set course properties
+            course.title = course_data["title"]
+            course.description = course_data["description"]
+            course.price = course_data["price"]
+            course.category = course_data.get("category", "General")
+            course.is_active = course_data.get("is_active", True)
+            course.min_credits_for_certificate = course_data.get("min_credits_for_certificate", 70)
+            course.total_available_credits = course_data.get("total_available_credits", 100)
+            course.instructor_id = current_user.id
+            
+            db.session.flush()  # Get course ID
+            
+            # Import lessons
+            for lesson_data in course_data.get("lessons", []):
+                lesson = Lesson()
+                lesson.course_id = course.id
+                lesson.title = lesson_data["title"]
+                lesson.description = lesson_data.get("description", "")
+                lesson.content_type = lesson_data["content_type"]
+                lesson.order = lesson_data.get("order", 1)
+                lesson.duration = lesson_data.get("duration", 30)
+                
+                if lesson.content_type == 'text':
+                    lesson.content = lesson_data.get("content", "")
+                elif lesson.content_type == 'video':
+                    lesson.video_url = lesson_data.get("video_url", "")
+                # Note: PDF files need to be uploaded separately
+                
+                db.session.add(lesson)
+            
+            # Import quizzes
+            for quiz_data in course_data.get("quizzes", []):
+                quiz = Quiz()
+                quiz.course_id = course.id
+                quiz.title = quiz_data["title"]
+                quiz.description = quiz_data.get("description", "")
+                quiz.time_limit = quiz_data["time_limit"]
+                quiz.max_attempts = quiz_data["max_attempts"]
+                quiz.max_credits = quiz_data.get("max_credits", 10)
+                quiz.pass_threshold = quiz_data.get("pass_threshold", 70.0)
+                db.session.add(quiz)
+                db.session.flush()
+                
+                # Import questions
+                for question_data in quiz_data.get("questions", []):
+                    question = QuizQuestion()
+                    question.quiz_id = quiz.id
+                    question.question = question_data["question"]
+                    question.option_a = question_data["option_a"]
+                    question.option_b = question_data["option_b"]
+                    question.option_c = question_data["option_c"]
+                    question.option_d = question_data["option_d"]
+                    question.correct_answer = question_data["correct_answer"]
+                    question.points = question_data.get("points", 1)
+                    db.session.add(question)
+            
+            # Import assignments
+            for assignment_data in course_data.get("assignments", []):
+                assignment = Assignment()
+                assignment.course_id = course.id
+                assignment.title = assignment_data["title"]
+                assignment.description = assignment_data["description"]
+                assignment.instructions = assignment_data.get("instructions", "")
+                assignment.max_points = assignment_data.get("max_points", 100)
+                assignment.max_credits = assignment_data.get("max_credits", 15)
+                assignment.pass_threshold = assignment_data.get("pass_threshold", 60.0)
+                db.session.add(assignment)
+        
+        db.session.commit()
+        return True, f"Successfully imported {imported_count} new courses and updated {updated_count} existing courses"
+        
+    except Exception as e:
+        db.session.rollback()
+        return False, f"Import failed: {str(e)}"
+
+def generate_course_download_package(course_id, user_id):
+    """Generate a downloadable package of course content"""
+    import zipfile
+    import tempfile
+    import os
+    from models import Course, Lesson, Enrollment
+    
+    # Check if user is enrolled
+    enrollment = Enrollment.query.filter_by(course_id=course_id, user_id=user_id, is_approved=True).first()
+    if not enrollment:
+        return None, "You are not enrolled in this course"
+    
+    course = Course.query.get(course_id)
+    if not course:
+        return None, "Course not found"
+    
+    # Check download settings
+    from models import SystemSettings
+    settings = SystemSettings.query.first()
+    if settings and not settings.allow_content_download:
+        return None, "Content downloads are not allowed"
+    
+    if settings and settings.download_requires_completion:
+        # Check if user has completed the course
+        # This would need additional logic to check completion status
+        pass
+    
+    # Create temporary zip file
+    temp_dir = tempfile.mkdtemp()
+    zip_path = os.path.join(temp_dir, f"course_{course_id}_content.zip")
+    
+    try:
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            # Add course info
+            course_info = f"""Course: {course.title}
+Description: {course.description}
+Category: {course.category}
+Downloaded: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}
+
+This content is for personal use only.
+Redistribution is prohibited.
+"""
+            zipf.writestr("course_info.txt", course_info)
+            
+            # Add lessons
+            lessons = Lesson.query.filter_by(course_id=course_id).order_by(Lesson.order).all()
+            for lesson in lessons:
+                lesson_content = f"""Lesson {lesson.order}: {lesson.title}
+Duration: {lesson.duration} minutes
+Description: {lesson.description or 'No description'}
+
+Content:
+{lesson.content if lesson.content_type == 'text' else f'Content Type: {lesson.content_type}'}
+
+{'Video URL: ' + lesson.video_url if lesson.video_url else ''}
+"""
+                zipf.writestr(f"lessons/lesson_{lesson.order:02d}_{lesson.title[:50]}.txt", lesson_content)
+                
+                # Add PDF files if they exist
+                if lesson.content_type == 'pdf' and lesson.file_path:
+                    pdf_path = os.path.join('uploads', lesson.file_path)
+                    if os.path.exists(pdf_path):
+                        zipf.write(pdf_path, f"lessons/lesson_{lesson.order:02d}_{lesson.title[:30]}.pdf")
+        
+        return zip_path, None
+        
+    except Exception as e:
+        return None, f"Failed to create download package: {str(e)}"

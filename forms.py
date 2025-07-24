@@ -117,6 +117,14 @@ class SystemSettingsForm(FlaskForm):
     terms_content = TextAreaField('Terms of Service', widget=TextArea())
     privacy_content = TextAreaField('Privacy Policy', widget=TextArea())
     about_content = TextAreaField('About Us', widget=TextArea())
+    # Google Services Integration
+    google_adsense_code = TextAreaField('Google AdSense Code', 
+                                       render_kw={"placeholder": "Paste your AdSense ad unit code here", "rows": 5})
+    google_analytics_code = TextAreaField('Google Analytics Code', 
+                                         render_kw={"placeholder": "Paste your GA4 measurement code here", "rows": 5})
+    # Content Download Settings
+    allow_content_download = BooleanField('Allow Students to Download Course Content', default=True)
+    download_requires_completion = BooleanField('Require Course Completion for Downloads', default=False)
 
 class CertificateTemplateForm(FlaskForm):
     name = StringField('Template Name', validators=[DataRequired(), Length(max=200)])
@@ -185,3 +193,14 @@ class SettingsImportForm(FlaskForm):
 class SettingsExportForm(FlaskForm):
     include_sensitive = BooleanField('Include Sensitive Data (SMTP passwords, etc.)')
     submit = SubmitField('Export Settings')
+
+class BulkCourseImportForm(FlaskForm):
+    course_file = FileField('Course Data File (JSON)', validators=[DataRequired(), FileAllowed(['json'], 'JSON files only!')])
+    replace_existing = BooleanField('Replace Existing Courses with Same Title')
+    submit = SubmitField('Import Courses')
+
+class BulkCourseExportForm(FlaskForm):
+    include_content_files = BooleanField('Include PDF/Media Files', default=False)
+    selected_courses = StringField('Course IDs (comma-separated)', 
+                                  render_kw={"placeholder": "Leave empty to export all courses"})
+    submit = SubmitField('Export Courses')

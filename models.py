@@ -398,6 +398,12 @@ class SystemSettings(db.Model):
     terms_content = db.Column(db.Text)
     privacy_content = db.Column(db.Text)
     about_content = db.Column(db.Text)
+    # Google Services Integration
+    google_adsense_code = db.Column(db.Text)
+    google_analytics_code = db.Column(db.Text)
+    # Content Download Settings
+    allow_content_download = db.Column(db.Boolean, default=True)
+    download_requires_completion = db.Column(db.Boolean, default=False)
 
 class CertificateTemplate(db.Model):
     id = db.Column(db.Integer, primary_key=True)

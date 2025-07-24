@@ -133,6 +133,13 @@
                         <a href="{{ url_for('get_course_certificate', course_id=course.id) }}" class="btn btn-success">
                             <i data-feather="award" class="me-1"></i>Get Certificate
                         </a>
+                        {% if settings and settings.allow_content_download %}
+                        <a href="{{ url_for('download_course_content', course_id=course.id) }}" 
+                           class="btn btn-outline-primary" 
+                           data-action="download" data-file-name="course_{{ course.id }}_content.zip">
+                            <i data-feather="download" class="me-1"></i>Download Content
+                        </a>
+                        {% endif %}
                     </div>
                     {% else %}
                     <div class="d-grid gap-2">

@@ -1,0 +1,141 @@
+{
+  "courses": [
+    {
+      "title": "Introduction to Python Programming",
+      "description": "Learn Python programming from scratch with hands-on exercises and real-world projects.",
+      "price": 15000.00,
+      "category": "Programming",
+      "is_active": true,
+      "min_credits_for_certificate": 70,
+      "total_available_credits": 100,
+      "lessons": [
+        {
+          "title": "Getting Started with Python",
+          "description": "Introduction to Python syntax and basic concepts",
+          "content_type": "text",
+          "content": "Welcome to Python programming! Python is a powerful, easy-to-learn programming language...",
+          "order": 1,
+          "duration": 45
+        },
+        {
+          "title": "Variables and Data Types",
+          "description": "Understanding Python variables and data types",
+          "content_type": "video",
+          "video_url": "https://youtube.com/watch?v=example",
+          "order": 2,
+          "duration": 60
+        }
+      ],
+      "quizzes": [
+        {
+          "title": "Python Basics Quiz",
+          "description": "Test your understanding of Python fundamentals",
+          "time_limit": 30,
+          "max_attempts": 3,
+          "max_credits": 20,
+          "pass_threshold": 70.0,
+          "questions": [
+            {
+              "question": "What is the correct file extension for Python files?",
+              "option_a": ".py",
+              "option_b": ".python",
+              "option_c": ".pt",
+              "option_d": ".pyt",
+              "correct_answer": "A",
+              "points": 5
+            },
+            {
+              "question": "Which of the following is NOT a valid Python data type?",
+              "option_a": "int",
+              "option_b": "string",
+              "option_c": "bool",
+              "option_d": "float",
+              "correct_answer": "B",
+              "points": 5
+            }
+          ]
+        }
+      ],
+      "assignments": [
+        {
+          "title": "Python Calculator Project",
+          "description": "Create a simple calculator using Python",
+          "instructions": "Build a calculator that can perform basic arithmetic operations (addition, subtraction, multiplication, division). The calculator should handle user input and display results.",
+          "max_points": 100,
+          "max_credits": 25,
+          "pass_threshold": 60.0
+        }
+      ]
+    },
+    {
+      "title": "Web Development with HTML and CSS",
+      "description": "Master the fundamentals of web development using HTML and CSS",
+      "price": 12000.00,
+      "category": "Web Development",
+      "is_active": true,
+      "min_credits_for_certificate": 75,
+      "total_available_credits": 120,
+      "lessons": [
+        {
+          "title": "HTML Basics",
+          "description": "Learn the fundamentals of HTML markup",
+          "content_type": "text",
+          "content": "HTML (HyperText Markup Language) is the standard markup language for creating web pages...",
+          "order": 1,
+          "duration": 40
+        }
+      ],
+      "quizzes": [
+        {
+          "title": "HTML Structure Quiz",
+          "description": "Test your knowledge of HTML structure",
+          "time_limit": 25,
+          "max_attempts": 2,
+          "max_credits": 15,
+          "pass_threshold": 80.0,
+          "questions": [
+            {
+              "question": "What does HTML stand for?",
+              "option_a": "HyperText Markup Language",
+              "option_b": "HyperText Markdown Language",
+              "option_c": "HighText Markup Language",
+              "option_d": "HyperTech Markup Language",
+              "correct_answer": "A",
+              "points": 10
+            }
+          ]
+        }
+      ],
+      "assignments": []
+    }
+  ],
+  "import_instructions": {
+    "version": "1.0",
+    "description": "Sample course import file for Nigerian E-Learning Platform",
+    "instructions": [
+      "1. Each course must have a unique title",
+      "2. Prices should be in Nigerian Naira (numeric values only)",
+      "3. Lesson order determines the sequence in which content is displayed",
+      "4. Quiz questions must have exactly 4 options (A, B, C, D)",
+      "5. Content types supported: 'text', 'video', 'pdf'",
+      "6. For PDF content, upload files separately and reference them",
+      "7. Video URLs should be valid YouTube, Vimeo, or direct video links",
+      "8. All duration values are in minutes",
+      "9. Credits and thresholds are percentages (0-100)",
+      "10. Set 'replace_existing' to true to update existing courses with same title"
+    ],
+    "required_fields": {
+      "course": ["title", "description", "price"],
+      "lesson": ["title", "content_type", "order"],
+      "quiz": ["title", "time_limit", "max_attempts"],
+      "question": ["question", "option_a", "option_b", "option_c", "option_d", "correct_answer"],
+      "assignment": ["title", "description", "max_points"]
+    },
+    "tips": [
+      "Start with a small test import to verify the format",
+      "Back up your existing data before importing",
+      "Use the export feature to see the exact format",
+      "Ensure all referenced files are uploaded to the server"
+    ]
+  }
+}

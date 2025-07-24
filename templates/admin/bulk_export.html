@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Bulk Export Courses</h2>
+    <div>
+        <a href="{{ url_for('bulk_import_courses') }}" class="btn btn-outline-success me-2">
+            <i data-feather="download"></i> Bulk Import
+        </a>
+        <a href="{{ url_for('admin_courses') }}" class="btn btn-secondary">
+            <i data-feather="arrow-left"></i> Back to Courses
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Export Course Data</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.selected_courses.label(class="form-label") }}
+                        {{ form.selected_courses(class="form-control") }}
+                        <div class="form-text">
+                            Enter course IDs separated by commas (e.g., 1,2,3). 
+                            Leave empty to export all courses.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.include_content_files(class="form-check-input") }}
+                            {{ form.include_content_files.label(class="form-check-label") }}
+                        </div>
+                        <div class="form-text">
+                            Include references to PDF and media files in the export.
+                            Note: Actual files must be handled separately.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>Available Courses</h6>
+            </div>
+            <div class="card-body">
+                {% if courses %}
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                            <tr>
+                                <td>{{ course.id }}</td>
+                                <td>{{ course.title[:30] }}{% if course.title|length > 30 %}...{% endif %}</td>
+                                <td>
+                                    {% if course.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No courses available</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6>Export Information</h6>
+            </div>
+            <div class="card-body">
+                <ul class="small">
+                    <li>Export includes course details, lessons, quizzes, and assignments</li>
+                    <li>Quiz questions and answers are included</li>
+                    <li>Student data and submissions are NOT exported</li>
+                    <li>Files referenced but not the actual file content</li>
+                    <li>Exported data can be imported on another platform</li>
+                </ul>
+                
+                <div class="alert alert-info mt-3">
+                    <small>
+                        <strong>Tip:</strong> Use this feature to backup your courses 
+                        or migrate to another platform.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

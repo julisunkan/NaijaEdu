@@ -1082,6 +1082,12 @@ def admin_settings():
     
     return render_template('settings/admin.html', form=form)
 
+@app.context_processor
+def inject_settings():
+    """Make settings available to all templates"""
+    settings = SystemSettings.query.first()
+    return dict(settings=settings)
+
 # File serving
 @app.route('/uploads/<path:filename>')
 @login_required
@@ -1322,6 +1328,98 @@ def preview_certificate_template(template_id):
     }
     
     return render_template('certificates/preview_template.html', **preview_data)
+
+# Google AdSense, Analytics, Content Download, and Bulk Import/Export Routes
+
+@app.route('/download_course/<int:course_id>')
+@login_required
+def download_course_content(course_id):
+    """Allow students to download course content as a ZIP file"""
+    from utils import generate_course_download_package
+    zip_path, error = generate_course_download_package(course_id, current_user.id)
+    
+    if error:
+        flash(error, 'danger')
+        return redirect(url_for('course_detail', course_id=course_id))
+    
+    try:
+        return send_file(zip_path, as_attachment=True, 
+                        download_name=f"course_{course_id}_content.zip",
+                        mimetype='application/zip')
+    except Exception as e:
+        flash(f'Download failed: {str(e)}', 'danger')
+        return redirect(url_for('course_detail', course_id=course_id))
+
+@app.route('/admin/bulk_export', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def bulk_export_courses():
+    """Export courses in bulk to JSON format"""
+    from utils import export_courses_to_json
+    form = BulkCourseExportForm()
+    
+    if form.validate_on_submit():
+        try:
+            course_ids = None
+            if form.selected_courses.data:
+                course_ids = [int(id.strip()) for id in form.selected_courses.data.split(',') if id.strip().isdigit()]
+            
+            export_data = export_courses_to_json(course_ids, form.include_content_files.data)
+            
+            # Create response with JSON file
+            response = make_response(json.dumps(export_data, indent=2))
+            response.headers['Content-Type'] = 'application/json'
+            response.headers['Content-Disposition'] = f'attachment; filename=courses_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+            
+            flash('Courses exported successfully!', 'success')
+            return response
+            
+        except Exception as e:
+            flash(f'Export failed: {str(e)}', 'danger')
+    
+    courses = Course.query.all()
+    return render_template('admin/bulk_export.html', form=form, courses=courses)
+
+@app.route('/admin/bulk_import', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def bulk_import_courses():
+    """Import courses in bulk from JSON format"""
+    from utils import import_courses_from_json
+    form = BulkCourseImportForm()
+    
+    if form.validate_on_submit():
+        try:
+            file = form.course_file.data
+            json_data = json.loads(file.read().decode('utf-8'))
+            
+            success, message = import_courses_from_json(json_data, form.replace_existing.data)
+            
+            if success:
+                flash(message, 'success')
+                return redirect(url_for('admin_courses'))
+            else:
+                flash(message, 'danger')
+                
+        except json.JSONDecodeError:
+            flash('Invalid JSON file format', 'danger')
+        except Exception as e:
+            flash(f'Import failed: {str(e)}', 'danger')
+    
+    return render_template('admin/bulk_import.html', form=form)
+
+@app.route('/admin/sample_import')
+@login_required
+@admin_required
+def download_sample_import():
+    """Download sample import file"""
+    try:
+        return send_file('sample_course_import.json', as_attachment=True,
+                        download_name='sample_course_import.json',
+                        mimetype='application/json')
+    except Exception as e:
+        flash(f'Download failed: {str(e)}', 'danger')
+        return redirect(url_for('bulk_import_courses'))
 
 # Error handlers
 @app.errorhandler(404)
