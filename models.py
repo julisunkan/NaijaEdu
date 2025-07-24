@@ -8,7 +8,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
-    role = db.Column(db.String(20), nullable=False, default='student')  # admin, instructor, student
+    role = db.Column(db.String(20), nullable=False, default='student')  # admin, instructor, tutor, student
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50))
     active = db.Column(db.Boolean, default=True)
@@ -30,13 +30,14 @@ class User(UserMixin, db.Model):
     last_login = db.Column(db.DateTime)
     
     # Relationships
-    courses_created = db.relationship('Course', backref='instructor', lazy='dynamic')
+    courses_created = db.relationship('Course', foreign_keys='Course.instructor_id', backref='instructor', lazy='dynamic')
     enrollments = db.relationship('Enrollment', backref='student', lazy='dynamic')
     payments = db.relationship('Payment', backref='user', lazy='dynamic')
     wallet_transactions = db.relationship('WalletTransaction', backref='user', lazy='dynamic')
     quiz_attempts = db.relationship('QuizAttempt', backref='user', lazy='dynamic')
     assignment_submissions = db.relationship('AssignmentSubmission', backref='user', lazy='dynamic')
     course_credits = db.relationship('CourseCredit', backref='student_credit', lazy='dynamic')
+    withdrawal_requests = db.relationship('WithdrawalRequest', foreign_keys='WithdrawalRequest.tutor_id', backref='tutor', lazy='dynamic')
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -48,7 +49,7 @@ class User(UserMixin, db.Model):
         return self.role == role
     
     def can_access_course(self, course):
-        if self.role in ['admin', 'instructor']:
+        if self.role in ['admin', 'instructor', 'tutor']:
             return True
         enrollment = Enrollment.query.filter_by(
             user_id=self.id, 
@@ -61,8 +62,7 @@ class User(UserMixin, db.Model):
     def is_account_active(self) -> bool:
         return bool(self.active and not self.banned)
     
-    # Override Flask-Login is_active property appropriately
-    @property 
+    # Override Flask-Login is_active method to ensure correct type compatibility
     def is_active(self) -> bool:
         return self.is_account_active()
     
@@ -80,8 +80,9 @@ class User(UserMixin, db.Model):
         badges = []
         if self.email_verified:
             badges.append({'name': 'Verified Email', 'color': 'success', 'icon': 'check-circle'})
-        if self.instructor_verified and self.role == 'instructor':
-            badges.append({'name': 'Verified Instructor', 'color': 'primary', 'icon': 'book'})
+        if self.instructor_verified and self.role in ['instructor', 'tutor']:
+            badge_name = 'Verified Instructor' if self.role == 'instructor' else 'Verified Tutor'
+            badges.append({'name': badge_name, 'color': 'primary', 'icon': 'book'})
         if self.premium_user:
             badges.append({'name': 'Premium', 'color': 'warning', 'icon': 'star'})
         return badges
@@ -93,6 +94,11 @@ class Course(db.Model):
     price = db.Column(db.Float, nullable=False, default=0.0)
     instructor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
+    # Course approval system for tutor-created courses
+    approval_status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
+    approved_by = db.Column(db.Integer, db.ForeignKey('user.id'))  # admin who approved
+    approved_at = db.Column(db.DateTime)
+    rejection_reason = db.Column(db.Text)
     # Credit system fields
     min_credits_for_certificate = db.Column(db.Integer, default=70)  # Minimum credits needed for certificate
     total_available_credits = db.Column(db.Integer, default=100)     # Total credits available in course
@@ -105,6 +111,7 @@ class Course(db.Model):
     quizzes = db.relationship('Quiz', backref='course', lazy='dynamic', cascade='all, delete-orphan')
     assignments = db.relationship('Assignment', backref='course', lazy='dynamic', cascade='all, delete-orphan')
     course_credits = db.relationship('CourseCredit', backref='course', lazy='dynamic', cascade='all, delete-orphan')
+    course_vouchers = db.relationship('Voucher', foreign_keys='Voucher.course_id', backref='course', lazy='dynamic', cascade='all, delete-orphan')
     
     def get_student_credits(self, user_id):
         """Get total credits earned by a student in this course"""
@@ -161,6 +168,9 @@ class Voucher(db.Model):
     current_uses = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)
     expires_at = db.Column(db.DateTime)
+    # Tutor-specific voucher fields
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'))  # Specific course or null for all courses
+    tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Tutor who created this voucher
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def is_valid(self):
@@ -183,6 +193,46 @@ class Voucher(db.Model):
         elif self.discount_type == 'fixed':
             return min(self.discount_value, amount)
         return 0.0
+
+class WithdrawalRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tutor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    bank_name = db.Column(db.String(100), nullable=False)
+    account_number = db.Column(db.String(20), nullable=False)
+    account_name = db.Column(db.String(100), nullable=False)
+    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected, paid
+    request_reason = db.Column(db.Text)
+    admin_notes = db.Column(db.Text)
+    approved_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    requested_at = db.Column(db.DateTime, default=datetime.utcnow)
+    processed_at = db.Column(db.DateTime)
+    
+    def get_available_balance(self):
+        """Calculate tutor's available balance for withdrawal"""
+        # Get total earnings from course sales
+        total_earnings = 0
+        courses = Course.query.filter_by(instructor_id=self.tutor_id, approval_status='approved').all()
+        
+        for course in courses:
+            successful_payments = Payment.query.filter_by(
+                course_id=course.id, 
+                status='approved'
+            ).all()
+            
+            for payment in successful_payments:
+                # Calculate earnings after platform commission (e.g., 15% commission)
+                commission_rate = 0.15  # 15% platform commission
+                tutor_share = payment.amount * (1 - commission_rate)
+                total_earnings += tutor_share
+        
+        # Subtract already requested/approved withdrawals
+        total_withdrawals = db.session.query(db.func.sum(WithdrawalRequest.amount)).filter(
+            WithdrawalRequest.tutor_id == self.tutor_id,
+            WithdrawalRequest.status.in_(['approved', 'paid'])
+        ).scalar() or 0
+        
+        return max(0, total_earnings - total_withdrawals)
 
 class WalletTransaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)

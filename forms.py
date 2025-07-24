@@ -12,8 +12,10 @@ class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password', message='Passwords must match')])
     first_name = StringField('First Name', validators=[Optional(), Length(max=50)])
     last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
+    role = SelectField('Account Type', choices=[('student', 'Student'), ('tutor', 'Tutor/Instructor')], default='student')
 
 class CourseForm(FlaskForm):
     title = StringField('Course Title', validators=[DataRequired(), Length(max=200)])
@@ -47,6 +49,18 @@ class VoucherForm(FlaskForm):
     discount_value = FloatField('Discount Value', validators=[NumberRange(min=0)])
     max_uses = IntegerField('Maximum Uses', validators=[DataRequired(), NumberRange(min=1)])
     expires_at = DateTimeField('Expiry Date', format='%Y-%m-%d %H:%M:%S', validators=[Optional()])
+    course_id = SelectField('Apply to Course', choices=[], coerce=int, validators=[Optional()])
+
+class WithdrawalRequestForm(FlaskForm):
+    amount = FloatField('Withdrawal Amount (₦)', validators=[DataRequired(), NumberRange(min=100)])
+    bank_name = StringField('Bank Name', validators=[DataRequired(), Length(max=100)])
+    account_number = StringField('Account Number', validators=[DataRequired(), Length(min=10, max=20)])
+    account_name = StringField('Account Name', validators=[DataRequired(), Length(max=100)])
+    request_reason = TextAreaField('Reason for Withdrawal', validators=[Optional()])
+
+class WithdrawalApprovalForm(FlaskForm):
+    status = SelectField('Status', choices=[('approved', 'Approve'), ('rejected', 'Reject'), ('paid', 'Mark as Paid')])
+    admin_notes = TextAreaField('Admin Notes', validators=[Optional()])
 
 class RedeemVoucherForm(FlaskForm):
     voucher_code = StringField('Voucher Code', validators=[DataRequired()])

@@ -65,12 +65,29 @@
                         <small class="form-text text-muted">Minimum 6 characters</small>
                     </div>
                     
-                    <div class="alert alert-info">
-                        <small><i data-feather="info"></i> All new accounts are registered as students. Contact an administrator to request instructor privileges.</small>
+                    <div class="mb-3">
+                        {{ form.confirm_password.label(class="form-label") }}
+                        {{ form.confirm_password(class="form-control") }}
+                        {% if form.confirm_password.errors %}
+                        <div class="text-danger">
+                            {% for error in form.confirm_password.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.role.label(class="form-label") }}
+                        {{ form.role(class="form-select") }}
+                        <small class="form-text text-muted">
+                            <strong>Student:</strong> Access and learn from courses<br>
+                            <strong>Tutor:</strong> Create and manage your own courses, earn money (requires admin approval for courses)
+                        </small>
                     </div>
                     
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Register as Student</button>
+                        <button type="submit" class="btn btn-primary">Create Account</button>
                     </div>
                 </form>
                 

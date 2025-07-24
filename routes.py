@@ -49,11 +49,16 @@ def register():
             user.email = form.email.data
             user.first_name = form.first_name.data
             user.last_name = form.last_name.data
-            user.role = 'student'  # All new registrations are students by default
+            # Set role based on form selection
+            if form.role.data == 'tutor':
+                user.role = 'tutor'
+                flash('Tutor account created! You can now create courses that require admin approval before going live.', 'success')
+            else:
+                user.role = 'student'
+                flash('Student account created successfully!', 'success')
             user.set_password(form.password.data)
             db.session.add(user)
             db.session.commit()
-            flash('Registration successful! Please log in.', 'success')
             return redirect(url_for('login'))
     return render_template('auth/register.html', form=form)
 
@@ -72,7 +77,7 @@ def dashboard():
         vouchers = Voucher.query.order_by(Voucher.created_at.desc()).all()
         users = User.query.all()
         return render_template('dashboard/admin.html', vouchers=vouchers, User=User)
-    elif current_user.role == 'instructor':
+    elif current_user.role in ['instructor', 'tutor']:
         # Get instructor's courses and submissions
         instructor_courses = Course.query.filter_by(instructor_id=current_user.id).all()
         recent_submissions = AssignmentSubmission.query.join(Assignment).join(Course).filter(
@@ -91,7 +96,7 @@ def dashboard():
 # Course routes
 @app.route('/courses')
 def courses():
-    courses = Course.query.filter_by(is_active=True).all()
+    courses = Course.query.filter_by(is_active=True, approval_status='approved').all()
     return render_template('courses/list.html', courses=courses)
 
 @app.route('/courses/<int:course_id>')
@@ -113,9 +118,15 @@ def create_course():
         course.description = form.description.data
         course.price = form.price.data
         course.instructor_id = current_user.id
+        # Set approval status based on user role
+        if current_user.role == 'tutor':
+            course.approval_status = 'pending'
+            flash('Course created and submitted for admin approval!', 'success')
+        else:
+            course.approval_status = 'approved'  # Admin/instructor courses auto-approved
+            flash('Course created successfully!', 'success')
         db.session.add(course)
         db.session.commit()
-        flash('Course created successfully!', 'success')
         return redirect(url_for('manage_courses'))
     return render_template('courses/create.html', form=form)
 
