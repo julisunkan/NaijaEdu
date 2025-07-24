@@ -392,3 +392,182 @@ footer {
         color: #000 !important;
     }
 }
+
+/* Enhanced Mobile Optimizations */
+@media (max-width: 768px) {
+    .offcanvas-profile {
+        width: 280px !important;
+    }
+    
+    /* Mobile-friendly buttons */
+    .btn {
+        min-height: 44px; /* Touch-friendly size */
+        padding: 0.75rem 1rem;
+    }
+    
+    .btn-sm {
+        min-height: 36px;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Stack button groups vertically on mobile */
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.25rem;
+        width: 100%;
+    }
+    
+    /* Horizontal button groups for action rows */
+    .btn-group-horizontal {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    
+    .btn-group-horizontal .btn {
+        flex: 1;
+        margin-right: 0.25rem;
+    }
+    
+    .btn-group-horizontal .btn:last-child {
+        margin-right: 0;
+    }
+    
+    /* Card optimizations */
+    .card {
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .card-header {
+        padding: 0.75rem 1rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    /* Table improvements */
+    .table-responsive {
+        font-size: 0.875rem;
+        border-radius: 0.375rem;
+        overflow: hidden;
+    }
+    
+    .table th, .table td {
+        padding: 0.5rem;
+        vertical-align: middle;
+    }
+    
+    /* Modal optimizations */
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100vw - 1rem);
+    }
+    
+    .modal-content {
+        border-radius: 0.5rem;
+    }
+    
+    /* Form optimizations */
+    .form-control, .form-select {
+        min-height: 44px;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    /* Navigation improvements */
+    .navbar-toggler {
+        border: none;
+        padding: 0.5rem;
+    }
+    
+    /* Badge improvements */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+    }
+    
+    /* Typography scaling */
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+    h4 { font-size: 1.1rem; }
+    h5 { font-size: 1rem; }
+    h6 { font-size: 0.9rem; }
+    
+    /* Grid improvements */
+    .row {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+    
+    .col, [class*="col-"] {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    /* Spacing adjustments */
+    .mb-4 { margin-bottom: 1.5rem !important; }
+    .mt-4 { margin-top: 1.5rem !important; }
+    .py-4 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+    
+    /* Container adjustments */
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .btn-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .btn-group .btn {
+        flex: 0 0 auto;
+        margin-bottom: 0;
+    }
+    
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    .table th, .table td {
+        padding: 0.75rem;
+    }
+}
+
+/* Touch optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .btn:hover {
+        transform: none;
+    }
+    
+    .btn:active {
+        transform: scale(0.98);
+        transition: transform 0.1s;
+    }
+    
+    /* Larger touch targets */
+    .btn-close {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+    
+    /* Improved form controls */
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+}
