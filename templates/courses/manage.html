@@ -63,7 +63,7 @@
                     
                     {% if current_user.role == 'admin' or course.instructor_id == current_user.id %}
                     <button type="button" class="btn btn-outline-danger btn-sm" 
-                            onclick="confirmDeleteCourse('{{ course.title }}', '{{ url_for('instructor_delete_course', course_id=course.id) }}')">
+                            onclick="confirmDeleteCourse('{{ course.title|replace("'", "\\\\'") }}', '{{ url_for("instructor_delete_course", course_id=course.id) }}')">
                         <i data-feather="trash-2"></i> Delete
                     </button>
                     {% endif %}
@@ -111,7 +111,6 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form id="deleteForm" method="POST" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button type="submit" class="btn btn-danger">
                         <i data-feather="trash-2"></i> Delete Course
                     </button>
