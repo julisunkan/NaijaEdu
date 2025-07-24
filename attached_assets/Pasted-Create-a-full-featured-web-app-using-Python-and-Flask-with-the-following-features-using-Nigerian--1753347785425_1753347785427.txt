@@ -1,0 +1,79 @@
+Create a full-featured web app using Python and Flask with the following features, using **Nigerian Naira (₦)** as the sole currency for all payments and pricing:
+
+1. **User Authentication:**
+   - User registration and login
+   - User roles: Admin, Instructor, Student
+
+2. **Courses & Lessons:**
+   - Courses with title, description, price in **Naira (₦)**
+   - Lessons supporting multiple content types:
+     - PDF uploads
+     - Video URLs (YouTube/Vimeo embeds)
+     - HTML content with rich text editor support
+
+3. **Manual Payment System:**
+   - Students pay manually in **Naira**
+   - Upload proof of payment (bank transfer receipts, etc.)
+   - Admin verifies and approves payment before enrollment
+
+4. **Voucher System:**
+   - Admin creates voucher codes offering discounts or free access in **Naira**
+   - Students redeem vouchers during enrollment
+
+5. **Wallet System:**
+   - Wallet balance stored in **Naira (₦)**
+   - Students can top up manually and use wallet funds to purchase courses
+
+6. **Course Pricing Plans:**
+   - Admin defines pricing bundles in **Naira** (e.g., 5 courses for ₦1,000)
+   - Students purchase plans and receive course credits
+
+7. **Quizzes and Assignments:**
+   - Quizzes with multiple-choice questions, auto-graded
+   - Assignments supporting text and file uploads, manually graded
+
+8. **Admin Settings Panel:**
+   - Manage system-wide settings:
+     - SMTP email config
+     - Bank/payment details in **Naira**
+     - Website name, description
+     - Footer pages (Terms, Privacy, About)
+
+9. **Enrollment Logic:**
+   - Students enroll by paying manually (in ₦), redeeming vouchers, or using wallet/credits
+
+10. **File Uploads and Storage:**
+    - PDFs, assignments, payment proofs saved securely
+
+11. **UI & UX:**
+    - Responsive design with Bootstrap
+    - Display all prices and balances with **₦** prefix
+
+12. **Security:**
+    - Role-based access
+    - Input validation and sanitization
+
+---
+
+**Technical stack:**
+
+- Flask + SQLAlchemy + SQLite
+- Flask-Login for auth
+- Use secure file uploads
+- Jinja2 templates with all prices shown in Naira (₦)
+- Flash messaging for feedback
+- Environment variables for secrets and SMTP configs
+
+---
+
+**Bonus:** Add unit tests for payments, enrollment, and voucher redemption.
+
+---
+
+Please scaffold with a clear project structure, templates, static assets, and a README for running in Replit.
+
+Generate code modules stepwise starting from authentication and courses, then add advanced features.
+
+---
+
+**Important:** Use Naira (₦) everywhere as currency — no other currency support.
