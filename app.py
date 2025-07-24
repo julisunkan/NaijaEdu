@@ -38,7 +38,7 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = "auth.login"
+    login_manager.login_view = "login"
     login_manager.login_message = "Please log in to access this page."
     login_manager.login_message_category = "info"
     
@@ -61,24 +61,22 @@ with app.app_context():
     
     admin = User.query.filter_by(username='admin').first()
     if not admin:
-        admin = User(
-            username='admin',
-            email='admin@example.com',
-            password_hash=generate_password_hash('admin123'),
-            role='admin',
-            is_active=True
-        )
+        admin = User()
+        admin.username = 'admin'
+        admin.email = 'admin@example.com'
+        admin.password_hash = generate_password_hash('admin123')
+        admin.role = 'admin'
+        admin.is_active = True
         db.session.add(admin)
     
     # Create default system settings
     settings = SystemSettings.query.first()
     if not settings:
-        settings = SystemSettings(
-            site_name='Nigerian E-Learning Platform',
-            site_description='Learn with the best courses in Nigeria',
-            currency_symbol='₦',
-            admin_email='admin@example.com'
-        )
+        settings = SystemSettings()
+        settings.site_name = 'Nigerian E-Learning Platform'
+        settings.site_description = 'Learn with the best courses in Nigeria'
+        settings.currency_symbol = '₦'
+        settings.admin_email = 'admin@example.com'
         db.session.add(settings)
     
     db.session.commit()
