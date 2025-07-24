@@ -556,6 +556,20 @@ def edit_course(course_id):
     
     return render_template('admin/edit_course.html', form=form, course=course)
 
+@app.route('/admin/courses/<int:course_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_course(course_id):
+    course = Course.query.get_or_404(course_id)
+    course_title = course.title
+    
+    # Delete course (cascade will handle related records)
+    db.session.delete(course)
+    db.session.commit()
+    
+    flash(f'Course "{course_title}" and all its content deleted successfully!', 'success')
+    return redirect(url_for('admin_courses'))
+
 @app.route('/admin/courses/<int:course_id>/lessons')
 @login_required
 @admin_required
@@ -579,6 +593,24 @@ def edit_lesson(lesson_id):
     
     return render_template('admin/edit_lesson.html', form=form, lesson=lesson)
 
+@app.route('/admin/lessons/<int:lesson_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_lesson(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    course_id = lesson.course_id
+    lesson_title = lesson.title
+    
+    # Delete associated file if exists
+    if lesson.file_path and os.path.exists(lesson.file_path):
+        os.remove(lesson.file_path)
+    
+    db.session.delete(lesson)
+    db.session.commit()
+    
+    flash(f'Lesson "{lesson_title}" deleted successfully!', 'success')
+    return redirect(url_for('admin_course_lessons', course_id=course_id))
+
 @app.route('/admin/courses/<int:course_id>/quizzes')
 @login_required
 @admin_required
@@ -601,6 +633,21 @@ def edit_quiz(quiz_id):
         return redirect(url_for('admin_course_quizzes', course_id=quiz.course_id))
     
     return render_template('admin/edit_quiz.html', form=form, quiz=quiz)
+
+@app.route('/admin/quizzes/<int:quiz_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    course_id = quiz.course_id
+    quiz_title = quiz.title
+    
+    # Delete quiz (cascade will handle questions and attempts)
+    db.session.delete(quiz)
+    db.session.commit()
+    
+    flash(f'Quiz "{quiz_title}" and all its questions deleted successfully!', 'success')
+    return redirect(url_for('admin_course_quizzes', course_id=course_id))
 
 @app.route('/admin/quizzes/<int:quiz_id>/questions')
 @login_required
@@ -626,6 +673,19 @@ def edit_question(question_id):
     
     return render_template('admin/edit_question.html', form=form, question=question)
 
+@app.route('/admin/questions/<int:question_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_question(question_id):
+    question = QuizQuestion.query.get_or_404(question_id)
+    quiz_id = question.quiz_id
+    
+    db.session.delete(question)
+    db.session.commit()
+    
+    flash('Question deleted successfully!', 'success')
+    return redirect(url_for('admin_quiz_questions', quiz_id=quiz_id))
+
 @app.route('/admin/courses/<int:course_id>/assignments')
 @login_required
 @admin_required
@@ -648,6 +708,21 @@ def edit_assignment(assignment_id):
         return redirect(url_for('admin_course_assignments', course_id=assignment.course_id))
     
     return render_template('admin/edit_assignment.html', form=form, assignment=assignment)
+
+@app.route('/admin/assignments/<int:assignment_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_assignment(assignment_id):
+    assignment = Assignment.query.get_or_404(assignment_id)
+    course_id = assignment.course_id
+    assignment_title = assignment.title
+    
+    # Delete assignment (cascade will handle submissions)
+    db.session.delete(assignment)
+    db.session.commit()
+    
+    flash(f'Assignment "{assignment_title}" and all submissions deleted successfully!', 'success')
+    return redirect(url_for('admin_course_assignments', course_id=course_id))
 
 @app.route('/admin/quizzes/<int:quiz_id>/questions/add', methods=['POST'])
 @login_required

@@ -58,11 +58,11 @@ class Course(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationships
+    # Relationships with cascade deletions
     lessons = db.relationship('Lesson', backref='course', lazy='dynamic', cascade='all, delete-orphan')
-    enrollments = db.relationship('Enrollment', backref='course', lazy='dynamic')
-    quizzes = db.relationship('Quiz', backref='course', lazy='dynamic')
-    assignments = db.relationship('Assignment', backref='course', lazy='dynamic')
+    enrollments = db.relationship('Enrollment', backref='course', lazy='dynamic', cascade='all, delete-orphan')
+    quizzes = db.relationship('Quiz', backref='course', lazy='dynamic', cascade='all, delete-orphan')
+    assignments = db.relationship('Assignment', backref='course', lazy='dynamic', cascade='all, delete-orphan')
 
 class Lesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -149,7 +149,7 @@ class Quiz(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     questions = db.relationship('QuizQuestion', backref='quiz', lazy='dynamic', cascade='all, delete-orphan')
-    attempts = db.relationship('QuizAttempt', backref='quiz', lazy='dynamic')
+    attempts = db.relationship('QuizAttempt', backref='quiz', lazy='dynamic', cascade='all, delete-orphan')
 
 class QuizQuestion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -183,7 +183,7 @@ class Assignment(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    submissions = db.relationship('AssignmentSubmission', backref='assignment', lazy='dynamic')
+    submissions = db.relationship('AssignmentSubmission', backref='assignment', lazy='dynamic', cascade='all, delete-orphan')
 
 class AssignmentSubmission(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -69,6 +69,10 @@
                                                class="btn btn-outline-primary btn-sm">
                                                 <i data-feather="edit" class="me-1"></i>Edit Question
                                             </a>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="confirmDeleteQuestion('Question {{ loop.index }}', '{{ url_for('delete_question', question_id=question.id) }}')">
+                                                <i data-feather="trash-2" class="me-1"></i>Delete Question
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -87,6 +91,28 @@
                     </button>
                 </div>
                 {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete "<strong id="deleteItemName"></strong>"?</p>
+                <p class="text-danger"><small><i data-feather="alert-triangle" class="me-1"></i>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Question</button>
+                </form>
             </div>
         </div>
     </div>
@@ -159,5 +185,15 @@ function showAddQuestionModal() {
     var modal = new bootstrap.Modal(document.getElementById('addQuestionModal'));
     modal.show();
 }
+
+function confirmDeleteQuestion(itemName, deleteUrl) {
+    document.getElementById('deleteItemName').textContent = itemName;
+    document.getElementById('deleteForm').action = deleteUrl;
+    var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+// Initialize Feather icons
+feather.replace();
 </script>
 {% endblock %}
