@@ -62,7 +62,7 @@
                                             <i data-feather="file-text"></i>
                                         </a>
                                         <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                onclick="confirmDelete('{{ course.title|replace("'", "\\'") }}', '{{ url_for('delete_course', course_id=course.id) }}')"
+                                                onclick="confirmDelete('{{ course.title|e }}', '{{ url_for('delete_course', course_id=course.id) }}')"
                                                 title="Delete Course">
                                             <i data-feather="trash-2"></i>
                                         </button>

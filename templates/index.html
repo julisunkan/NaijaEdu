@@ -27,7 +27,7 @@
                         <h5 class="card-title">{{ course.title }}</h5>
                         <p class="card-text">{{ course.description[:100] }}{% if course.description|length > 100 %}...{% endif %}</p>
                         <p class="card-text">
-                            <strong class="text-success">₦{{ "%.2f"|format(course.price) }}</strong>
+                            <strong class="text-success">{{ course.price|currency }}</strong>
                         </p>
                         <p class="card-text">
                             <small class="text-muted">By {{ course.instructor.first_name }} {{ course.instructor.last_name }}</small>
