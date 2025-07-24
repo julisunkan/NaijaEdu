@@ -21,6 +21,7 @@ def create_app():
     
     # Configuration
     app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
+    # Force SQLite usage regardless of environment variables
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///elearning.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
