@@ -11,7 +11,7 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), nullable=False, default='student')  # admin, instructor, student
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50))
-    is_active = db.Column(db.Boolean, default=True)
+    active = db.Column(db.Boolean, default=True)
     wallet_balance = db.Column(db.Float, default=0.0)
     course_credits = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -42,6 +42,11 @@ class User(UserMixin, db.Model):
             status='approved'
         ).first()
         return enrollment is not None
+    
+    # Override UserMixin's is_active property to use our database field
+    @property
+    def is_active(self):
+        return self.active
 
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)

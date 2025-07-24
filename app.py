@@ -20,7 +20,7 @@ def create_app():
     app = Flask(__name__)
     
     # Configuration
-    app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
+    app.secret_key = os.environ.get("SESSION_SECRET")
     # Force SQLite usage regardless of environment variables
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///elearning.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -39,7 +39,7 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = "login"
+    login_manager.login_view = "auth.login"
     login_manager.login_message = "Please log in to access this page."
     login_manager.login_message_category = "info"
     
@@ -67,7 +67,7 @@ with app.app_context():
         admin.email = 'admin@example.com'
         admin.password_hash = generate_password_hash('admin123')
         admin.role = 'admin'
-        admin.is_active = True
+        admin.active = True
         db.session.add(admin)
     
     # Create default system settings
