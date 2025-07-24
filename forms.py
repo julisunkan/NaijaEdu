@@ -21,7 +21,9 @@ class CourseForm(FlaskForm):
     title = StringField('Course Title', validators=[DataRequired(), Length(max=200)])
     description = TextAreaField('Description', widget=TextArea())
     price = FloatField('Price (₦)', validators=[DataRequired(), NumberRange(min=0)])
-    category = StringField('Category', validators=[Optional(), Length(max=100)])
+    category = SelectField('Category', 
+                          choices=[],  # Will be populated in the view
+                          validators=[DataRequired()])
     is_active = BooleanField('Active Status', default=True)
     # Credit system fields
     min_credits_for_certificate = IntegerField('Minimum Credits for Certificate', validators=[DataRequired(), NumberRange(min=1)], default=70)

@@ -27,7 +27,12 @@
             <div class="col-md-6 mb-4">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title">{{ course.title }}</h5>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title">{{ course.title }}</h5>
+                            {% if course.category %}
+                            <span class="badge bg-info">{{ get_category_name(course.category) }}</span>
+                            {% endif %}
+                        </div>
                         <p class="card-text">{{ course.description[:100] }}{% if course.description|length > 100 %}...{% endif %}</p>
                         <p class="card-text">
                             <strong class="text-success">{{ course.price|currency }}</strong>
@@ -52,6 +57,21 @@
     </div>
     
     <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Popular Categories</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for category in popular_categories %}
+                    <a href="{{ url_for('courses', category=category) }}" class="btn btn-sm btn-outline-primary">
+                        {{ get_category_name(category) }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
         <div class="card">
             <div class="card-header">
                 <h5>Why Choose Our Platform?</h5>

@@ -10,19 +10,28 @@ from models import *
 from forms import *
 from utils import admin_required, instructor_required
 from cache import cache
+from course_categories import get_category_choices, get_category_name, get_popular_categories
 
 @app.route('/')
 def index():
     # Check cache first
-    cached_courses = cache.get('homepage_courses', 300)  # 5 minutes cache
-    if cached_courses is None:
+    cached_data = cache.get('homepage_data', 300)  # 5 minutes cache
+    if cached_data is None:
         # Optimize with limit for better performance
         courses = Course.query.filter_by(is_active=True, approval_status='approved')\
                         .limit(12).all()
-        cache.set('homepage_courses', courses)
-    else:
-        courses = cached_courses
-    return render_template('index.html', courses=courses)
+        popular_categories = get_popular_categories()
+        cached_data = {
+            'courses': courses,
+            'popular_categories': popular_categories,
+            'get_category_name': get_category_name
+        }
+        cache.set('homepage_data', cached_data)
+    
+    return render_template('index.html', 
+                         courses=cached_data['courses'],
+                         popular_categories=cached_data['popular_categories'],
+                         get_category_name=cached_data['get_category_name'])
 
 # Authentication routes
 @app.route('/login', methods=['GET', 'POST'])
@@ -105,8 +114,28 @@ def dashboard():
 # Course routes
 @app.route('/courses')
 def courses():
-    courses = Course.query.filter_by(is_active=True, approval_status='approved').all()
-    return render_template('courses/list.html', courses=courses)
+    category = request.args.get('category')
+    search = request.args.get('search', '').strip()
+    
+    query = Course.query.filter_by(is_active=True, approval_status='approved')
+    
+    if category and category != 'all':
+        query = query.filter_by(category=category)
+    
+    if search:
+        query = query.filter(
+            Course.title.contains(search) | 
+            Course.description.contains(search)
+        )
+    
+    courses = query.all()
+    categories = get_category_choices()
+    return render_template('courses/list.html', 
+                         courses=courses, 
+                         categories=categories,
+                         selected_category=category,
+                         search_term=search,
+                         get_category_name=get_category_name)
 
 @app.route('/courses/<int:course_id>')
 def course_detail(course_id):
@@ -131,11 +160,13 @@ def course_detail(course_id):
 @instructor_required
 def create_course():
     form = CourseForm()
+    form.category.choices = get_category_choices()
     if form.validate_on_submit():
         course = Course()
         course.title = form.title.data
         course.description = form.description.data
         course.price = form.price.data
+        course.category = form.category.data  # Set category from form
         course.instructor_id = current_user.id
         # Set approval status based on user role - only admins can auto-approve
         if current_user.role == 'admin':
@@ -170,10 +201,12 @@ def instructor_edit_course(course_id):
         return redirect(url_for('manage_courses'))
     
     form = CourseForm(obj=course)
+    form.category.choices = get_category_choices()
     if form.validate_on_submit():
         course.title = form.title.data
         course.description = form.description.data
         course.price = form.price.data
+        course.category = form.category.data  # Update category
         
         # If tutor/instructor edits course, reset to pending approval
         if current_user.role != 'admin' and course.approval_status == 'approved':
