@@ -77,7 +77,7 @@
             </div>
             
             <nav class="nav flex-column">
-                <a class="nav-link active" href="{{ url_for('admin_dashboard') }}">
+                <a class="nav-link active" href="{{ url_for('dashboard') }}">
                     <i data-feather="grid"></i> Dashboard
                 </a>
                 
@@ -90,7 +90,7 @@
                 </a>
                 
                 <div class="nav-title">User Management</div>
-                <a class="nav-link" href="{{ url_for('admin_users') }}">
+                <a class="nav-link" href="{{ url_for('manage_users') }}">
                     <i data-feather="users"></i> Manage Users
                 </a>
                 <a class="nav-link" href="{{ url_for('manage_payments') }}">

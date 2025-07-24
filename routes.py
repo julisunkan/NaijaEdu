@@ -1343,9 +1343,13 @@ def download_course_content(course_id):
         return redirect(url_for('course_detail', course_id=course_id))
     
     try:
-        return send_file(zip_path, as_attachment=True, 
-                        download_name=f"course_{course_id}_content.zip",
-                        mimetype='application/zip')
+        if zip_path:
+            return send_file(zip_path, as_attachment=True, 
+                            download_name=f"course_{course_id}_content.zip",
+                            mimetype='application/zip')
+        else:
+            flash('Download failed: Unable to create course package', 'danger')
+            return redirect(url_for('course_detail', course_id=course_id))
     except Exception as e:
         flash(f'Download failed: {str(e)}', 'danger')
         return redirect(url_for('course_detail', course_id=course_id))
