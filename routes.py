@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from flask import render_template, request, redirect, url_for, flash, jsonify, send_from_directory
+from flask import render_template, request, redirect, url_for, flash, jsonify, send_from_directory, make_response
 from datetime import datetime as dt
 from flask_login import login_user, logout_user, login_required, current_user
 from app import app, db
@@ -1028,6 +1028,202 @@ def admin_settings():
 @login_required
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# Certificate functionality
+def check_course_completion(user_id, course_id):
+    """Check if a user has completed all requirements for a course"""
+    course = Course.query.get(course_id)
+    if not course:
+        return False
+    
+    # Check if user is enrolled and approved
+    enrollment = Enrollment.query.filter_by(
+        user_id=user_id, 
+        course_id=course_id, 
+        status='approved'
+    ).first()
+    if not enrollment:
+        return False
+    
+    # Check if all lessons have been accessed (basic completion check)
+    total_lessons = course.lessons.count()
+    if total_lessons == 0:
+        return True  # Course with no lessons is considered complete
+    
+    # For now, we'll consider a course complete if user is enrolled
+    # In a full implementation, you'd track lesson progress, quiz scores, etc.
+    return True
+
+def issue_certificate(user_id, course_id):
+    """Issue a certificate for course completion"""
+    # Check if certificate already exists
+    existing_cert = Certificate.query.filter_by(
+        user_id=user_id,
+        course_id=course_id
+    ).first()
+    
+    if existing_cert:
+        return existing_cert
+    
+    if not check_course_completion(user_id, course_id):
+        return None
+    
+    user = User.query.get(user_id)
+    course = Course.query.get(course_id)
+    
+    # Get default certificate template
+    template = CertificateTemplate.query.filter_by(is_default=True, is_active=True).first()
+    if not template:
+        # Create a default template if none exists
+        template = CertificateTemplate()
+        template.name = 'Default Template'
+        template.is_default = True
+        db.session.add(template)
+        db.session.commit()
+    
+    # Create certificate
+    certificate = Certificate()
+    certificate.user_id = user_id
+    certificate.course_id = course_id
+    certificate.template_id = template.id
+    certificate.certificate_number = certificate.generate_certificate_number()
+    certificate.student_name = f"{user.first_name} {user.last_name}" if user.first_name else user.username
+    certificate.course_title = course.title
+    certificate.completion_date = datetime.utcnow()
+    certificate.instructor_name = f"{course.instructor.first_name} {course.instructor.last_name}" if course.instructor.first_name else course.instructor.username
+    
+    db.session.add(certificate)
+    db.session.commit()
+    
+    return certificate
+
+@app.route('/certificates')
+@login_required
+def my_certificates():
+    """View user's certificates"""
+    certificates = current_user.certificates.filter_by(is_valid=True).all()
+    return render_template('certificates/my_certificates.html', certificates=certificates)
+
+@app.route('/certificate/<certificate_number>')
+def view_certificate(certificate_number):
+    """View and print certificate by certificate number"""
+    certificate = Certificate.query.filter_by(certificate_number=certificate_number, is_valid=True).first_or_404()
+    return render_template('certificates/view_certificate.html', certificate=certificate)
+
+@app.route('/courses/<int:course_id>/certificate')
+@login_required
+def get_course_certificate(course_id):
+    """Request/view certificate for a completed course"""
+    course = Course.query.get_or_404(course_id)
+    
+    # Check if user can access course
+    if not current_user.can_access_course(course):
+        flash('You must be enrolled in this course to get a certificate', 'warning')
+        return redirect(url_for('course_detail', course_id=course_id))
+    
+    # Check if course is completed
+    if not check_course_completion(current_user.id, course_id):
+        flash('You must complete all course requirements to receive a certificate', 'warning')
+        return redirect(url_for('course_detail', course_id=course_id))
+    
+    # Issue or retrieve certificate
+    certificate = issue_certificate(current_user.id, course_id)
+    if not certificate:
+        flash('Unable to issue certificate. Please contact support.', 'danger')
+        return redirect(url_for('course_detail', course_id=course_id))
+    
+    flash('Certificate issued successfully!', 'success')
+    return redirect(url_for('view_certificate', certificate_number=certificate.certificate_number))
+
+# Admin Certificate Template Management
+@app.route('/admin/certificate-templates')
+@login_required
+@admin_required
+def manage_certificate_templates():
+    """Manage certificate templates"""
+    templates = CertificateTemplate.query.order_by(CertificateTemplate.created_at.desc()).all()
+    return render_template('admin/certificate_templates.html', templates=templates)
+
+@app.route('/admin/certificate-templates/create', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_certificate_template():
+    """Create new certificate template"""
+    form = CertificateTemplateForm()
+    
+    if form.validate_on_submit():
+        # If setting as default, unset other defaults
+        if form.is_default.data:
+            CertificateTemplate.query.filter_by(is_default=True).update({'is_default': False})
+        
+        template = CertificateTemplate()
+        form.populate_obj(template)
+        db.session.add(template)
+        db.session.commit()
+        
+        flash('Certificate template created successfully!', 'success')
+        return redirect(url_for('manage_certificate_templates'))
+    
+    return render_template('admin/create_certificate_template.html', form=form)
+
+@app.route('/admin/certificate-templates/<int:template_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_certificate_template(template_id):
+    """Edit certificate template"""
+    template = CertificateTemplate.query.get_or_404(template_id)
+    form = CertificateTemplateForm(obj=template)
+    
+    if form.validate_on_submit():
+        # If setting as default, unset other defaults
+        if form.is_default.data and not template.is_default:
+            CertificateTemplate.query.filter_by(is_default=True).update({'is_default': False})
+        
+        form.populate_obj(template)
+        db.session.commit()
+        
+        flash('Certificate template updated successfully!', 'success')
+        return redirect(url_for('manage_certificate_templates'))
+    
+    return render_template('admin/edit_certificate_template.html', form=form, template=template)
+
+@app.route('/admin/certificate-templates/<int:template_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_certificate_template(template_id):
+    """Delete certificate template"""
+    template = CertificateTemplate.query.get_or_404(template_id)
+    
+    # Check if template is being used
+    if template.certificates.count() > 0:
+        flash('Cannot delete template that has been used for certificates', 'danger')
+        return redirect(url_for('manage_certificate_templates'))
+    
+    db.session.delete(template)
+    db.session.commit()
+    
+    flash('Certificate template deleted successfully!', 'success')
+    return redirect(url_for('manage_certificate_templates'))
+
+@app.route('/admin/certificate-templates/<int:template_id>/preview')
+@login_required
+@admin_required
+def preview_certificate_template(template_id):
+    """Preview certificate template with sample data"""
+    template = CertificateTemplate.query.get_or_404(template_id)
+    
+    # Create sample certificate data for preview
+    preview_data = {
+        'template': template,
+        'certificate_number': 'CERT-PREVIEW-123456',
+        'student_name': 'John Doe',
+        'course_title': 'Sample Course Title',
+        'completion_date': datetime.utcnow(),
+        'instructor_name': 'Jane Smith',
+        'issued_at': datetime.utcnow()
+    }
+    
+    return render_template('certificates/preview_template.html', **preview_data)
 
 # Error handlers
 @app.errorhandler(404)

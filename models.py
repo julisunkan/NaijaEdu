@@ -240,3 +240,45 @@ class SystemSettings(db.Model):
     terms_content = db.Column(db.Text)
     privacy_content = db.Column(db.Text)
     about_content = db.Column(db.Text)
+
+class CertificateTemplate(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    title = db.Column(db.String(300), default='Certificate of Completion')
+    subtitle = db.Column(db.String(300), default='This is to certify that')
+    content_template = db.Column(db.Text, default='{{student_name}} has successfully completed the course {{course_title}} on {{completion_date}}')
+    signature_line = db.Column(db.String(200), default='Instructor Signature')
+    background_color = db.Column(db.String(7), default='#ffffff')  # Hex color
+    text_color = db.Column(db.String(7), default='#000000')  # Hex color
+    border_style = db.Column(db.String(50), default='solid')  # solid, dashed, dotted
+    border_color = db.Column(db.String(7), default='#000000')
+    is_default = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    certificates = db.relationship('Certificate', backref='template', lazy='dynamic')
+
+class Certificate(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    template_id = db.Column(db.Integer, db.ForeignKey('certificate_template.id'), nullable=False)
+    certificate_number = db.Column(db.String(50), unique=True, nullable=False)
+    student_name = db.Column(db.String(200), nullable=False)
+    course_title = db.Column(db.String(200), nullable=False)
+    completion_date = db.Column(db.DateTime, nullable=False)
+    instructor_name = db.Column(db.String(200))
+    issued_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_valid = db.Column(db.Boolean, default=True)
+    
+    # Relationships
+    user = db.relationship('User', backref=db.backref('certificates', lazy='dynamic'))
+    course = db.relationship('Course', backref=db.backref('certificates', lazy='dynamic'))
+    
+    def generate_certificate_number(self):
+        """Generate a unique certificate number"""
+        import secrets
+        import string
+        timestamp = datetime.utcnow().strftime('%Y%m%d')
+        random_part = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+        return f'CERT-{timestamp}-{random_part}'

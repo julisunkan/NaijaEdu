@@ -125,7 +125,12 @@
                         <i data-feather="check-circle"></i>
                         You are enrolled in this course!
                     </div>
-                    <a href="#lessons" class="btn btn-primary">Continue Learning</a>
+                    <div class="d-grid gap-2">
+                        <a href="#lessons" class="btn btn-primary">Continue Learning</a>
+                        <a href="{{ url_for('get_course_certificate', course_id=course.id) }}" class="btn btn-success">
+                            <i data-feather="award" class="me-1"></i>Get Certificate
+                        </a>
+                    </div>
                     {% else %}
                     <div class="d-grid gap-2">
                         <a href="{{ url_for('enroll_course', course_id=course.id) }}" class="btn btn-primary">Pay with Bank Transfer</a>

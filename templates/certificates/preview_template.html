@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Preview</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        
+        .certificate {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: {{ template.background_color }};
+            color: {{ template.text_color }};
+            border: 3px {{ template.border_style }} {{ template.border_color }};
+            padding: 40px;
+            text-align: center;
+            font-family: serif;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .certificate h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: {{ template.text_color }};
+        }
+        
+        .certificate h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: {{ template.text_color }};
+        }
+        
+        .certificate .content {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin: 30px 0;
+        }
+        
+        .certificate .signature-line {
+            border-top: 2px solid {{ template.text_color }};
+            width: 200px;
+            margin: 40px auto 10px;
+            padding-top: 10px;
+        }
+        
+        .certificate .certificate-number {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .ornament {
+            font-size: 2rem;
+            color: {{ template.text_color }};
+            opacity: 0.3;
+        }
+        
+        .preview-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        
+        .preview-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 0 5px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        
+        @media print {
+            .preview-header, .preview-actions {
+                display: none !important;
+            }
+            body {
+                background: white;
+            }
+            .certificate {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-header">
+        <h3>Certificate Template Preview</h3>
+        <p><strong>Template:</strong> {{ template.name }}</p>
+        <p><em>This is a preview with sample data</em></p>
+    </div>
+    
+    <div class="certificate">
+        <div class="ornament">✦ ✦ ✦</div>
+        
+        <h1>{{ template.title }}</h1>
+        
+        <h2>{{ template.subtitle }}</h2>
+        
+        <div class="content">
+            {% set content_with_vars = template.content_template 
+                | replace('{{student_name}}', student_name)
+                | replace('{{course_title}}', course_title) 
+                | replace('{{completion_date}}', completion_date.strftime('%B %d, %Y'))
+                | replace('{{instructor_name}}', instructor_name) %}
+            {{ content_with_vars }}
+        </div>
+        
+        <div class="ornament">✧ ✧ ✧</div>
+        
+        <div class="signature-line">
+            {{ template.signature_line }}
+        </div>
+        
+        <p style="margin-top: 20px; opacity: 0.8;">
+            Issued on {{ issued_at.strftime('%B %d, %Y') }}
+        </p>
+        
+        <div class="certificate-number">
+            Certificate #: {{ certificate_number }}
+        </div>
+    </div>
+    
+    <div class="preview-actions">
+        <button onclick="window.print()" class="btn">Print Preview</button>
+        <button onclick="window.close()" class="btn btn-secondary">Close</button>
+    </div>
+</body>
+</html>

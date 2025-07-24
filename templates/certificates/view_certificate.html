@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Certificate - {{ certificate.course_title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .certificate {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: {{ certificate.template.background_color }};
+        color: {{ certificate.template.text_color }};
+        border: 3px {{ certificate.template.border_style }} {{ certificate.template.border_color }};
+        padding: 40px;
+        text-align: center;
+        font-family: serif;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .certificate h1 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        color: {{ certificate.template.text_color }};
+    }
+    
+    .certificate h2 {
+        font-size: 1.5rem;
+        margin-bottom: 30px;
+        color: {{ certificate.template.text_color }};
+    }
+    
+    .certificate .content {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        margin: 30px 0;
+    }
+    
+    .certificate .signature-line {
+        border-top: 2px solid {{ certificate.template.text_color }};
+        width: 200px;
+        margin: 40px auto 10px;
+        padding-top: 10px;
+    }
+    
+    .certificate .certificate-number {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+    
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        .certificate {
+            box-shadow: none;
+            border: 3px {{ certificate.template.border_style }} {{ certificate.template.border_color }};
+        }
+        body {
+            background: white;
+        }
+    }
+    
+    .ornament {
+        font-size: 2rem;
+        color: {{ certificate.template.text_color }};
+        opacity: 0.3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row no-print mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('my_certificates') }}" class="btn btn-secondary">
+                    <i data-feather="arrow-left" class="me-1"></i>Back to Certificates
+                </a>
+                <div>
+                    <button onclick="window.print()" class="btn btn-primary">
+                        <i data-feather="printer" class="me-1"></i>Print Certificate
+                    </button>
+                    <a href="{{ url_for('course_detail', course_id=certificate.course_id) }}" class="btn btn-outline-primary">
+                        <i data-feather="book" class="me-1"></i>View Course
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="certificate position-relative">
+        <div class="ornament">✦ ✦ ✦</div>
+        
+        <h1>{{ certificate.template.title }}</h1>
+        
+        <h2>{{ certificate.template.subtitle }}</h2>
+        
+        <div class="content">
+            {% set content_with_vars = certificate.template.content_template 
+                | replace('{{student_name}}', certificate.student_name)
+                | replace('{{course_title}}', certificate.course_title) 
+                | replace('{{completion_date}}', certificate.completion_date.strftime('%B %d, %Y'))
+                | replace('{{instructor_name}}', certificate.instructor_name or 'Course Instructor') %}
+            {{ content_with_vars }}
+        </div>
+        
+        <div class="ornament">✧ ✧ ✧</div>
+        
+        <div class="signature-line">
+            {{ certificate.template.signature_line }}
+        </div>
+        
+        <p class="mt-2 text-muted">
+            Issued on {{ certificate.issued_at.strftime('%B %d, %Y') }}
+        </p>
+        
+        <div class="certificate-number">
+            Certificate #: {{ certificate.certificate_number }}
+        </div>
+    </div>
+    
+    <div class="text-center mt-4 no-print">
+        <p class="text-muted">
+            <small>
+                This certificate can be verified at: 
+                <strong>{{ request.url }}</strong>
+            </small>
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}My Certificates{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>My Certificates</h2>
+            <a href="{{ url_for('courses') }}" class="btn btn-primary">Browse More Courses</a>
+        </div>
+        
+        {% if certificates %}
+        <div class="row">
+            {% for certificate in certificates %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <i data-feather="award" class="text-success me-2" style="width: 24px; height: 24px;"></i>
+                            <h6 class="card-title mb-0">{{ certificate.course_title }}</h6>
+                        </div>
+                        
+                        <p class="text-muted small mb-2">
+                            <strong>Certificate #:</strong> {{ certificate.certificate_number }}
+                        </p>
+                        
+                        <p class="text-muted small mb-2">
+                            <strong>Completed:</strong> {{ certificate.completion_date.strftime('%B %d, %Y') }}
+                        </p>
+                        
+                        <p class="text-muted small mb-3">
+                            <strong>Instructor:</strong> {{ certificate.instructor_name }}
+                        </p>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('view_certificate', certificate_number=certificate.certificate_number) }}" 
+                               class="btn btn-success btn-sm">
+                                <i data-feather="eye" class="me-1"></i>View Certificate
+                            </a>
+                            <a href="{{ url_for('view_certificate', certificate_number=certificate.certificate_number) }}?print=1" 
+                               class="btn btn-outline-primary btn-sm" target="_blank">
+                                <i data-feather="printer" class="me-1"></i>Print Certificate
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i data-feather="award" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
+            <h4>No Certificates Yet</h4>
+            <p class="text-muted">Complete courses to earn certificates and showcase your achievements.</p>
+            <a href="{{ url_for('courses') }}" class="btn btn-primary">Browse Courses</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

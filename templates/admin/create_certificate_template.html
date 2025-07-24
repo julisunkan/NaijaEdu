@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Create Certificate Template{% endblock %}
+
+{% block extra_head %}
+<style>
+    .color-input {
+        width: 50px;
+        height: 38px;
+        padding: 4px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+    
+    .preview-section {
+        border: 2px dashed #dee2e6;
+        border-radius: 0.5rem;
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Create Certificate Template</h2>
+            <a href="{{ url_for('manage_certificate_templates') }}" class="btn btn-secondary">
+                <i data-feather="arrow-left" class="me-1"></i>Back to Templates
+            </a>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Template Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.name.label(class="form-label") }}
+                                    {{ form.name(class="form-control") }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.title.label(class="form-label") }}
+                                    {{ form.title(class="form-control") }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.subtitle.label(class="form-label") }}
+                                {{ form.subtitle(class="form-control") }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.content_template.label(class="form-label") }}
+                                {{ form.content_template(class="form-control") }}
+                                <div class="form-text">
+                                    Available placeholders: <code>{{student_name}}</code>, <code>{{course_title}}</code>, 
+                                    <code>{{completion_date}}</code>, <code>{{instructor_name}}</code>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.signature_line.label(class="form-label") }}
+                                {{ form.signature_line(class="form-control") }}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    {{ form.background_color.label(class="form-label") }}
+                                    <div class="d-flex align-items-center">
+                                        {{ form.background_color(type="color", class="color-input me-2") }}
+                                        {{ form.background_color(class="form-control") }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ form.text_color.label(class="form-label") }}
+                                    <div class="d-flex align-items-center">
+                                        {{ form.text_color(type="color", class="color-input me-2") }}
+                                        {{ form.text_color(class="form-control") }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ form.border_color.label(class="form-label") }}
+                                    <div class="d-flex align-items-center">
+                                        {{ form.border_color(type="color", class="color-input me-2") }}
+                                        {{ form.border_color(class="form-control") }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.border_style.label(class="form-label") }}
+                                {{ form.border_style(class="form-select") }}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_default(class="form-check-input") }}
+                                        {{ form.is_default.label(class="form-check-label") }}
+                                        <div class="form-text">Only one template can be set as default</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_active(class="form-check-input") }}
+                                        {{ form.is_active.label(class="form-check-label") }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-feather="save" class="me-1"></i>Create Template
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>Preview</h6>
+                    </div>
+                    <div class="card-body preview-section text-center">
+                        <div id="certificatePreview">
+                            <h5>Certificate Preview</h5>
+                            <p class="text-muted small">Fill in the form to see a live preview</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6>Tips</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled small">
+                            <li><i data-feather="check" class="text-success me-1"></i>Use professional fonts and colors</li>
+                            <li><i data-feather="check" class="text-success me-1"></i>Keep content clear and concise</li>
+                            <li><i data-feather="check" class="text-success me-1"></i>Test with different course titles</li>
+                            <li><i data-feather="check" class="text-success me-1"></i>Ensure good print quality</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Simple preview update (you could enhance this with real-time updates)
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const preview = document.getElementById('certificatePreview');
+    
+    function updatePreview() {
+        const title = document.getElementById('title').value || 'Certificate of Completion';
+        const subtitle = document.getElementById('subtitle').value || 'This is to certify that';
+        
+        preview.innerHTML = `
+            <div style="font-family: serif;">
+                <h6>${title}</h6>
+                <p class="small">${subtitle}</p>
+                <p class="small"><strong>John Doe</strong> has completed <strong>Sample Course</strong></p>
+            </div>
+        `;
+    }
+    
+    form.addEventListener('input', updatePreview);
+    updatePreview();
+});
+</script>
+{% endblock %}

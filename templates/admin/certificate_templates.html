@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Certificate Templates{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Certificate Templates</h2>
+            <a href="{{ url_for('create_certificate_template') }}" class="btn btn-primary">
+                <i data-feather="plus" class="me-1"></i>Create Template
+            </a>
+        </div>
+        
+        {% if templates %}
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Template Name</th>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Default</th>
+                                <th>Certificates Issued</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for template in templates %}
+                            <tr>
+                                <td>
+                                    <strong>{{ template.name }}</strong>
+                                </td>
+                                <td>{{ template.title }}</td>
+                                <td>
+                                    {% if template.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if template.is_default %}
+                                    <span class="badge bg-primary">Default</span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ template.certificates.count() }}</span>
+                                </td>
+                                <td>{{ template.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('preview_certificate_template', template_id=template.id) }}" 
+                                           class="btn btn-outline-info" target="_blank">
+                                            <i data-feather="eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('edit_certificate_template', template_id=template.id) }}" 
+                                           class="btn btn-outline-primary">
+                                            <i data-feather="edit"></i>
+                                        </a>
+                                        {% if template.certificates.count() == 0 %}
+                                        <button class="btn btn-outline-danger" 
+                                                onclick="deleteTemplate({{ template.id }}, '{{ template.name }}')">
+                                            <i data-feather="trash-2"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i data-feather="file-text" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
+            <h4>No Certificate Templates</h4>
+            <p class="text-muted">Create your first certificate template to start issuing certificates.</p>
+            <a href="{{ url_for('create_certificate_template') }}" class="btn btn-primary">Create Template</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Certificate Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the template "<span id="templateName"></span>"?</p>
+                <p class="text-warning"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="deleteForm" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Template</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteTemplate(templateId, templateName) {
+    document.getElementById('templateName').textContent = templateName;
+    document.getElementById('deleteForm').action = `/admin/certificate-templates/${templateId}/delete`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

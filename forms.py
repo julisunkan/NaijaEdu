@@ -109,3 +109,18 @@ class SystemSettingsForm(FlaskForm):
     terms_content = TextAreaField('Terms of Service', widget=TextArea())
     privacy_content = TextAreaField('Privacy Policy', widget=TextArea())
     about_content = TextAreaField('About Us', widget=TextArea())
+
+class CertificateTemplateForm(FlaskForm):
+    name = StringField('Template Name', validators=[DataRequired(), Length(max=200)])
+    title = StringField('Certificate Title', validators=[DataRequired(), Length(max=300)], default='Certificate of Completion')
+    subtitle = StringField('Subtitle', validators=[DataRequired(), Length(max=300)], default='This is to certify that')
+    content_template = TextAreaField('Content Template', validators=[DataRequired()], 
+                                   default='{{student_name}} has successfully completed the course {{course_title}} on {{completion_date}}',
+                                   render_kw={"rows": 4, "placeholder": "Use {{student_name}}, {{course_title}}, {{completion_date}}, {{instructor_name}} as placeholders"})
+    signature_line = StringField('Signature Line', validators=[DataRequired(), Length(max=200)], default='Instructor Signature')
+    background_color = StringField('Background Color', validators=[DataRequired(), Length(7, 7)], default='#ffffff')
+    text_color = StringField('Text Color', validators=[DataRequired(), Length(7, 7)], default='#000000')
+    border_style = SelectField('Border Style', choices=[('solid', 'Solid'), ('dashed', 'Dashed'), ('dotted', 'Dotted')], default='solid')
+    border_color = StringField('Border Color', validators=[DataRequired(), Length(7, 7)], default='#000000')
+    is_default = BooleanField('Set as Default Template')
+    is_active = BooleanField('Active', default=True)

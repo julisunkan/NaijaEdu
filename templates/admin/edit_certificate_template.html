@@ -1,0 +1,140 @@
+{% extends "admin/create_certificate_template.html" %}
+
+{% block title %}Edit Certificate Template{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Edit Certificate Template: {{ template.name }}</h2>
+            <div>
+                <a href="{{ url_for('preview_certificate_template', template_id=template.id) }}" 
+                   class="btn btn-outline-info me-2" target="_blank">
+                    <i data-feather="eye" class="me-1"></i>Preview
+                </a>
+                <a href="{{ url_for('manage_certificate_templates') }}" class="btn btn-secondary">
+                    <i data-feather="arrow-left" class="me-1"></i>Back to Templates
+                </a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Template Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.name.label(class="form-label") }}
+                                    {{ form.name(class="form-control") }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.title.label(class="form-label") }}
+                                    {{ form.title(class="form-control") }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.subtitle.label(class="form-label") }}
+                                {{ form.subtitle(class="form-control") }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.content_template.label(class="form-label") }}
+                                {{ form.content_template(class="form-control") }}
+                                <div class="form-text">
+                                    Available placeholders: <code>{{student_name}}</code>, <code>{{course_title}}</code>, 
+                                    <code>{{completion_date}}</code>, <code>{{instructor_name}}</code>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.signature_line.label(class="form-label") }}
+                                {{ form.signature_line(class="form-control") }}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    {{ form.background_color.label(class="form-label") }}
+                                    <div class="d-flex align-items-center">
+                                        {{ form.background_color(type="color", class="color-input me-2") }}
+                                        {{ form.background_color(class="form-control") }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ form.text_color.label(class="form-label") }}
+                                    <div class="d-flex align-items-center">
+                                        {{ form.text_color(type="color", class="color-input me-2") }}
+                                        {{ form.text_color(class="form-control") }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ form.border_color.label(class="form-label") }}
+                                    <div class="d-flex align-items-center">
+                                        {{ form.border_color(type="color", class="color-input me-2") }}
+                                        {{ form.border_color(class="form-control") }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.border_style.label(class="form-label") }}
+                                {{ form.border_style(class="form-select") }}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_default(class="form-check-input") }}
+                                        {{ form.is_default.label(class="form-check-label") }}
+                                        <div class="form-text">Only one template can be set as default</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_active(class="form-check-input") }}
+                                        {{ form.is_active.label(class="form-check-label") }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-feather="save" class="me-1"></i>Update Template
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>Template Info</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Certificates Issued:</strong> {{ template.certificates.count() }}</p>
+                        <p><strong>Created:</strong> {{ template.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        <p><strong>Status:</strong> 
+                            {% if template.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </p>
+                        {% if template.is_default %}
+                        <p><strong>Default Template:</strong> <span class="badge bg-primary">Yes</span></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

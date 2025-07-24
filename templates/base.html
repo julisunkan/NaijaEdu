@@ -42,7 +42,9 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('wallet_history') }}">Wallet</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('my_certificates') }}">My Certificates</a></li>
                             {% if current_user.role in ['admin', 'instructor'] %}
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('create_course') }}">Create Course</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('manage_courses') }}">Manage Courses</a></li>
                             {% endif %}
@@ -50,6 +52,7 @@
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('manage_payments') }}">Manage Payments</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('create_voucher') }}">Create Voucher</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('manage_certificate_templates') }}">Certificate Templates</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin_settings') }}">Settings</a></li>
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
