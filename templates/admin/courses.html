@@ -80,7 +80,9 @@
                                             <i data-feather="file-text"></i>
                                         </a>
                                         <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                onclick="confirmDelete(&quot;{{ course.title|e }}&quot;, &quot;{{ url_for('delete_course', course_id=course.id) }}&quot;)"
+                                                data-course-title="{{ course.title }}"
+                                                data-delete-url="{{ url_for('delete_course', course_id=course.id) }}"
+                                                onclick="confirmDelete(this.dataset.courseTitle, this.dataset.deleteUrl)"
                                                 title="Delete Course">
                                             <i data-feather="trash-2"></i>
                                         </button>
@@ -90,13 +92,14 @@
                                     {% if course.approval_status == 'pending' %}
                                     <div class="btn-group d-block" role="group">
                                         <form method="POST" action="{{ url_for('approve_course', course_id=course.id) }}" style="display: inline;">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             <button type="submit" class="btn btn-sm btn-success me-1" title="Approve Course">
                                                 <i data-feather="check"></i> Approve
                                             </button>
                                         </form>
                                         <button type="button" class="btn btn-sm btn-danger" 
-                                                onclick="showRejectModal(&quot;{{ course.title|e }}&quot;, &quot;{{ url_for('reject_course', course_id=course.id) }}&quot;)"
+                                                data-course-title="{{ course.title }}"
+                                                data-reject-url="{{ url_for('reject_course', course_id=course.id) }}"
+                                                onclick="showRejectModal(this.dataset.courseTitle, this.dataset.rejectUrl)"
                                                 title="Reject Course">
                                             <i data-feather="x"></i> Reject
                                         </button>
@@ -144,7 +147,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="rejectForm" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="modal-body">
                     <p>Are you sure you want to reject "<strong id="rejectCourseName"></strong>"?</p>
                     <div class="mb-3">

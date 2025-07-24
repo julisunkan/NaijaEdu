@@ -1135,7 +1135,7 @@ def request_withdrawal():
     
     if form.validate_on_submit():
         # Validate withdrawal amount
-        if form.amount.data > available_balance:
+        if form.amount.data and form.amount.data > available_balance:
             flash(f'Insufficient balance. Available: ₦{available_balance:,.2f}', 'error')
             return render_template('instructor/withdraw.html', form=form, available_balance=available_balance)
         
