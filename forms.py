@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, TextAreaField, PasswordField, SelectField, FloatField, IntegerField, DateTimeField, BooleanField, HiddenField
-from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional
+from wtforms import StringField, TextAreaField, PasswordField, SelectField, FloatField, IntegerField, DateTimeField, BooleanField, HiddenField, SubmitField
+from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional, EqualTo
 from wtforms.widgets import TextArea
 
 class LoginForm(FlaskForm):
@@ -126,9 +126,62 @@ class CertificateTemplateForm(FlaskForm):
                                    default='{{student_name}} has successfully completed the course {{course_title}} on {{completion_date}}',
                                    render_kw={"rows": 4, "placeholder": "Use {{student_name}}, {{course_title}}, {{completion_date}}, {{instructor_name}} as placeholders"})
     signature_line = StringField('Signature Line', validators=[DataRequired(), Length(max=200)], default='Instructor Signature')
+    
+    # Enhanced colorful design options
     background_color = StringField('Background Color', validators=[DataRequired(), Length(7, 7)], default='#ffffff')
     text_color = StringField('Text Color', validators=[DataRequired(), Length(7, 7)], default='#000000')
+    header_color = StringField('Header Color', validators=[DataRequired(), Length(7, 7)], default='#2E86AB')
+    accent_color = StringField('Accent Color', validators=[DataRequired(), Length(7, 7)], default='#A23B72')
+    gradient_start = StringField('Gradient Start Color', validators=[Optional(), Length(7, 7)], default='#667eea')
+    gradient_end = StringField('Gradient End Color', validators=[Optional(), Length(7, 7)], default='#764ba2')
+    use_gradient = BooleanField('Use Gradient Background')
+    
+    # Company logo support
+    company_logo_url = StringField('Company Logo URL', validators=[Optional(), Length(max=500)], 
+                                  render_kw={"placeholder": "https://example.com/logo.png"})
+    logo_width = IntegerField('Logo Width (px)', validators=[Optional(), NumberRange(min=50, max=300)], default=100)
+    logo_height = IntegerField('Logo Height (px)', validators=[Optional(), NumberRange(min=50, max=300)], default=100)
+    
+    # Additional styling
     border_style = SelectField('Border Style', choices=[('solid', 'Solid'), ('dashed', 'Dashed'), ('dotted', 'Dotted')], default='solid')
     border_color = StringField('Border Color', validators=[DataRequired(), Length(7, 7)], default='#000000')
+    font_family = SelectField('Font Family', choices=[
+        ('serif', 'Serif (Times New Roman)'),
+        ('sans-serif', 'Sans Serif (Arial)'),
+        ('cursive', 'Cursive'),
+        ('fantasy', 'Fantasy'),
+        ('monospace', 'Monospace')
+    ], default='serif')
+    decorative_elements = BooleanField('Show Decorative Elements', default=True)
+    seal_design = SelectField('Seal Design', choices=[
+        ('classic', 'Classic'),
+        ('modern', 'Modern'),
+        ('minimal', 'Minimal')
+    ], default='classic')
+    
     is_default = BooleanField('Set as Default Template')
     is_active = BooleanField('Active', default=True)
+
+# Email verification and password reset forms
+class ForgotPasswordForm(FlaskForm):
+    email = StringField('Email Address', validators=[DataRequired(), Email()])
+    submit = SubmitField('Send Password Reset Email')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('New Password', validators=[DataRequired(), Length(min=6)])
+    password_confirm = PasswordField('Confirm New Password', 
+                                   validators=[DataRequired(), EqualTo('password', message='Passwords must match')])
+    submit = SubmitField('Reset Password')
+
+class ResendVerificationForm(FlaskForm):
+    email = StringField('Email Address', validators=[DataRequired(), Email()])
+    submit = SubmitField('Resend Verification Email')
+
+# Website settings import/export forms
+class SettingsImportForm(FlaskForm):
+    settings_file = FileField('Settings File (JSON)', validators=[DataRequired(), FileAllowed(['json'], 'JSON files only!')])
+    submit = SubmitField('Import Settings')
+
+class SettingsExportForm(FlaskForm):
+    include_sensitive = BooleanField('Include Sensitive Data (SMTP passwords, etc.)')
+    submit = SubmitField('Export Settings')

@@ -16,6 +16,11 @@ class User(UserMixin, db.Model):
     ban_reason = db.Column(db.Text)
     email_verified = db.Column(db.Boolean, default=False)
     verification_token = db.Column(db.String(100))
+    # Enhanced authentication fields
+    password_reset_token = db.Column(db.String(100))
+    password_reset_expires = db.Column(db.DateTime)
+    email_verification_token = db.Column(db.String(100))
+    email_verification_expires = db.Column(db.DateTime)
     premium_user = db.Column(db.Boolean, default=False)
     instructor_verified = db.Column(db.Boolean, default=False)
     badge_level = db.Column(db.String(20), default='basic')  # basic, bronze, silver, gold, premium
@@ -56,7 +61,8 @@ class User(UserMixin, db.Model):
     def is_account_active(self) -> bool:
         return bool(self.active and not self.banned)
     
-    # Keep Flask-Login compatibility
+    # Override Flask-Login is_active property appropriately
+    @property 
     def is_active(self):
         return self.is_account_active()
     
@@ -404,6 +410,20 @@ class CertificateTemplate(db.Model):
     text_color = db.Column(db.String(7), default='#000000')  # Hex color
     border_style = db.Column(db.String(50), default='solid')  # solid, dashed, dotted
     border_color = db.Column(db.String(7), default='#000000')
+    # Enhanced colorful design options
+    header_color = db.Column(db.String(7), default='#2E86AB')  # Header background
+    accent_color = db.Column(db.String(7), default='#A23B72')  # Accent elements
+    gradient_start = db.Column(db.String(7), default='#667eea')  # Gradient start
+    gradient_end = db.Column(db.String(7), default='#764ba2')  # Gradient end
+    use_gradient = db.Column(db.Boolean, default=False)
+    # Company logo support
+    company_logo_url = db.Column(db.String(500))  # URL to company logo
+    logo_width = db.Column(db.Integer, default=100)  # Logo width in pixels
+    logo_height = db.Column(db.Integer, default=100)  # Logo height in pixels
+    # Additional styling
+    font_family = db.Column(db.String(100), default='serif')
+    decorative_elements = db.Column(db.Boolean, default=True)
+    seal_design = db.Column(db.String(50), default='classic')  # classic, modern, minimal
     is_default = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

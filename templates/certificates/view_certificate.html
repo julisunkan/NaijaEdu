@@ -7,13 +7,48 @@
     .certificate {
         max-width: 800px;
         margin: 0 auto;
+        {% if certificate.template.use_gradient %}
+        background: linear-gradient(135deg, {{ certificate.template.gradient_start }}, {{ certificate.template.gradient_end }});
+        {% else %}
         background-color: {{ certificate.template.background_color }};
+        {% endif %}
         color: {{ certificate.template.text_color }};
         border: 3px {{ certificate.template.border_style }} {{ certificate.template.border_color }};
         padding: 40px;
         text-align: center;
-        font-family: serif;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        font-family: {{ certificate.template.font_family or 'serif' }};
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .certificate::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 80px;
+        background: {{ certificate.template.header_color or certificate.template.text_color }};
+        opacity: 0.1;
+        z-index: 0;
+    }
+
+    .certificate .content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .certificate .logo {
+        margin-bottom: 20px;
+    }
+
+    .certificate .logo img {
+        max-width: {{ certificate.template.logo_width or 100 }}px;
+        max-height: {{ certificate.template.logo_height or 100 }}px;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
     .certificate h1 {
@@ -91,11 +126,21 @@
     </div>
     
     <div class="certificate position-relative">
-        <div class="ornament">✦ ✦ ✦</div>
-        
-        <h1>{{ certificate.template.title }}</h1>
-        
-        <h2>{{ certificate.template.subtitle }}</h2>
+        <div class="content">
+            {% if certificate.template.company_logo_url %}
+            <div class="logo">
+                <img src="{{ certificate.template.company_logo_url }}" alt="Company Logo" 
+                     onerror="this.style.display='none'">
+            </div>
+            {% endif %}
+            
+            {% if certificate.template.decorative_elements %}
+            <div class="ornament">✦ ✦ ✦</div>
+            {% endif %}
+            
+            <h1>{{ certificate.template.title }}</h1>
+            
+            <h2>{{ certificate.template.subtitle }}</h2>
         
         <div class="content">
             {% set content_with_vars = certificate.template.content_template 
@@ -106,15 +151,18 @@
             {{ content_with_vars }}
         </div>
         
-        <div class="ornament">✧ ✧ ✧</div>
-        
-        <div class="signature-line">
-            {{ certificate.template.signature_line }}
+            {% if certificate.template.decorative_elements %}
+            <div class="ornament">✧ ✧ ✧</div>
+            {% endif %}
+            
+            <div class="signature-line">
+                {{ certificate.template.signature_line }}
+            </div>
+            
+            <p class="mt-2 text-muted">
+                Issued on {{ certificate.issued_at.strftime('%B %d, %Y') }}
+            </p>
         </div>
-        
-        <p class="mt-2 text-muted">
-            Issued on {{ certificate.issued_at.strftime('%B %d, %Y') }}
-        </p>
         
         <div class="certificate-number">
             Certificate #: {{ certificate.certificate_number }}
