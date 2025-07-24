@@ -39,6 +39,19 @@
                         </div>
                         
                         <div class="mb-3">
+                            {{ form.category.label(class="form-label") }}
+                            {{ form.category(class="form-control") }}
+                            {% if form.category.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.category.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Optional category for course classification</small>
+                        </div>
+                        
+                        <div class="mb-3">
                             {{ form.price.label(class="form-label") }}
                             <div class="input-group">
                                 <span class="input-group-text">₦</span>

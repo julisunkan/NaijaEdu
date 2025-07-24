@@ -86,6 +86,7 @@ class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
+    category = db.Column(db.String(100), default='General')  # Added missing category field
     price = db.Column(db.Float, nullable=False, default=0.0)
     instructor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
