@@ -1236,6 +1236,43 @@ def delete_course(course_id):
     
     return redirect(url_for('admin_courses'))
 
+@app.route('/admin/courses/<int:course_id>/approve', methods=['POST'])
+@login_required
+@admin_required
+def approve_course(course_id):
+    course = Course.query.get_or_404(course_id)
+    
+    # Update course approval status
+    course.approval_status = 'approved'
+    course.approved_by = current_user.id
+    course.approved_at = datetime.utcnow()
+    course.rejection_reason = None  # Clear any previous rejection reason
+    
+    db.session.commit()
+    
+    flash(f'Course "{course.title}" has been approved and is now live!', 'success')
+    return redirect(url_for('admin_courses'))
+
+@app.route('/admin/courses/<int:course_id>/reject', methods=['POST'])
+@login_required
+@admin_required
+def reject_course(course_id):
+    course = Course.query.get_or_404(course_id)
+    
+    # Get rejection reason from form data
+    rejection_reason = request.form.get('rejection_reason', 'No reason provided')
+    
+    # Update course approval status
+    course.approval_status = 'rejected'
+    course.approved_by = current_user.id
+    course.approved_at = datetime.utcnow()
+    course.rejection_reason = rejection_reason
+    
+    db.session.commit()
+    
+    flash(f'Course "{course.title}" has been rejected.', 'warning')
+    return redirect(url_for('admin_courses'))
+
 @app.route('/admin/courses/<int:course_id>/lessons')
 @login_required
 @admin_required

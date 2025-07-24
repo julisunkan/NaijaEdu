@@ -264,8 +264,19 @@ Preferred communication style: Simple, everyday language.
 - ✓ Ensured only course owners and admins can edit/delete content
 - ✓ Maintained approval workflow integrity when content is modified
 
+### July 24, 2025 - PostgreSQL Migration & Enhanced Course Approval System
+- ✓ Successfully migrated from SQLite to PostgreSQL database for improved scalability
+- ✓ Enhanced course approval system with admin approve/reject functionality
+- ✓ Added course approval status display in admin dashboard with visual indicators
+- ✓ Implemented rejection reason tracking for better communication with instructors
+- ✓ Created approve and reject course routes with proper authorization
+- ✓ Updated admin courses template with approval/rejection buttons for pending courses
+- ✓ All tutor/instructor courses start with "Pending" status requiring admin approval
+- ✓ Only admin-approved courses are visible to public users
+- ✓ Enhanced instructor information display in admin course management
+
 ### Current Status - July 24, 2025
-The Nigerian e-learning platform has been successfully migrated from Replit Agent to standard Replit environment with comprehensive enhancements including a complete tutor system, proper course approval workflow, and full edit/delete capabilities for instructors and tutors. The platform now features advanced certificate templates with colorful designs and company logo support, email verification and password reset functionality, Progressive Web App (PWA) capabilities, enhanced mobile responsiveness, website settings import/export functionality, Google AdSense integration, Google Analytics tracking, student content downloads, and bulk import/export systems.
+The Nigerian e-learning platform has been successfully migrated from Replit Agent to standard Replit environment with comprehensive enhancements including a complete tutor system, robust PostgreSQL database, enhanced course approval workflow with admin controls, and full edit/delete capabilities for instructors and tutors. The platform now features advanced certificate templates with colorful designs and company logo support, email verification and password reset functionality, Progressive Web App (PWA) capabilities, enhanced mobile responsiveness, website settings import/export functionality, Google AdSense integration, Google Analytics tracking, student content downloads, and bulk import/export systems.
 
 #### Latest Migration & Enhancement Features (July 24, 2025):
 - ✓ Enhanced Certificate Templates: Colorful designs with gradient backgrounds, company logo support, customizable color schemes, decorative elements, and multiple seal designs
