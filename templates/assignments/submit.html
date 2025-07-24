@@ -85,7 +85,7 @@
                         {% endif %}
                     </div>
                     
-                    {% if assignment.due_date and assignment.due_date < moment().datetime %}
+                    {% if assignment.due_date and assignment.due_date < now %}
                     <div class="alert alert-warning">
                         <i data-feather="alert-triangle" class="me-2"></i>
                         <strong>Late Submission:</strong> This assignment is past its due date. Your instructor may apply late penalties.

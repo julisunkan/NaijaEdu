@@ -414,7 +414,9 @@ def take_quiz(quiz_id):
         return redirect(url_for('course_detail', course_id=quiz.course_id))
     
     questions = quiz.questions.all()
-    return render_template('quizzes/take.html', quiz=quiz, questions=questions)
+    from forms import FlaskForm
+    form = FlaskForm()  # Create empty form for CSRF token
+    return render_template('quizzes/take.html', quiz=quiz, questions=questions, form=form)
 
 @app.route('/quizzes/<int:quiz_id>/submit', methods=['POST'])
 @login_required
