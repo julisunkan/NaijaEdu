@@ -174,6 +174,7 @@ class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
+    instructions = db.Column(db.Text)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
     due_date = db.Column(db.DateTime)
     max_points = db.Column(db.Integer, default=100)
