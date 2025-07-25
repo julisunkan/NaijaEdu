@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Add Question - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>Add New Question</h2>
+                <p class="text-muted">{{ quiz.title }} - {{ quiz.course.title }}</p>
+            </div>
+            <a href="{{ url_for('instructor_quiz_questions', quiz_id=quiz.id) }}" class="btn btn-secondary">
+                <i data-feather="arrow-left" class="me-1"></i>Back to Questions
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.question.label(class="form-label") }}
+                        {{ form.question(class="form-control") }}
+                        {% if form.question.errors %}
+                            <div class="text-danger small">
+                                {{ form.question.errors[0] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.option_a.label(class="form-label") }}
+                                {{ form.option_a(class="form-control") }}
+                                {% if form.option_a.errors %}
+                                    <div class="text-danger small">
+                                        {{ form.option_a.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.option_b.label(class="form-label") }}
+                                {{ form.option_b(class="form-control") }}
+                                {% if form.option_b.errors %}
+                                    <div class="text-danger small">
+                                        {{ form.option_b.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.option_c.label(class="form-label") }}
+                                {{ form.option_c(class="form-control") }}
+                                {% if form.option_c.errors %}
+                                    <div class="text-danger small">
+                                        {{ form.option_c.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.option_d.label(class="form-label") }}
+                                {{ form.option_d(class="form-control") }}
+                                {% if form.option_d.errors %}
+                                    <div class="text-danger small">
+                                        {{ form.option_d.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.correct_answer.label(class="form-label") }}
+                                {{ form.correct_answer(class="form-select") }}
+                                {% if form.correct_answer.errors %}
+                                    <div class="text-danger small">
+                                        {{ form.correct_answer.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.points.label(class="form-label") }}
+                                {{ form.points(class="form-control") }}
+                                {% if form.points.errors %}
+                                    <div class="text-danger small">
+                                        {{ form.points.errors[0] }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Points awarded for correct answer</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="plus" class="me-1"></i>Add Question
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

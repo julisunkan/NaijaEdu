@@ -1491,6 +1491,107 @@ def add_question(quiz_id):
     flash('Question added successfully!', 'success')
     return redirect(url_for('admin_quiz_questions', quiz_id=quiz_id))
 
+# Instructor/Tutor Quiz Question Management Routes
+@app.route('/instructor/quizzes/<int:quiz_id>/questions')
+@login_required
+@instructor_required
+def instructor_quiz_questions(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    course = quiz.course
+    
+    # Only allow viewing own course quiz questions (or admin can view any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only manage questions from your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
+    form = QuizQuestionForm()  # For CSRF token
+    return render_template('instructor/quiz_questions.html', quiz=quiz, questions=questions, form=form)
+
+@app.route('/instructor/questions/<int:question_id>/edit', methods=['GET', 'POST'])
+@login_required
+@instructor_required
+def instructor_edit_question(question_id):
+    question = QuizQuestion.query.get_or_404(question_id)
+    quiz = question.quiz
+    course = quiz.course
+    
+    # Only allow editing own course questions (or admin can edit any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only edit questions from your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    form = QuizQuestionForm(obj=question)
+    
+    if form.validate_on_submit():
+        form.populate_obj(question)
+        db.session.commit()
+        flash('Question updated successfully!', 'success')
+        return redirect(url_for('instructor_quiz_questions', quiz_id=question.quiz_id))
+    
+    return render_template('instructor/edit_question.html', form=form, question=question, quiz=quiz)
+
+@app.route('/instructor/questions/<int:question_id>/delete', methods=['POST'])
+@login_required
+@instructor_required
+def instructor_delete_question(question_id):
+    question = QuizQuestion.query.get_or_404(question_id)
+    quiz = question.quiz
+    course = quiz.course
+    quiz_id = question.quiz_id
+    
+    # Only allow deleting own course questions (or admin can delete any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only delete questions from your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    db.session.delete(question)
+    db.session.commit()
+    
+    flash('Question deleted successfully!', 'success')
+    return redirect(url_for('instructor_quiz_questions', quiz_id=quiz_id))
+
+@app.route('/instructor/quizzes/<int:quiz_id>/questions/add', methods=['GET', 'POST'])
+@login_required
+@instructor_required
+def instructor_add_question(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    course = quiz.course
+    
+    # Only allow adding questions to own course quizzes (or admin can add to any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only add questions to your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    form = QuizQuestionForm()
+    
+    if form.validate_on_submit():
+        question = QuizQuestion()
+        question.quiz_id = quiz_id
+        form.populate_obj(question)
+        
+        db.session.add(question)
+        db.session.commit()
+        flash('Question added successfully!', 'success')
+        return redirect(url_for('instructor_quiz_questions', quiz_id=quiz_id))
+    
+    return render_template('instructor/add_question.html', form=form, quiz=quiz)
+
+# Instructor/Tutor Assignment Management Routes
+@app.route('/instructor/courses/<int:course_id>/assignments')
+@login_required
+@instructor_required
+def instructor_course_assignments(course_id):
+    course = Course.query.get_or_404(course_id)
+    
+    # Only allow viewing own course assignments (or admin can view any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only manage assignments from your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    assignments = Assignment.query.filter_by(course_id=course_id).all()
+    return render_template('instructor/course_assignments.html', course=course, assignments=assignments, now=datetime.utcnow())
+
 # Admin settings
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required

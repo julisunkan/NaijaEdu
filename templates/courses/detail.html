@@ -107,6 +107,29 @@
                             <a href="{{ url_for('create_assignment', course_id=course.id) }}" class="btn btn-warning">Add Assignment</a>
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('instructor_course_assignments', course_id=course.id) }}" class="btn btn-outline-primary">
+                                <i data-feather="file-text" class="me-1"></i>Manage Assignments
+                            </a>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                                    <i data-feather="help-circle" class="me-1"></i>Manage Quiz Questions
+                                </button>
+                                <ul class="dropdown-menu w-100">
+                                    {% for quiz in course.quizzes %}
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('instructor_quiz_questions', quiz_id=quiz.id) }}">
+                                            {{ quiz.title }}
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li><span class="dropdown-item text-muted">No quizzes available</span></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

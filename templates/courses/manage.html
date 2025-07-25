@@ -60,6 +60,21 @@
                     <a href="{{ url_for('create_assignment', course_id=course.id) }}" class="btn btn-info btn-sm">
                         <i data-feather="file-text"></i> Add Assignment
                     </a>
+                    <a href="{{ url_for('instructor_course_assignments', course_id=course.id) }}" class="btn btn-outline-info btn-sm">
+                        <i data-feather="settings"></i> Manage Assignments
+                    </a>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                            <i data-feather="help-circle"></i> Quiz Questions
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% for quiz in course.quizzes %}
+                            <li><a class="dropdown-item" href="{{ url_for('instructor_quiz_questions', quiz_id=quiz.id) }}">{{ quiz.title }}</a></li>
+                            {% else %}
+                            <li><span class="dropdown-item text-muted">No quizzes available</span></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                     
                     {% if current_user.role == 'admin' or course.instructor_id == current_user.id %}
                     <button type="button" class="btn btn-outline-danger btn-sm" 
