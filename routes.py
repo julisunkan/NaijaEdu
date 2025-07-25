@@ -123,12 +123,12 @@ def dashboard():
         recent_quiz_attempts = QuizAttempt.query.join(Quiz).join(Course).filter(
             Course.instructor_id == current_user.id
         ).order_by(QuizAttempt.completed_at.desc()).limit(10).all()
-        return render_template('dashboard/instructor.html', 
+        return render_template('dashboard/instructor_modern.html', 
                              courses=instructor_courses,
                              recent_submissions=recent_submissions,
                              recent_quiz_attempts=recent_quiz_attempts)
     else:
-        return render_template('dashboard/student.html')
+        return render_template('dashboard/student_modern.html')
 
 # Course routes
 @app.route('/courses')

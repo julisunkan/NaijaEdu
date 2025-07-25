@@ -1,0 +1,469 @@
+{% extends "base_modern.html" %}
+
+{% block title %}Student Dashboard - EduNaija{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<section class="section-sm bg-purple-gradient text-white">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-6 fw-bold mb-2">Welcome back, {{ current_user.username }}!</h1>
+                <p class="lead mb-0 opacity-75">Continue your learning journey</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('courses') }}" class="btn btn-secondary">
+                    <i class="bi bi-search me-1"></i>Browse Courses
+                </a>
+                {% if current_user.wallet_balance and current_user.wallet_balance > 0 %}
+                <div class="btn btn-outline-primary bg-white text-primary">
+                    <i class="bi bi-wallet2 me-1"></i>{{ current_user.wallet_balance|currency }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Stats -->
+<section class="section-sm">
+    <div class="container-fluid">
+        <div class="row g-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon primary me-3" style="width: 48px; height: 48px;">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <div>
+                            <div class="stats-number">{{ current_user.enrollments.count() }}</div>
+                            <div class="text-muted">Enrolled Courses</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon secondary me-3" style="width: 48px; height: 48px;">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div>
+                            <div class="stats-number">{{ completed_courses|default(0) }}</div>
+                            <div class="text-muted">Completed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon emerald me-3" style="width: 48px; height: 48px;">
+                            <i class="bi bi-award"></i>
+                        </div>
+                        <div>
+                            <div class="stats-number">{{ certificates_count|default(0) }}</div>
+                            <div class="text-muted">Certificates</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon purple me-3" style="width: 48px; height: 48px;">
+                            <i class="bi bi-clock"></i>
+                        </div>
+                        <div>
+                            <div class="stats-number">{{ learning_hours|default(0) }}</div>
+                            <div class="text-muted">Learning Hours</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Dashboard Content -->
+<section class="section bg-light">
+    <div class="container-fluid">
+        <div class="row g-4">
+            <!-- Quick Actions -->
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-3">
+                            <a href="{{ url_for('courses') }}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-search me-2"></i>Browse Courses
+                            </a>
+                            <a href="{{ url_for('my_certificates') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-award me-2"></i>My Certificates
+                            </a>
+                            <a href="{{ url_for('wallet_topup') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-wallet2 me-2"></i>Top Up Wallet
+                            </a>
+                            <a href="{{ url_for('settings') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-gear me-2"></i>Account Settings
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Continue Learning -->
+            <div class="col-lg-8">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Continue Learning</h5>
+                        <a href="{{ url_for('courses') }}" class="text-primary text-decoration-none">View All Courses</a>
+                    </div>
+                    <div class="card-body">
+                        {% if current_user.enrollments %}
+                        <div class="row g-3">
+                            {% for enrollment in current_user.enrollments[:4] %}
+                            <div class="col-md-6">
+                                <div class="course-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <span class="badge badge-primary">{{ enrollment.course.category or 'General' }}</span>
+                                            <div class="progress-circle">
+                                                <span class="small text-muted">{{ enrollment.progress|default(0) }}%</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <h6 class="card-title">{{ enrollment.course.title }}</h6>
+                                        <p class="text-muted small mb-3">{{ enrollment.course.description[:60] }}{% if enrollment.course.description|length > 60 %}...{% endif %}</p>
+                                        
+                                        <!-- Progress Bar -->
+                                        <div class="progress mb-3" style="height: 6px;">
+                                            <div class="progress-bar bg-primary" style="width: {{ enrollment.progress|default(0) }}%"></div>
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="bi bi-book me-1"></i>{{ enrollment.course.lessons.count() }} lessons
+                                            </small>
+                                            <a href="{{ url_for('course_lessons', course_id=enrollment.course.id) }}" class="btn btn-sm btn-primary">
+                                                Continue <i class="bi bi-arrow-right ms-1"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if current_user.enrollments|length > 4 %}
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('courses') }}" class="btn btn-outline-primary">
+                                View All My Courses <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-book text-muted mb-3 d-block" style="font-size: 3rem;"></i>
+                            <h6 class="mb-2">No courses enrolled yet</h6>
+                            <p class="text-muted mb-3">Start your learning journey by enrolling in a course</p>
+                            <a href="{{ url_for('courses') }}" class="btn btn-primary">
+                                <i class="bi bi-search me-2"></i>Browse Courses
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Learning Overview -->
+        <div class="row g-4 mt-4">
+            <!-- Recent Activity -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Activity</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-timeline">
+                            <div class="activity-item">
+                                <div class="activity-icon bg-success">
+                                    <i class="bi bi-check-circle text-white"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="mb-1">Completed lesson</h6>
+                                    <p class="text-muted small mb-1">Introduction to Python Programming</p>
+                                    <small class="text-muted">2 hours ago</small>
+                                </div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon bg-primary">
+                                    <i class="bi bi-patch-question text-white"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="mb-1">Completed quiz</h6>
+                                    <p class="text-muted small mb-1">Basic HTML & CSS Quiz - Score: 85%</p>
+                                    <small class="text-muted">1 day ago</small>
+                                </div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon bg-warning">
+                                    <i class="bi bi-bookmark text-white"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="mb-1">Enrolled in course</h6>
+                                    <p class="text-muted small mb-1">Web Development Fundamentals</p>
+                                    <small class="text-muted">3 days ago</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Learning Goals -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Learning Goals</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="goal-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small fw-medium">Complete 2 courses this month</span>
+                                <span class="small text-muted">1/2</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-primary" style="width: 50%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small fw-medium">Earn 3 certificates</span>
+                                <span class="small text-muted">{{ certificates_count|default(0) }}/3</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: {{ ((certificates_count|default(0) / 3) * 100)|round }}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small fw-medium">Study 20 hours</span>
+                                <span class="small text-muted">{{ learning_hours|default(0) }}/20</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-warning" style="width: {{ ((learning_hours|default(0) / 20) * 100)|round }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Achievements -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Achievements</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if certificates_count and certificates_count > 0 %}
+                        <div class="achievement-list">
+                            <div class="achievement-item d-flex align-items-center mb-2">
+                                <div class="achievement-icon bg-success me-2">
+                                    <i class="bi bi-award text-white"></i>
+                                </div>
+                                <div>
+                                    <small class="fw-medium">First Certificate</small>
+                                    <br><small class="text-muted">Earned your first certificate</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="bi bi-trophy text-muted mb-2 d-block"></i>
+                            <small class="text-muted">Complete courses to earn achievements</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recommended Courses -->
+        <div class="row g-4 mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recommended for You</h5>
+                        <a href="{{ url_for('courses') }}" class="text-primary text-decoration-none">Browse All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Placeholder for recommended courses -->
+                            <div class="col-lg-3 col-md-6">
+                                <div class="course-card">
+                                    <div class="card-body">
+                                        <span class="badge badge-primary mb-2">Programming</span>
+                                        <h6 class="card-title">Advanced Python</h6>
+                                        <p class="text-muted small mb-3">Take your Python skills to the next level</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-primary fw-bold">₦15,000</span>
+                                            <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6">
+                                <div class="course-card">
+                                    <div class="card-body">
+                                        <span class="badge badge-secondary mb-2">Web Dev</span>
+                                        <h6 class="card-title">React Fundamentals</h6>
+                                        <p class="text-muted small mb-3">Build modern web applications with React</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-primary fw-bold">₦20,000</span>
+                                            <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6">
+                                <div class="course-card">
+                                    <div class="card-body">
+                                        <span class="badge badge-purple mb-2">Data Science</span>
+                                        <h6 class="card-title">Data Analysis</h6>
+                                        <p class="text-muted small mb-3">Learn data analysis with Python and Pandas</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-primary fw-bold">₦25,000</span>
+                                            <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6">
+                                <div class="course-card">
+                                    <div class="card-body">
+                                        <span class="badge badge-emerald mb-2">Business</span>
+                                        <h6 class="card-title">Digital Marketing</h6>
+                                        <p class="text-muted small mb-3">Master digital marketing strategies</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-primary fw-bold">₦18,000</span>
+                                            <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.bg-purple-gradient {
+    background: var(--gradient-purple) !important;
+}
+
+.activity-timeline {
+    position: relative;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.activity-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 32px;
+    width: 2px;
+    height: calc(100% - 16px);
+    background: var(--gray-200);
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex-grow: 1;
+}
+
+.progress-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.goal-item {
+    padding: 0.5rem 0;
+}
+
+.achievement-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add hover effects to course cards
+document.querySelectorAll('.course-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+    });
+});
+
+// Animate progress bars on load
+window.addEventListener('load', function() {
+    document.querySelectorAll('.progress-bar').forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.transition = 'width 1s ease-in-out';
+            bar.style.width = width;
+        }, 500);
+    });
+});
+</script>
+{% endblock %}
