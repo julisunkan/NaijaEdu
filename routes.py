@@ -28,10 +28,20 @@ def index():
         }
         cache.set('homepage_data', cached_data)
     
+    # Get basic stats
+    stats = {
+        'total_courses': Course.query.filter_by(approval_status='approved').count(),
+        'total_students': User.query.filter_by(role='student').count(),
+        'total_instructors': User.query.filter(User.role.in_(['instructor', 'tutor'])).count(),
+        'total_certificates': 0  # Will be updated later
+    }
+    
     return render_template('index.html', 
                          courses=cached_data['courses'],
+                         recent_courses=cached_data['courses'],
                          popular_categories=cached_data['popular_categories'],
-                         get_category_name=cached_data['get_category_name'])
+                         get_category_name=cached_data['get_category_name'],
+                         stats=stats)
 
 # Authentication routes
 @app.route('/login', methods=['GET', 'POST'])

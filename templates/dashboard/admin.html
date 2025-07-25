@@ -1,342 +1,166 @@
-{% extends "base.html" %}
+{% extends "admin/layout.html" %}
 
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Admin Dashboard - EduNaija{% endblock %}
 
-{% block extra_head %}
-<style>
-    .admin-sidebar {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: calc(100vh - 120px);
-        border-radius: 15px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    }
-    
-    .admin-sidebar .nav-link {
-        color: rgba(255,255,255,0.8);
-        padding: 12px 20px;
-        border-radius: 8px;
-        margin: 2px 8px;
-        transition: all 0.3s ease;
-        border: none;
-        text-decoration: none;
-    }
-    
-    .admin-sidebar .nav-link:hover {
-        background-color: rgba(255,255,255,0.15);
-        color: white;
-        transform: translateX(5px);
-    }
-    
-    .admin-sidebar .nav-link.active {
-        background-color: rgba(255,255,255,0.2);
-        color: white;
-        font-weight: 500;
-    }
-    
-    .admin-sidebar .nav-title {
-        color: white;
-        font-weight: 600;
-        font-size: 1.1rem;
-        margin: 20px 20px 15px 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-    
-    .admin-sidebar i {
-        width: 18px;
-        margin-right: 10px;
-    }
-    
-    .admin-content {
-        background: white;
-        border-radius: 15px;
-        padding: 30px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
-    
-    @media (max-width: 768px) {
-        .admin-sidebar {
-            margin-bottom: 20px;
-            min-height: auto;
-        }
-        
-        .admin-sidebar .nav-link {
-            padding: 10px 15px;
-            margin: 1px 5px;
-        }
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="row">
-    <div class="col-lg-3 col-md-4 mb-4">
-        <div class="admin-sidebar">
-            <div class="nav-title">
-                <i data-feather="shield"></i> Admin Panel
-            </div>
-            
-            <nav class="nav flex-column">
-                <a class="nav-link active" href="{{ url_for('dashboard') }}">
-                    <i data-feather="grid"></i> Dashboard
-                </a>
-                
-                <div class="nav-title">Content Management</div>
-                <a class="nav-link" href="{{ url_for('admin_courses') }}">
-                    <i data-feather="book"></i> Manage Courses
-                </a>
-                <a class="nav-link" href="{{ url_for('create_course') }}">
-                    <i data-feather="plus-circle"></i> Create Course
-                </a>
-                
-                <div class="nav-title">User Management</div>
-                <a class="nav-link" href="{{ url_for('manage_users') }}">
-                    <i data-feather="users"></i> Manage Users
-                </a>
-                <a class="nav-link" href="{{ url_for('manage_payments') }}">
-                    <i data-feather="credit-card"></i> Review Payments
-                </a>
-                <a class="nav-link" href="{{ url_for('admin_withdrawals') }}">
-                    <i data-feather="dollar-sign"></i> Withdrawal Requests
-                </a>
-                
-                <div class="nav-title">System Tools</div>
-                <a class="nav-link" href="{{ url_for('create_voucher') }}">
-                    <i data-feather="gift"></i> Create Vouchers
-                </a>
-                <a class="nav-link" href="{{ url_for('manage_certificate_templates') }}">
-                    <i data-feather="award"></i> Certificate Templates
-                </a>
-                
-                <div class="nav-title">Bulk Operations</div>
-                <a class="nav-link" href="{{ url_for('bulk_import_courses') }}">
-                    <i data-feather="upload"></i> Bulk Import
-                </a>
-                <a class="nav-link" href="{{ url_for('bulk_export_courses') }}">
-                    <i data-feather="download"></i> Bulk Export
-                </a>
-                
-                <div class="nav-title">Configuration</div>
-                <a class="nav-link" href="{{ url_for('admin_settings') }}">
-                    <i data-feather="settings"></i> Settings
-                </a>
-            </nav>
-        </div>
+{% block admin_content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="page-title">Admin Dashboard</h1>
+        <p class="page-subtitle">Manage your platform efficiently</p>
     </div>
-    
-    <div class="col-lg-9 col-md-8">
-        <div class="admin-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2>Admin Dashboard</h2>
-                    <p class="text-muted mb-0">Manage your e-learning platform</p>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('create_course') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>New Course
+        </a>
+        <a href="{{ url_for('create_voucher') }}" class="btn btn-outline-primary">
+            <i class="bi bi-tag me-1"></i>New Voucher
+        </a>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="text-xs text-gray-500 text-uppercase">Total Users</div>
+                        <div class="h4 mb-0">{{ stats.total_users or 0 }}</div>
+                    </div>
                 </div>
             </div>
-
-<div class="row">
-    <div class="col-md-3 mb-4">
-        <div class="card text-center">
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card">
             <div class="card-body">
-                <i data-feather="users" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>Manage Users</h5>
-                <p class="text-muted">View and manage user accounts</p>
-                <a href="{{ url_for('manage_users') }}" class="btn btn-info btn-sm">Manage</a>
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-book text-success" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="text-xs text-gray-500 text-uppercase">Total Courses</div>
+                        <div class="h4 mb-0">{{ stats.total_courses or 0 }}</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3 mb-4">
-        <div class="card text-center">
+    <div class="col-xl-3 col-md-6">
+        <div class="card">
             <div class="card-body">
-                <i data-feather="book" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>Manage Courses</h5>
-                <p class="text-muted">Edit content, quizzes & assignments</p>
-                <a href="{{ url_for('admin_courses') }}" class="btn btn-primary btn-sm">Manage</a>
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-cash-stack text-warning" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="text-xs text-gray-500 text-uppercase">Total Revenue</div>
+                        <div class="h4 mb-0">{{ stats.total_revenue|currency or '₦0' }}</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3 mb-4">
-        <div class="card text-center">
+    <div class="col-xl-3 col-md-6">
+        <div class="card">
             <div class="card-body">
-                <i data-feather="credit-card" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>Payments</h5>
-                <p class="text-muted">Review pending payments</p>
-                <a href="{{ url_for('manage_payments') }}" class="btn btn-warning btn-sm">Review</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <i data-feather="gift" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>{{ vouchers|length if vouchers else 0 }}</h5>
-                <p class="text-muted">Active Vouchers</p>
-                <a href="{{ url_for('create_voucher') }}" class="btn btn-success btn-sm">Create</a>
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-credit-card text-danger" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="text-xs text-gray-500 text-uppercase">Pending Payments</div>
+                        <div class="h4 mb-0">{{ stats.pending_payments or 0 }}</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-4 mb-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <i data-feather="help-circle" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>Manage Quizzes</h5>
-                <p class="text-muted">View and edit all quizzes</p>
-                <a href="{{ url_for('admin_courses') }}" class="btn btn-info btn-sm">Manage</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4 mb-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <i data-feather="file-text" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>Manage Assignments</h5>
-                <p class="text-muted">View and edit all assignments</p>
-                <a href="{{ url_for('admin_courses') }}" class="btn btn-warning btn-sm">Manage</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4 mb-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <i data-feather="award" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>Certificate Templates</h5>
-                <p class="text-muted">Manage certificate designs</p>
-                <a href="{{ url_for('manage_certificate_templates') }}" class="btn btn-success btn-sm">Manage</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-4 mb-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <i data-feather="dollar-sign" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>Withdrawal Requests</h5>
-                <p class="text-muted">Review tutor withdrawal requests</p>
-                <a href="{{ url_for('admin_withdrawals') }}" class="btn btn-warning btn-sm">Review</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4 mb-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <i data-feather="settings" class="mb-2" style="width: 48px; height: 48px;"></i>
-                <h5>System Settings</h5>
-                <p class="text-muted">Configure platform settings</p>
-                <a href="{{ url_for('admin_settings') }}" class="btn btn-secondary btn-sm">Settings</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6">
+<!-- Quick Actions & Recent Activity -->
+<div class="row g-4">
+    <!-- Quick Actions -->
+    <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <h5>Quick Actions</h5>
+                <h5 class="mb-0">Quick Actions</h5>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ url_for('admin_courses') }}" class="btn btn-primary">Manage All Courses</a>
-                    <a href="{{ url_for('create_course') }}" class="btn btn-outline-primary">Create New Course</a>
-                    <a href="{{ url_for('admin_courses') }}" class="btn btn-info">Manage Quizzes</a>
-                    <a href="{{ url_for('admin_courses') }}" class="btn btn-warning">Manage Assignments</a>
-                    <a href="{{ url_for('create_voucher') }}" class="btn btn-success">Create Voucher</a>
-                    <a href="{{ url_for('admin_withdrawals') }}" class="btn btn-warning">Withdrawal Requests</a>
-                    <a href="{{ url_for('manage_certificate_templates') }}" class="btn btn-warning">Certificate Templates</a>
-                    <a href="{{ url_for('bulk_import_courses') }}" class="btn btn-success">Bulk Import Courses</a>
-                    <a href="{{ url_for('bulk_export_courses') }}" class="btn btn-info">Bulk Export Courses</a>
-                    <a href="{{ url_for('admin_settings') }}" class="btn btn-secondary">System Settings</a>
+                    <a href="{{ url_for('manage_payments') }}" class="btn btn-outline-primary text-start">
+                        <i class="bi bi-credit-card me-2"></i>Review Payments
+                    </a>
+                    <a href="{{ url_for('manage_courses') }}" class="btn btn-outline-success text-start">
+                        <i class="bi bi-check-circle me-2"></i>Approve Courses
+                    </a>
+                    <a href="#" class="btn btn-outline-warning text-start">
+                        <i class="bi bi-cash-stack me-2"></i>Process Withdrawals
+                    </a>
+                    <a href="{{ url_for('admin_settings') }}" class="btn btn-outline-secondary text-start">
+                        <i class="bi bi-gear me-2"></i>System Settings
+                    </a>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-6">
+    <!-- Recent Courses -->
+    <div class="col-md-8">
         <div class="card">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5>Created Vouchers</h5>
-                    <a href="{{ url_for('create_voucher') }}" class="btn btn-sm btn-success">
-                        <i data-feather="plus" class="me-1"></i>New
-                    </a>
-                </div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Courses</h5>
+                <a href="{{ url_for('manage_courses') }}" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
-            <div class="card-body">
-                {% if vouchers %}
+            <div class="card-body p-0">
+                {% if recent_courses %}
                 <div class="table-responsive">
-                    <table class="table table-sm">
+                    <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th>Code</th>
-                                <th>Type</th>
-                                <th>Value</th>
-                                <th>Uses</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th class="border-0">Course</th>
+                                <th class="border-0">Instructor</th>
+                                <th class="border-0">Status</th>
+                                <th class="border-0">Price</th>
+                                <th class="border-0">Created</th>
+                                <th class="border-0">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for voucher in vouchers[:10] %}
+                            {% for course in recent_courses[:5] %}
                             <tr>
                                 <td>
-                                    <strong>{{ voucher.code }}</strong>
+                                    <div class="fw-semibold">{{ course.title }}</div>
+                                    <div class="text-xs text-gray-500">{{ course.category or 'General' }}</div>
                                 </td>
+                                <td>{{ course.instructor.username if course.instructor else 'Admin' }}</td>
                                 <td>
-                                    <span class="badge bg-{{ 'success' if voucher.discount_type == 'free' else 'info' if voucher.discount_type == 'percentage' else 'primary' }}">
-                                        {{ voucher.discount_type.title() }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {% if voucher.discount_type == 'free' %}
-                                        Free
-                                    {% elif voucher.discount_type == 'percentage' %}
-                                        {{ voucher.discount_value|int }}%
+                                    {% if course.approval_status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                    {% elif course.approval_status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
                                     {% else %}
-                                        {{ voucher.discount_value|currency }}
+                                    <span class="badge bg-danger">Rejected</span>
                                     {% endif %}
                                 </td>
+                                <td>{{ course.price|currency }}</td>
+                                <td class="text-sm">{{ course.created_at.strftime('%m/%d/%Y') if course.created_at else 'N/A' }}</td>
                                 <td>
-                                    <small>{{ voucher.current_uses }}/{{ voucher.max_uses }}</small>
-                                </td>
-                                <td>
-                                    {% if voucher.is_valid() %}
-                                        <span class="badge bg-success">Active</span>
-                                    {% elif not voucher.is_active %}
-                                        <span class="badge bg-danger">Deactivated</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Expired</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        {% if voucher.is_active %}
-                                        <form method="POST" action="{{ url_for('toggle_voucher', voucher_id=voucher.id) }}" style="display: inline;">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Deactivate">
-                                                <i data-feather="x-circle"></i>
-                                            </button>
-                                        </form>
-                                        {% else %}
-                                        <form method="POST" action="{{ url_for('toggle_voucher', voucher_id=voucher.id) }}" style="display: inline;">
-                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Activate">
-                                                <i data-feather="check-circle"></i>
-                                            </button>
-                                        </form>
-                                        {% endif %}
-                                        <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                onclick="confirmDeleteVoucher({{ voucher.code|tojson }}, {{ url_for('delete_voucher', voucher_id=voucher.id)|tojson }})"
-                                                title="Delete Voucher">
-                                            <i data-feather="trash-2"></i>
-                                        </button>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('edit_course', course_id=course.id) }}" class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -344,55 +168,110 @@
                         </tbody>
                     </table>
                 </div>
-                {% if vouchers|length > 10 %}
-                <div class="text-center mt-2">
-                    <small class="text-muted">Showing 10 of {{ vouchers|length }} vouchers</small>
-                </div>
-                {% endif %}
                 {% else %}
-                <div class="text-center py-3">
-                    <i data-feather="gift" class="text-muted mb-2" style="width: 32px; height: 32px;"></i>
-                    <p class="text-muted mb-2">No vouchers created yet</p>
-                    <a href="{{ url_for('create_voucher') }}" class="btn btn-sm btn-success">Create First Voucher</a>
+                <div class="text-center py-4">
+                    <i class="bi bi-book text-gray-400" style="font-size: 2rem;"></i>
+                    <p class="text-gray-500 mt-2 mb-0">No courses yet</p>
                 </div>
                 {% endif %}
             </div>
         </div>
-        </div>
     </div>
 </div>
 
-<!-- Delete Voucher Confirmation Modal -->
-<div class="modal fade" id="deleteVoucherModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Voucher Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Pending Reviews -->
+{% if pending_payments or pending_courses %}
+<div class="row g-4 mt-2">
+    <!-- Pending Payments -->
+    {% if pending_payments %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Pending Payments</h5>
+                <span class="badge bg-warning">{{ pending_payments|length }}</span>
             </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete voucher "<strong id="deleteVoucherCode"></strong>"?</p>
-                <p class="text-danger"><small><i data-feather="alert-triangle" class="me-1"></i>This action cannot be undone. All voucher usage history will be lost.</small></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteVoucherForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Delete Voucher</button>
-                </form>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="border-0">Student</th>
+                                <th class="border-0">Course</th>
+                                <th class="border-0">Amount</th>
+                                <th class="border-0">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in pending_payments[:3] %}
+                            <tr>
+                                <td>{{ payment.user.username }}</td>
+                                <td class="text-sm">{{ payment.course.title[:20] }}...</td>
+                                <td>{{ payment.amount|currency }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('manage_payments') }}" class="btn btn-success btn-sm">
+                                            <i class="bi bi-check"></i>
+                                        </a>
+                                        <a href="{{ url_for('manage_payments') }}" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-x"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
+    {% endif %}
+    
+    <!-- Pending Courses -->
+    {% if pending_courses %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Pending Course Approvals</h5>
+                <span class="badge bg-warning">{{ pending_courses|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="border-0">Course</th>
+                                <th class="border-0">Instructor</th>
+                                <th class="border-0">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in pending_courses[:3] %}
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">{{ course.title[:25] }}...</div>
+                                    <div class="text-xs text-gray-500">{{ course.category or 'General' }}</div>
+                                </td>
+                                <td>{{ course.instructor.username if course.instructor else 'N/A' }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('approve_course', course_id=course.id) }}" class="btn btn-success btn-sm">
+                                            <i class="bi bi-check"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
-
-<script>
-function confirmDeleteVoucher(voucherCode, deleteUrl) {
-    document.getElementById('deleteVoucherCode').textContent = voucherCode;
-    document.getElementById('deleteVoucherForm').action = deleteUrl;
-    var modal = new bootstrap.Modal(document.getElementById('deleteVoucherModal'));
-    modal.show();
-}
-
-// Initialize Feather icons
-feather.replace();
-</script>
+{% endif %}
 {% endblock %}

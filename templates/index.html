@@ -1,298 +1,140 @@
 {% extends "base.html" %}
 
+{% block title %}EduNaija - Learn. Grow. Succeed.{% endblock %}
+
 {% block content %}
-<!-- Modern Hero Section -->
-<div class="position-relative overflow-hidden py-5 mb-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-    <div class="container py-5">
+<!-- Hero Section -->
+<section class="page-header">
+    <div class="container-fluid">
         <div class="row align-items-center">
-            <div class="col-lg-6 text-white">
-                <h1 class="display-4 fw-bold mb-4">Transform Your Future with <span class="text-warning">EduNaija</span></h1>
-                <p class="lead mb-4">Nigeria's premier e-learning platform offering world-class education in your local currency. Learn from industry experts and accelerate your career.</p>
-                
-                <div class="d-flex flex-column flex-sm-row gap-3 mb-4">
+            <div class="col-lg-8">
+                <h1 class="page-title">Learn. Grow. Succeed.</h1>
+                <p class="page-subtitle">Quality education made accessible for everyone in Nigeria.</p>
+                <div class="mt-4">
+                    <a href="{{ url_for('courses') }}" class="btn btn-primary btn-lg me-3">Browse Courses</a>
                     {% if not current_user.is_authenticated %}
-                    <a class="btn btn-warning btn-lg rounded-pill px-4" href="{{ url_for('register') }}">
-                        <i class="bi bi-rocket-takeoff me-2"></i>Start Learning Today
-                    </a>
-                    <a class="btn btn-outline-light btn-lg rounded-pill px-4" href="{{ url_for('courses') }}">
-                        <i class="bi bi-collection me-2"></i>Browse Courses
-                    </a>
-                    {% else %}
-                    <a class="btn btn-warning btn-lg rounded-pill px-4" href="{{ url_for('dashboard') }}">
-                        <i class="bi bi-speedometer2 me-2"></i>Continue Learning
-                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">Get Started</a>
                     {% endif %}
                 </div>
-                
-                <!-- Features List -->
-                <div class="row text-center text-lg-start">
-                    <div class="col-4">
-                        <div class="d-flex align-items-center justify-content-center justify-content-lg-start">
-                            <i class="bi bi-currency-exchange fs-4 me-2"></i>
-                            <small>Naira Pricing</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="d-flex align-items-center justify-content-center justify-content-lg-start">
-                            <i class="bi bi-certificate fs-4 me-2"></i>
-                            <small>Certificates</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="d-flex align-items-center justify-content-center justify-content-lg-start">
-                            <i class="bi bi-phone fs-4 me-2"></i>
-                            <small>Mobile First</small>
-                        </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="p-4">
+                    <i class="bi bi-mortarboard text-primary" style="font-size: 6rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container-fluid">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-book text-primary mb-3" style="font-size: 2.5rem;"></i>
+                        <h5>Quality Content</h5>
+                        <p class="text-gray-600">Learn from expert instructors with industry experience.</p>
                     </div>
                 </div>
             </div>
-            
-            <div class="col-lg-6 text-center">
-                <div class="position-relative">
-                    <!-- Floating Cards Animation -->
-                    <div class="card shadow-lg border-0 mb-3 mx-auto" style="max-width: 300px; transform: rotate(-5deg);">
-                        <div class="card-body">
-                            <h6 class="card-title text-primary">
-                                <i class="bi bi-code-slash me-2"></i>Web Development
-                            </h6>
-                            <p class="card-text small mb-2">Learn modern web technologies</p>
-                            <span class="badge bg-success">₦15,000</span>
-                        </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-award text-primary mb-3" style="font-size: 2.5rem;"></i>
+                        <h5>Certificates</h5>
+                        <p class="text-gray-600">Earn recognized certificates upon course completion.</p>
                     </div>
-                    
-                    <div class="card shadow-lg border-0 ms-auto" style="max-width: 280px; transform: rotate(3deg); margin-top: -40px;">
-                        <div class="card-body">
-                            <h6 class="card-title text-success">
-                                <i class="bi bi-graph-up me-2"></i>Data Science
-                            </h6>
-                            <p class="card-text small mb-2">Master data analysis & AI</p>
-                            <span class="badge bg-warning">₦25,000</span>
-                        </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people text-primary mb-3" style="font-size: 2.5rem;"></i>
+                        <h5>Community</h5>
+                        <p class="text-gray-600">Join a community of learners and professionals.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Decorative Elements -->
-    <div class="position-absolute top-0 end-0 mt-4 me-4 opacity-25">
-        <i class="bi bi-mortarboard" style="font-size: 8rem;"></i>
+</section>
+
+<!-- Courses Section -->
+{% if recent_courses %}
+<section class="py-5 bg-gray-50">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="text-center mb-4">Featured Courses</h2>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for course in recent_courses[:6] %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="card-text text-gray-600">{{ course.description[:100] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">{{ course.category or 'General' }}</span>
+                            <span class="fw-bold text-primary">{{ course.price|currency }}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0">
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-outline-primary btn-sm w-100">View Course</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="{{ url_for('courses') }}" class="btn btn-primary">View All Courses</a>
+            </div>
+        </div>
     </div>
-</div>
+</section>
+{% endif %}
 
 <!-- Stats Section -->
-<div class="container mb-5">
-    <div class="row text-center">
-        <div class="col-6 col-md-3 mb-4">
-            <div class="bg-white rounded-3 p-4 shadow-sm">
-                <i class="bi bi-people text-primary fs-1 mb-2"></i>
-                <h4 class="fw-bold mb-0">1000+</h4>
-                <small class="text-muted">Students</small>
-            </div>
-        </div>
-        <div class="col-6 col-md-3 mb-4">
-            <div class="bg-white rounded-3 p-4 shadow-sm">
-                <i class="bi bi-book text-success fs-1 mb-2"></i>
-                <h4 class="fw-bold mb-0">{{ courses|length or 50 }}+</h4>
-                <small class="text-muted">Courses</small>
-            </div>
-        </div>
-        <div class="col-6 col-md-3 mb-4">
-            <div class="bg-white rounded-3 p-4 shadow-sm">
-                <i class="bi bi-mortarboard text-warning fs-1 mb-2"></i>
-                <h4 class="fw-bold mb-0">500+</h4>
-                <small class="text-muted">Graduates</small>
-            </div>
-        </div>
-        <div class="col-6 col-md-3 mb-4">
-            <div class="bg-white rounded-3 p-4 shadow-sm">
-                <i class="bi bi-star text-info fs-1 mb-2"></i>
-                <h4 class="fw-bold mb-0">4.8</h4>
-                <small class="text-muted">Rating</small>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Ad Banner -->
-{% include 'components/ad_banner.html' %}
-
-<div class="container">
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Featured Courses Section -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold">
-                    <i class="bi bi-star text-warning me-2"></i>Featured Courses
-                </h2>
-                <a href="{{ url_for('courses') }}" class="btn btn-outline-primary rounded-pill">
-                    View All <i class="bi bi-arrow-right ms-1"></i>
-                </a>
-            </div>
-            
-            {% if courses %}
-            <div class="row">
-                {% for course in courses[:6] %}
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <!-- Course Badge -->
-                        {% if course.category %}
-                        <div class="position-absolute top-0 start-0 m-3">
-                            <span class="badge bg-primary rounded-pill">{{ get_category_name(course.category) }}</span>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="card-body p-4">
-                            <h5 class="card-title fw-bold mb-3">{{ course.title }}</h5>
-                            <p class="card-text text-muted mb-3">{{ course.description[:120] }}{% if course.description|length > 120 %}...{% endif %}</p>
-                            
-                            <!-- Course Info -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="bg-gradient-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
-                                        <i class="bi bi-person text-white"></i>
-                                    </div>
-                                    <small class="text-muted">{{ course.instructor.first_name }} {{ course.instructor.last_name }}</small>
-                                </div>
-                                <div class="text-end">
-                                    <h5 class="fw-bold text-success mb-0">{{ course.price|currency }}</h5>
-                                </div>
-                            </div>
-                            
-                            <!-- Course Stats -->
-                            <div class="d-flex justify-content-between text-muted small mb-3">
-                                <span><i class="bi bi-clock me-1"></i>Self-paced</span>
-                                <span><i class="bi bi-award me-1"></i>Certificate</span>
-                            </div>
-                        </div>
-                        
-                        <div class="card-footer bg-transparent border-0 p-4 pt-0">
-                            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary w-100 rounded-pill">
-                                <i class="bi bi-play-circle me-2"></i>Enroll Now
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="text-center py-5">
-                <i class="bi bi-book text-muted" style="font-size: 4rem;"></i>
-                <h4 class="mt-3">No courses available yet</h4>
-                <p class="text-muted">Check back soon for exciting new courses!</p>
-            </div>
-            {% endif %}
-        </div>
-        
-        <div class="col-lg-4">
-            <!-- Popular Categories -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent border-0 pb-0">
-                    <h5 class="fw-bold mb-0">
-                        <i class="bi bi-grid text-primary me-2"></i>Popular Categories
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex flex-wrap gap-2">
-                        {% for category in popular_categories %}
-                        <a href="{{ url_for('courses', category=category) }}" class="btn btn-sm btn-outline-primary rounded-pill">
-                            {{ get_category_name(category) }}
-                        </a>
-                        {% endfor %}
+<section class="py-5">
+    <div class="container-fluid">
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="card border-0">
+                    <div class="card-body">
+                        <h3 class="text-primary fw-bold">{{ stats.total_courses or 0 }}</h3>
+                        <p class="text-gray-600 mb-0">Courses</p>
                     </div>
                 </div>
             </div>
-            
-            <!-- Why Choose Us -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent border-0 pb-0">
-                    <h5 class="fw-bold mb-0">
-                        <i class="bi bi-check-circle text-success me-2"></i>Why Choose EduNaija?
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <div class="d-flex align-items-start">
-                                <i class="bi bi-shield-check text-success me-3 mt-1"></i>
-                                <div>
-                                    <h6 class="mb-1">Verified Instructors</h6>
-                                    <small class="text-muted">Learn from certified professionals</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="d-flex align-items-start">
-                                <i class="bi bi-currency-exchange text-warning me-3 mt-1"></i>
-                                <div>
-                                    <h6 class="mb-1">Local Currency</h6>
-                                    <small class="text-muted">Pay in Nigerian Naira (₦)</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="d-flex align-items-start">
-                                <i class="bi bi-phone text-info me-3 mt-1"></i>
-                                <div>
-                                    <h6 class="mb-1">Mobile Optimized</h6>
-                                    <small class="text-muted">Learn anywhere, anytime</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="d-flex align-items-start">
-                                <i class="bi bi-award text-primary me-3 mt-1"></i>
-                                <div>
-                                    <h6 class="mb-1">Certificates</h6>
-                                    <small class="text-muted">Earn recognized credentials</small>
-                                </div>
-                            </div>
-                        </div>
+            <div class="col-md-3">
+                <div class="card border-0">
+                    <div class="card-body">
+                        <h3 class="text-primary fw-bold">{{ stats.total_students or 0 }}</h3>
+                        <p class="text-gray-600 mb-0">Students</p>
                     </div>
                 </div>
             </div>
-            
-            <!-- Student Testimonial -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0 pb-0">
-                    <h5 class="fw-bold mb-0">
-                        <i class="bi bi-chat-quote text-info me-2"></i>Student Success
-                    </h5>
+            <div class="col-md-3">
+                <div class="card border-0">
+                    <div class="card-body">
+                        <h3 class="text-primary fw-bold">{{ stats.total_instructors or 0 }}</h3>
+                        <p class="text-gray-600 mb-0">Instructors</p>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <blockquote class="mb-3">
-                        <p class="fst-italic">"EduNaija transformed my career! The courses are practical, affordable, and the mobile experience is excellent."</p>
-                    </blockquote>
-                    <div class="d-flex align-items-center">
-                        <div class="bg-gradient-success rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                            <i class="bi bi-person text-white"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">Adaora Okafor</h6>
-                            <small class="text-muted">Software Developer, Lagos</small>
-                        </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0">
+                    <div class="card-body">
+                        <h3 class="text-primary fw-bold">{{ stats.total_certificates or 0 }}</h3>
+                        <p class="text-gray-600 mb-0">Certificates</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Newsletter Section -->
-<div class="bg-gradient-primary py-5 mt-5">
-    <div class="container text-center text-white">
-        <div class="row justify-content-center">
-            <div class="col-lg-6">
-                <h3 class="fw-bold mb-3">Stay Updated</h3>
-                <p class="mb-4">Get notified about new courses, special offers, and educational content.</p>
-                <div class="d-flex gap-2 justify-content-center">
-                    <input type="email" class="form-control rounded-pill" placeholder="Enter your email" style="max-width: 300px;">
-                    <button class="btn btn-warning rounded-pill px-4">
-                        <i class="bi bi-envelope me-1"></i>Subscribe
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+</section>
 {% endblock %}

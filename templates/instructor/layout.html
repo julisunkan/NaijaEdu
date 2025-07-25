@@ -1,0 +1,71 @@
+{% extends "base_minimal.html" %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Instructor Sidebar -->
+    <div class="admin-sidebar" style="width: 260px;">
+        <div class="sidebar-nav">
+            <!-- Overview -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Overview</div>
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('courses') }}" class="sidebar-link">
+                    <i class="bi bi-eye"></i>
+                    <span>View Site</span>
+                </a>
+            </div>
+            
+            <!-- Course Management -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">My Courses</div>
+                <a href="{{ url_for('create_course') }}" class="sidebar-link">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Create Course</span>
+                </a>
+                <a href="{{ url_for('manage_courses') }}" class="sidebar-link">
+                    <i class="bi bi-folder"></i>
+                    <span>Manage Courses</span>
+                </a>
+            </div>
+            
+            <!-- Student Activity -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Students</div>
+                <a href="{{ url_for('instructor_submissions') }}" class="sidebar-link">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span>Submissions</span>
+                </a>
+                <a href="{{ url_for('instructor_quiz_attempts') }}" class="sidebar-link">
+                    <i class="bi bi-question-circle"></i>
+                    <span>Quiz Attempts</span>
+                </a>
+            </div>
+            
+            <!-- Earnings -->
+            {% if current_user.role in ['instructor', 'tutor'] %}
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Earnings</div>
+                <a href="#" class="sidebar-link">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="bi bi-wallet2"></i>
+                    <span>Withdraw</span>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="flex-grow-1">
+        <div class="main-content">
+            {% block instructor_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,122 +1,146 @@
 {% extends "base.html" %}
 
-{% block title %}Courses - Nigerian E-Learning Platform{% endblock %}
+{% block title %}All Courses - EduNaija{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h2>Available Courses</h2>
-        <p class="text-muted">Discover quality education with courses priced in Nigerian Naira (₦)</p>
-    </div>
-</div>
-
-<!-- Category Filter and Search -->
-<div class="row mb-4">
-    <div class="col-md-8">
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ url_for('courses') }}" 
-               class="btn btn-sm {{ 'btn-primary' if not selected_category else 'btn-outline-primary' }}">
-                All Categories
-            </a>
-            {% for category_key, category_name in categories %}
-            <a href="{{ url_for('courses', category=category_key) }}" 
-               class="btn btn-sm {{ 'btn-primary' if selected_category == category_key else 'btn-outline-primary' }}">
-                {{ category_name }}
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-    <div class="col-md-4">
-        <form method="GET" class="d-flex">
-            {% if selected_category %}
-            <input type="hidden" name="category" value="{{ selected_category }}">
-            {% endif %}
-            <input type="search" name="search" class="form-control me-2" 
-                   placeholder="Search courses..." value="{{ search_term or '' }}">
-            <button type="submit" class="btn btn-outline-secondary">
-                <i data-feather="search"></i>
-            </button>
-        </form>
-    </div>
-</div>
-
-{% if courses %}
-<div class="row">
-    {% for course in courses %}
-    <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h5 class="card-title">{{ course.title }}</h5>
-                    <span class="badge bg-info">{{ get_category_name(course.category) }}</span>
-                </div>
-                <p class="card-text">{{ course.description[:120] }}{% if course.description|length > 120 %}...{% endif %}</p>
-                
-                <div class="mb-2">
-                    <span class="badge bg-primary">{{ course.lessons.count() }} Lessons</span>
-                    <span class="badge bg-secondary">{{ course.enrollments.filter_by(status='approved').count() }} Students</span>
-                </div>
-                
-                <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="text-success mb-0">{{ course.price|currency }}</h4>
-                    <small class="text-muted">By {{ course.instructor.first_name }} {{ course.instructor.last_name }}</small>
-                </div>
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="page-title">All Courses</h1>
+                <p class="page-subtitle">Discover your next learning opportunity</p>
             </div>
-            <div class="card-footer">
-                <div class="d-grid">
-                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% else %}
-<div class="text-center py-5">
-    <i data-feather="book" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
-    <h4>No courses available yet</h4>
-    <p class="text-muted">Check back soon for exciting new courses!</p>
-    {% if current_user.is_authenticated and current_user.role in ['admin', 'instructor'] %}
-    <a href="{{ url_for('create_course') }}" class="btn btn-primary">Create the First Course</a>
-    {% endif %}
-</div>
-{% endif %}
-
-{% if current_user.is_authenticated %}
-<div class="row mt-5">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>Payment Information</h5>
-            </div>
-            <div class="card-body">
-                <p><strong>All course prices are in Nigerian Naira (₦)</strong></p>
-                <ul class="list-unstyled">
-                    <li>• Secure bank transfer payments</li>
-                    <li>• Manual payment verification</li>
-                    <li>• Wallet system for easy payments</li>
-                    <li>• Voucher codes for discounts</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>Your Wallet</h5>
-            </div>
-            <div class="card-body text-center">
-                <h4 class="text-success">₦{{ "%.2f"|format(current_user.wallet_balance) }}</h4>
-                <p class="text-muted">Available Balance</p>
-                {% if current_user.wallet_balance > 0 %}
-                <p class="small text-success">You can use your wallet balance to purchase courses!</p>
-                {% else %}
-                <a href="{{ url_for('wallet_topup') }}" class="btn btn-success btn-sm">Top Up Wallet</a>
+            <div class="d-flex gap-2">
+                <select class="form-select" style="width: auto;" onchange="filterCourses(this.value)">
+                    <option value="">All Categories</option>
+                    <option value="Programming">Programming</option>
+                    <option value="Business">Business</option>
+                    <option value="Design">Design</option>
+                    <option value="Marketing">Marketing</option>
+                </select>
+                {% if current_user.is_authenticated and current_user.role in ['instructor', 'tutor', 'admin'] %}
+                <a href="{{ url_for('create_course') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Create Course
+                </a>
                 {% endif %}
             </div>
         </div>
     </div>
+    
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-6 mx-auto">
+            <form method="GET" action="{{ url_for('courses') }}">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" placeholder="Search courses..." value="{{ request.args.get('search', '') }}">
+                    <button class="btn btn-outline-primary" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Courses Grid -->
+    {% if courses %}
+    <div class="row g-4">
+        {% for course in courses %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-primary text-xs">{{ course.category or 'General' }}</span>
+                        {% if course.approval_status == 'pending' %}
+                        <span class="badge bg-warning text-xs">Pending</span>
+                        {% elif course.approval_status == 'rejected' %}
+                        <span class="badge bg-danger text-xs">Rejected</span>
+                        {% endif %}
+                    </div>
+                    
+                    <h5 class="card-title">{{ course.title }}</h5>
+                    <p class="card-text text-gray-600 text-sm">{{ course.description[:120] }}{% if course.description|length > 120 %}...{% endif %}</p>
+                    
+                    <div class="row text-sm text-gray-500 mb-3">
+                        <div class="col-6">
+                            <i class="bi bi-person me-1"></i>{{ course.instructor.username if course.instructor else 'Admin' }}
+                        </div>
+                        <div class="col-6 text-end">
+                            <i class="bi bi-people me-1"></i>{{ course.enrollments.count() }} enrolled
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h5 mb-0 text-primary">{{ course.price|currency }}</span>
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary btn-sm">
+                            View Course
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if pagination and pagination.pages > 1 %}
+    <nav class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('courses', page=pagination.prev_num, search=request.args.get('search', '')) }}">Previous</a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in pagination.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != pagination.page %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('courses', page=page_num, search=request.args.get('search', '')) }}">{{ page_num }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                    {% endif %}
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('courses', page=pagination.next_num, search=request.args.get('search', '')) }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <!-- No Courses -->
+    <div class="text-center py-5">
+        <i class="bi bi-book text-gray-400" style="font-size: 4rem;"></i>
+        <h3 class="mt-3 text-gray-600">No courses found</h3>
+        <p class="text-gray-500">{% if request.args.get('search') %}Try adjusting your search terms{% else %}Be the first to create a course!{% endif %}</p>
+        {% if current_user.is_authenticated and current_user.role in ['instructor', 'tutor', 'admin'] %}
+        <a href="{{ url_for('create_course') }}" class="btn btn-primary mt-3">Create First Course</a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
-{% endif %}
+
+<script>
+function filterCourses(category) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (category) {
+        urlParams.set('category', category);
+    } else {
+        urlParams.delete('category');
+    }
+    window.location.search = urlParams.toString();
+}
+</script>
 {% endblock %}

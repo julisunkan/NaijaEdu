@@ -1,61 +1,70 @@
 {% extends "base.html" %}
 
-{% block title %}Login - Nigerian E-Learning Platform{% endblock %}
+{% block title %}Login - EduNaija{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0">Login to Your Account</h4>
-            </div>
-            <div class="card-body">
-                <form method="POST">
-                    {{ form.hidden_tag() }}
-                    
-                    <div class="mb-3">
-                        {{ form.username.label(class="form-label") }}
-                        {{ form.username(class="form-control") }}
-                        {% if form.username.errors %}
-                        <div class="text-danger">
-                            {% for error in form.username.errors %}
-                            <small>{{ error }}</small>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="py-5">
+                <!-- Logo/Brand -->
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center">
+                        <i class="bi bi-mortarboard text-primary me-2" style="font-size: 2rem;"></i>
+                        <h3 class="mb-0">EduNaija</h3>
                     </div>
-                    
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control") }}
-                        {% if form.password.errors %}
-                        <div class="text-danger">
-                            {% for error in form.password.errors %}
-                            <small>{{ error }}</small>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Login</button>
-                    </div>
-                </form>
-                
-                <hr>
-                <div class="text-center">
-                    <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+                    <p class="text-gray-600 mt-2">Sign in to your account</p>
                 </div>
-            </div>
-        </div>
-        
-        <div class="card mt-3">
-            <div class="card-body">
-                <h6>Demo Accounts:</h6>
-                <small class="text-muted">
-                    <strong>Admin:</strong> admin / admin123<br>
-                    <strong>Student:</strong> Register a new account
-                </small>
+                
+                <!-- Login Form -->
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="mb-3">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control") }}
+                                {% if form.username.errors %}
+                                <div class="text-danger text-sm mt-1">
+                                    {% for error in form.username.errors %}
+                                    <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.password.label(class="form-label") }}
+                                {{ form.password(class="form-control") }}
+                                {% if form.password.errors %}
+                                <div class="text-danger text-sm mt-1">
+                                    {% for error in form.password.errors %}
+                                    <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+
+                            
+                            <div class="d-grid">
+                                {{ form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Additional Links -->
+                <div class="text-center mt-4">
+                    <p class="text-sm text-gray-600">
+                        Don't have an account? 
+                        <a href="{{ url_for('register') }}" class="text-primary text-decoration-none">Sign up</a>
+                    </p>
+                    <p class="text-sm">
+                        <a href="#" class="text-gray-500 text-decoration-none">Forgot your password?</a>
+                    </p>
+                </div>
             </div>
         </div>
     </div>

@@ -7,6 +7,7 @@ from wtforms.widgets import TextArea
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Sign In')
 
 class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
@@ -16,6 +17,7 @@ class RegisterForm(FlaskForm):
     first_name = StringField('First Name', validators=[Optional(), Length(max=50)])
     last_name = StringField('Last Name', validators=[Optional(), Length(max=50)])
     role = SelectField('Account Type', choices=[('student', 'Student'), ('tutor', 'Tutor/Instructor')], default='student')
+    submit = SubmitField('Create Account')
 
 class CourseForm(FlaskForm):
     title = StringField('Course Title', validators=[DataRequired(), Length(max=200)])

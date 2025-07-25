@@ -1,0 +1,81 @@
+{% extends "base_minimal.html" %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Admin Sidebar -->
+    <div class="admin-sidebar" style="width: 280px;">
+        <div class="sidebar-nav">
+            <!-- Dashboard Section -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Overview</div>
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <i class="bi bi-grid"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('courses') }}" class="sidebar-link">
+                    <i class="bi bi-eye"></i>
+                    <span>View Site</span>
+                </a>
+            </div>
+            
+            <!-- Content Management -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Content</div>
+                <a href="{{ url_for('create_course') }}" class="sidebar-link">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>New Course</span>
+                </a>
+                <a href="{{ url_for('manage_courses') }}" class="sidebar-link">
+                    <i class="bi bi-folder"></i>
+                    <span>All Courses</span>
+                </a>
+                <a href="{{ url_for('create_voucher') }}" class="sidebar-link">
+                    <i class="bi bi-tag"></i>
+                    <span>Create Voucher</span>
+                </a>
+            </div>
+            
+            <!-- User Management -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Users</div>
+                <a href="{{ url_for('manage_payments') }}" class="sidebar-link">
+                    <i class="bi bi-people"></i>
+                    <span>All Users</span>
+                </a>
+                <a href="{{ url_for('manage_payments') }}" class="sidebar-link">
+                    <i class="bi bi-credit-card"></i>
+                    <span>Payments</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="bi bi-cash-stack"></i>
+                    <span>Withdrawals</span>
+                </a>
+            </div>
+            
+            <!-- System -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">System</div>
+                <a href="{{ url_for('admin_settings') }}" class="sidebar-link">
+                    <i class="bi bi-gear"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="bi bi-upload"></i>
+                    <span>Import/Export</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="bi bi-award"></i>
+                    <span>Certificates</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="flex-grow-1">
+        <div class="main-content">
+            {% block admin_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
