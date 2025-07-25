@@ -173,7 +173,7 @@
                         {% if assignment.instructions %}
                         <div class="mb-3">
                             <strong>Instructions:</strong>
-                            <div class="small text-muted mt-1">{{ assignment.instructions|nl2br }}</div>
+                            <div class="small text-muted mt-1">{{ assignment.instructions|nl2br|safe }}</div>
                         </div>
                         {% endif %}
                         
@@ -214,9 +214,9 @@
         // Real-time credit calculation
         document.addEventListener('DOMContentLoaded', function() {
             const scoreInput = document.getElementById('score');
-            const maxPoints = {{ assignment.max_points }};
-            const maxCredits = {{ assignment.max_credits }};
-            const passThreshold = {{ assignment.pass_threshold }};
+            const maxPoints = {{ assignment.max_points|tojson }};
+            const maxCredits = {{ assignment.max_credits|tojson }};
+            const passThreshold = {{ assignment.pass_threshold|tojson }};
             
             function updateCreditPreview() {
                 const score = parseFloat(scoreInput.value) || 0;

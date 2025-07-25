@@ -70,6 +70,13 @@ def create_app():
             return "₦0.00"
         return f"₦{amount:,.2f}"
     
+    @app.template_filter('nl2br')
+    def nl2br_filter(text):
+        """Convert newlines to HTML line breaks"""
+        if not text:
+            return ''
+        return text.replace('\n', '<br>')
+    
     # Add critical CSS function
     @app.template_global()
     def get_critical_css():
