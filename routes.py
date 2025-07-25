@@ -36,7 +36,7 @@ def index():
         'total_certificates': 0  # Will be updated later
     }
     
-    return render_template('index.html', 
+    return render_template('index_modern.html', 
                          courses=cached_data['courses'],
                          recent_courses=cached_data['courses'],
                          popular_categories=cached_data['popular_categories'],
@@ -58,7 +58,7 @@ def login():
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('dashboard'))
         flash('Invalid username or password', 'danger')
-    return render_template('auth/login.html', form=form)
+    return render_template('auth/login_modern.html', form=form)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -88,7 +88,7 @@ def register():
             db.session.add(user)
             db.session.commit()
             return redirect(url_for('login'))
-    return render_template('auth/register.html', form=form)
+    return render_template('auth/register_modern.html', form=form)
 
 @app.route('/logout')
 @login_required
@@ -113,7 +113,7 @@ def dashboard():
             'pending_payments': Payment.query.filter_by(status='pending').count()
         }
         
-        return render_template('dashboard/admin.html', vouchers=vouchers, User=User, stats=stats)
+        return render_template('dashboard/admin_modern.html', vouchers=vouchers, User=User, stats=stats)
     elif current_user.role in ['instructor', 'tutor']:
         # Get instructor's courses and submissions
         instructor_courses = Course.query.filter_by(instructor_id=current_user.id).all()
@@ -149,7 +149,7 @@ def courses():
     
     courses = query.all()
     categories = get_category_choices()
-    return render_template('courses/list.html', 
+    return render_template('courses/list_modern.html', 
                          courses=courses, 
                          categories=categories,
                          selected_category=category,
@@ -172,7 +172,7 @@ def course_detail(course_id):
     user_enrolled = False
     if current_user.is_authenticated:
         user_enrolled = current_user.can_access_course(course)
-    return render_template('courses/detail.html', course=course, user_enrolled=user_enrolled)
+    return render_template('courses/detail_modern.html', course=course, user_enrolled=user_enrolled)
 
 @app.route('/courses/create', methods=['GET', 'POST'])
 @login_required

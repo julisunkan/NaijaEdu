@@ -1,0 +1,396 @@
+{% extends "base_modern.html" %}
+
+{% block title %}Admin Dashboard - EduNaija{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<section class="section-sm bg-primary-gradient text-white">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-6 fw-bold mb-2">Admin Dashboard</h1>
+                <p class="lead mb-0 opacity-75">Manage your platform efficiently</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('create_course') }}" class="btn btn-secondary">
+                    <i class="bi bi-plus-circle me-1"></i>New Course
+                </a>
+                <a href="{{ url_for('create_voucher') }}" class="btn btn-outline-primary bg-white text-primary">
+                    <i class="bi bi-tag me-1"></i>New Voucher
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Stats -->
+<section class="section-sm">
+    <div class="container-fluid">
+        <div class="row g-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon primary me-3" style="width: 48px; height: 48px;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div>
+                            <div class="stats-number">{{ stats.total_users or 0 }}</div>
+                            <div class="text-muted">Total Users</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon secondary me-3" style="width: 48px; height: 48px;">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <div>
+                            <div class="stats-number">{{ stats.total_courses or 0 }}</div>
+                            <div class="text-muted">Total Courses</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon emerald me-3" style="width: 48px; height: 48px;">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                        <div>
+                            <div class="stats-number">{{ stats.total_revenue|currency or '₦0' }}</div>
+                            <div class="text-muted">Total Revenue</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="feature-icon purple me-3" style="width: 48px; height: 48px;">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div>
+                            <div class="stats-number">{{ stats.pending_payments or 0 }}</div>
+                            <div class="text-muted">Pending Payments</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Dashboard Content -->
+<section class="section bg-light">
+    <div class="container-fluid">
+        <div class="row g-4">
+            <!-- Quick Actions -->
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-3">
+                            <a href="{{ url_for('create_course') }}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-plus-circle me-2"></i>Create New Course
+                            </a>
+                            <a href="{{ url_for('manage_payments') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-credit-card me-2"></i>Manage Payments
+                            </a>
+                            <a href="{{ url_for('create_voucher') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-tag me-2"></i>Create Voucher
+                            </a>
+                            <a href="{{ url_for('bulk_import') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-upload me-2"></i>Bulk Import
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="col-lg-8">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Activity</h5>
+                        <a href="#" class="text-primary text-decoration-none">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-timeline">
+                            <div class="activity-item">
+                                <div class="activity-icon bg-primary">
+                                    <i class="bi bi-person-plus text-white"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="mb-1">New user registration</h6>
+                                    <p class="text-muted small mb-1">John Doe joined as a student</p>
+                                    <small class="text-muted">2 hours ago</small>
+                                </div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon bg-success">
+                                    <i class="bi bi-credit-card text-white"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="mb-1">Payment received</h6>
+                                    <p class="text-muted small mb-1">₦25,000 for Python Programming course</p>
+                                    <small class="text-muted">4 hours ago</small>
+                                </div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon bg-warning">
+                                    <i class="bi bi-book text-white"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="mb-1">Course pending review</h6>
+                                    <p class="text-muted small mb-1">Web Development Basics by Sarah A.</p>
+                                    <small class="text-muted">6 hours ago</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Management Cards -->
+        <div class="row g-4 mt-4">
+            <!-- Course Management -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Course Management</h5>
+                        <a href="{{ url_for('manage_courses') }}" class="btn btn-sm btn-outline-primary">Manage All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 mb-3">
+                            <div class="col-4 text-center">
+                                <div class="stats-number text-primary">{{ stats.total_courses or 0 }}</div>
+                                <small class="text-muted">Total</small>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="stats-number text-warning">3</div>
+                                <small class="text-muted">Pending</small>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="stats-number text-success">{{ (stats.total_courses or 0) - 3 }}</div>
+                                <small class="text-muted">Approved</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('create_course') }}" class="btn btn-primary">
+                                <i class="bi bi-plus me-1"></i>Create Course
+                            </a>
+                            <a href="{{ url_for('manage_courses') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-gear me-1"></i>Manage Courses
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Management -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">User Management</h5>
+                        <a href="{{ url_for('manage_payments') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 mb-3">
+                            <div class="col-4 text-center">
+                                <div class="stats-number text-primary">{{ stats.total_users or 0 }}</div>
+                                <small class="text-muted">Total</small>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="stats-number text-secondary">15</div>
+                                <small class="text-muted">Instructors</small>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="stats-number text-success">{{ (stats.total_users or 0) - 15 }}</div>
+                                <small class="text-muted">Students</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('manage_payments') }}" class="btn btn-secondary">
+                                <i class="bi bi-people me-1"></i>Manage Users
+                            </a>
+                            <a href="{{ url_for('manage_payments') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-shield-check me-1"></i>Verify Accounts
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Vouchers -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Vouchers</h5>
+                        <a href="{{ url_for('create_voucher') }}" class="btn btn-sm btn-outline-primary">Create New</a>
+                    </div>
+                    <div class="card-body">
+                        {% if vouchers %}
+                        <div class="voucher-list">
+                            {% for voucher in vouchers[:5] %}
+                            <div class="voucher-item d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <span class="badge badge-{% if voucher.voucher_type == 'percentage' %}primary{% elif voucher.voucher_type == 'fixed' %}secondary{% else %}success{% endif %} me-2">
+                                        {{ voucher.code }}
+                                    </span>
+                                    <small class="text-muted">
+                                        {% if voucher.voucher_type == 'percentage' %}
+                                            {{ voucher.value }}% off
+                                        {% elif voucher.voucher_type == 'fixed' %}
+                                            {{ voucher.value|currency }} off
+                                        {% else %}
+                                            Free access
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <small class="text-muted">{{ voucher.usage_count }}/{{ voucher.usage_limit or '∞' }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="bi bi-tag text-muted mb-2 d-block" style="font-size: 2rem;"></i>
+                            <p class="text-muted">No vouchers created yet</p>
+                            <a href="{{ url_for('create_voucher') }}" class="btn btn-primary btn-sm">Create First Voucher</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Health -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">System Health</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="health-metrics">
+                            <div class="metric-item d-flex justify-content-between align-items-center mb-3">
+                                <span>Database</span>
+                                <span class="badge bg-success">Healthy</span>
+                            </div>
+                            <div class="metric-item d-flex justify-content-between align-items-center mb-3">
+                                <span>Storage</span>
+                                <span class="badge bg-success">75% Used</span>
+                            </div>
+                            <div class="metric-item d-flex justify-content-between align-items-center mb-3">
+                                <span>Cache</span>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                            <div class="metric-item d-flex justify-content-between align-items-center">
+                                <span>Backups</span>
+                                <span class="badge bg-warning">3 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.activity-timeline {
+    position: relative;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.activity-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 32px;
+    width: 2px;
+    height: calc(100% - 16px);
+    background: var(--gray-200);
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex-grow: 1;
+}
+
+.voucher-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.voucher-item:last-child {
+    border-bottom: none;
+}
+
+.metric-item {
+    padding: 0.25rem 0;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add real-time updates simulation
+function updateStats() {
+    // Simulate real-time stat updates
+    const stats = document.querySelectorAll('.stats-number');
+    stats.forEach(stat => {
+        const current = parseInt(stat.textContent);
+        if (Math.random() > 0.9) { // 10% chance to update
+            stat.textContent = current + 1;
+            stat.style.color = 'var(--success)';
+            setTimeout(() => {
+                stat.style.color = '';
+            }, 1000);
+        }
+    });
+}
+
+// Update stats every 30 seconds
+setInterval(updateStats, 30000);
+
+// Add hover effects to cards
+document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,379 @@
+{% extends "base_modern.html" %}
+
+{% block title %}{{ course.title }} - EduNaija{% endblock %}
+
+{% block content %}
+<!-- Course Hero Section -->
+<section class="hero-section section-sm">
+    <div class="container-fluid">
+        <div class="hero-content">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="mb-3">
+                        <span class="badge badge-primary mb-2">{{ course.category or 'General' }}</span>
+                        {% if course.approval_status == 'pending' %}
+                        <span class="badge bg-warning">Pending Review</span>
+                        {% elif course.approval_status == 'rejected' %}
+                        <span class="badge bg-danger">Rejected</span>
+                        {% endif %}
+                    </div>
+                    <h1 class="display-5 fw-bold mb-3">{{ course.title }}</h1>
+                    <p class="lead mb-4">{{ course.description }}</p>
+                    
+                    <!-- Course Stats -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-auto">
+                            <div class="d-flex align-items-center">
+                                <div class="feature-icon primary me-2" style="width: 32px; height: 32px; font-size: 0.875rem;">
+                                    {{ (course.instructor.username[0] if course.instructor else 'A')|upper }}
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block">Instructor</small>
+                                    <strong>{{ course.instructor.username if course.instructor else 'Admin' }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <small class="text-muted d-block">Students</small>
+                            <strong><i class="bi bi-people me-1"></i>{{ course.enrollments.count() }}</strong>
+                        </div>
+                        <div class="col-auto">
+                            <small class="text-muted d-block">Lessons</small>
+                            <strong><i class="bi bi-book me-1"></i>{{ course.lessons.count() }}</strong>
+                        </div>
+                        <div class="col-auto">
+                            <small class="text-muted d-block">Quizzes</small>
+                            <strong><i class="bi bi-patch-question me-1"></i>{{ course.quizzes.count() }}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Enrollment Card -->
+                    <div class="card">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <span class="h2 text-primary d-block">{{ course.price|currency }}</span>
+                                {% if course.price > 10000 %}
+                                <small class="text-muted">or ₦{{ (course.price / 3)|round|int }}/month</small>
+                                {% endif %}
+                            </div>
+                            
+                            {% if current_user.is_authenticated %}
+                                {% if user_enrolled %}
+                                <a href="{{ url_for('course_lessons', course_id=course.id) }}" class="btn btn-success btn-lg w-100 mb-3">
+                                    <i class="bi bi-play-circle me-2"></i>Continue Learning
+                                </a>
+                                {% else %}
+                                <button class="btn btn-primary btn-lg w-100 mb-3" data-bs-toggle="modal" data-bs-target="#enrollModal">
+                                    <i class="bi bi-plus-circle me-2"></i>Enroll Now
+                                </button>
+                                {% endif %}
+                            {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg w-100 mb-3">
+                                <i class="bi bi-person me-2"></i>Login to Enroll
+                            </a>
+                            {% endif %}
+                            
+                            <div class="row g-2 text-sm">
+                                <div class="col-6">
+                                    <i class="bi bi-clock text-primary me-1"></i>
+                                    <span>Self-paced</span>
+                                </div>
+                                <div class="col-6">
+                                    <i class="bi bi-award text-primary me-1"></i>
+                                    <span>Certificate</span>
+                                </div>
+                                <div class="col-6">
+                                    <i class="bi bi-phone text-primary me-1"></i>
+                                    <span>Mobile access</span>
+                                </div>
+                                <div class="col-6">
+                                    <i class="bi bi-infinity text-primary me-1"></i>
+                                    <span>Lifetime access</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Course Content -->
+<section class="section bg-light">
+    <div class="container-fluid">
+        <div class="row g-5">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Course Lessons -->
+                {% if course.lessons %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0">Course Content</h3>
+                        <p class="text-muted mb-0">{{ course.lessons.count() }} lessons</p>
+                    </div>
+                    <div class="card-body p-0">
+                        {% for lesson in course.lessons.order_by('order') %}
+                        <div class="lesson-item p-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <div class="feature-icon 
+                                    {% if lesson.content_type == 'video' %}secondary{% elif lesson.content_type == 'pdf' %}purple{% else %}primary{% endif %} 
+                                    me-3" style="width: 40px; height: 40px; font-size: 1rem;">
+                                    <i class="bi bi-{% if lesson.content_type == 'video' %}play-circle{% elif lesson.content_type == 'pdf' %}file-pdf{% else %}file-text{% endif %}"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ lesson.title }}</h6>
+                                    <small class="text-muted">
+                                        {{ lesson.content_type|title }} • 
+                                        {% if lesson.duration %}{{ lesson.duration }} min{% else %}5 min{% endif %}
+                                    </small>
+                                </div>
+                                {% if user_enrolled %}
+                                <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" class="btn btn-outline-primary btn-sm">
+                                    Start
+                                </a>
+                                {% else %}
+                                <i class="bi bi-lock text-muted"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Course Quizzes -->
+                {% if course.quizzes %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0">Assessments</h3>
+                        <p class="text-muted mb-0">{{ course.quizzes.count() }} quizzes</p>
+                    </div>
+                    <div class="card-body p-0">
+                        {% for quiz in course.quizzes %}
+                        <div class="lesson-item p-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <div class="feature-icon emerald me-3" style="width: 40px; height: 40px; font-size: 1rem;">
+                                    <i class="bi bi-patch-question"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ quiz.title }}</h6>
+                                    <small class="text-muted">
+                                        {{ quiz.questions.count() }} questions • 
+                                        {% if quiz.time_limit %}{{ quiz.time_limit }} min{% else %}No time limit{% endif %}
+                                    </small>
+                                </div>
+                                {% if user_enrolled %}
+                                <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="btn btn-outline-primary btn-sm">
+                                    Take Quiz
+                                </a>
+                                {% else %}
+                                <i class="bi bi-lock text-muted"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Course Assignments -->
+                {% if course.assignments %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">Assignments</h3>
+                        <p class="text-muted mb-0">{{ course.assignments.count() }} assignments</p>
+                    </div>
+                    <div class="card-body p-0">
+                        {% for assignment in course.assignments %}
+                        <div class="lesson-item p-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <div class="feature-icon teal me-3" style="width: 40px; height: 40px; font-size: 1rem;">
+                                    <i class="bi bi-file-earmark-text"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ assignment.title }}</h6>
+                                    <small class="text-muted">
+                                        Due: {{ assignment.due_date.strftime('%B %d, %Y') if assignment.due_date else 'No due date' }}
+                                    </small>
+                                </div>
+                                {% if user_enrolled %}
+                                <a href="{{ url_for('submit_assignment', assignment_id=assignment.id) }}" class="btn btn-outline-primary btn-sm">
+                                    Submit
+                                </a>
+                                {% else %}
+                                <i class="bi bi-lock text-muted"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Instructor Info -->
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <div class="feature-icon primary mb-3" style="width: 64px; height: 64px; font-size: 1.5rem; margin: 0 auto;">
+                            {{ (course.instructor.username[0] if course.instructor else 'A')|upper }}
+                        </div>
+                        <h5>{{ course.instructor.username if course.instructor else 'Admin' }}</h5>
+                        <p class="text-muted mb-3">Course Instructor</p>
+                        <div class="row g-2 text-sm">
+                            <div class="col-6">
+                                <strong>{{ course.instructor.courses_created.count() if course.instructor else 'Multiple' }}</strong>
+                                <small class="text-muted d-block">Courses</small>
+                            </div>
+                            <div class="col-6">
+                                <strong>4.8</strong>
+                                <small class="text-muted d-block">Rating</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Course Features -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">What you'll learn</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Master the fundamentals</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Build practical projects</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Earn industry certificate</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Join expert community</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Related Courses -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">You might also like</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% for related_course in course.instructor.courses_created.filter(Course.id != course.id).limit(3) if course.instructor %}
+                        <div class="p-3 border-bottom">
+                            <h6 class="mb-1">{{ related_course.title }}</h6>
+                            <small class="text-muted">{{ related_course.price|currency }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enrollment Modal -->
+{% if current_user.is_authenticated and not user_enrolled %}
+<div class="modal fade" id="enrollModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Enroll in {{ course.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="feature-icon primary mb-3">
+                                    <i class="bi bi-credit-card"></i>
+                                </div>
+                                <h6>Pay with Wallet</h6>
+                                <p class="text-muted small">Use your wallet balance</p>
+                                <p class="text-primary">Balance: ₦{{ current_user.wallet_balance|default(0)|currency }}</p>
+                                {% if current_user.wallet_balance and current_user.wallet_balance >= course.price %}
+                                <form method="POST" action="{{ url_for('enroll_with_wallet', course_id=course.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-primary w-100">Enroll Now</button>
+                                </form>
+                                {% else %}
+                                <button class="btn btn-outline-primary w-100" disabled>Insufficient Balance</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="feature-icon secondary mb-3">
+                                    <i class="bi bi-bank"></i>
+                                </div>
+                                <h6>Bank Transfer</h6>
+                                <p class="text-muted small">Pay via bank transfer</p>
+                                <p class="text-primary">{{ course.price|currency }}</p>
+                                <a href="{{ url_for('manual_payment', course_id=course.id) }}" class="btn btn-secondary w-100">
+                                    Pay Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Voucher Section -->
+                <div class="mt-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="mb-3">Have a voucher code?</h6>
+                            <form method="POST" action="{{ url_for('redeem_voucher') }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <input type="hidden" name="course_id" value="{{ course.id }}">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="code" placeholder="Enter voucher code">
+                                    <button type="submit" class="btn btn-outline-primary">Apply</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add smooth scroll to course content
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+        });
+    });
+});
+
+// Animate lesson items on scroll
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.lesson-item').forEach(item => {
+    item.style.opacity = '0';
+    item.style.transform = 'translateY(20px)';
+    item.style.transition = 'all 0.3s ease';
+    observer.observe(item);
+});
+</script>
+{% endblock %}

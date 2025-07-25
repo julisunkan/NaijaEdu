@@ -1,0 +1,143 @@
+{% extends "base_modern.html" %}
+
+{% block title %}Login - EduNaija{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="card">
+                    <div class="card-body p-5">
+                        <!-- Header -->
+                        <div class="text-center mb-4">
+                            <div class="feature-icon primary mb-3" style="width: 64px; height: 64px; font-size: 1.5rem; margin: 0 auto;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <h2 class="fw-bold mb-2">Welcome Back!</h2>
+                            <p class="text-muted">Continue your learning journey</p>
+                        </div>
+                        
+                        <!-- Login Form -->
+                        <form method="POST">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="mb-4">
+                                {{ form.username.label(class="form-label fw-medium") }}
+                                {{ form.username(class="form-control form-control-lg", placeholder="Enter your username") }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.username.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                {{ form.password.label(class="form-label fw-medium") }}
+                                <div class="position-relative">
+                                    {{ form.password(class="form-control form-control-lg", placeholder="Enter your password", id="passwordField") }}
+                                    <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y" 
+                                            onclick="togglePassword()" style="border: none; background: none;">
+                                        <i class="bi bi-eye" id="toggleIcon"></i>
+                                    </button>
+                                </div>
+                                {% if form.password.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.password.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                                    <label class="form-check-label text-muted" for="rememberMe">
+                                        Remember me
+                                    </label>
+                                </div>
+                                <a href="#" class="text-primary text-decoration-none">Forgot password?</a>
+                            </div>
+                            
+                            {{ form.submit(class="btn btn-primary btn-lg w-100 mb-3") }}
+                        </form>
+                        
+                        <!-- Social Login Options -->
+                        <div class="text-center mb-4">
+                            <div class="position-relative">
+                                <hr>
+                                <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">
+                                    or continue with
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-2 mb-4">
+                            <div class="col-6">
+                                <button class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-google me-2"></i>Google
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-facebook me-2"></i>Facebook
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Sign Up Link -->
+                        <div class="text-center">
+                            <p class="text-muted mb-0">
+                                Don't have an account? 
+                                <a href="{{ url_for('register') }}" class="text-primary text-decoration-none fw-medium">Sign up now</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Demo Account Info -->
+                <div class="card mt-4 bg-light border-0">
+                    <div class="card-body text-center p-4">
+                        <h6 class="text-muted mb-3">Demo Account</h6>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="p-3 bg-white rounded">
+                                    <strong>Admin:</strong> admin / admin123
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 bg-white rounded">
+                                    <strong>Student:</strong> student / student123
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword() {
+    const passwordField = document.getElementById('passwordField');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleIcon.className = 'bi bi-eye-slash';
+    } else {
+        passwordField.type = 'password';
+        toggleIcon.className = 'bi bi-eye';
+    }
+}
+
+// Add animation on form submission
+document.querySelector('form').addEventListener('submit', function(e) {
+    const submitBtn = document.querySelector('input[type="submit"]');
+    submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Signing in...';
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %}

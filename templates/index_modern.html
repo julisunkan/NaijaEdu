@@ -1,0 +1,293 @@
+{% extends "base_modern.html" %}
+
+{% block title %}EduNaija - Transform Your Future with Premium Learning{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container-fluid">
+        <div class="hero-content">
+            <div class="row align-items-center min-vh-50">
+                <div class="col-lg-6">
+                    <div class="mb-4">
+                        <span class="badge badge-secondary mb-3">🚀 New Platform Launch</span>
+                        <h1 class="display-4 fw-bold mb-4">Transform Your Future with Premium Learning</h1>
+                        <p class="lead mb-4">Join thousands of Nigerians advancing their careers with world-class courses from industry experts. Learn at your own pace with mobile-first design.</p>
+                        <div class="d-flex flex-column flex-sm-row gap-3">
+                            <a href="{{ url_for('courses') }}" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-play-circle me-2"></i>Explore Courses
+                            </a>
+                            {% if not current_user.is_authenticated %}
+                            <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg bg-white text-primary">
+                                <i class="bi bi-person-plus me-2"></i>Start Learning Free
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="text-center">
+                        <div class="position-relative">
+                            <div class="feature-icon primary" style="width: 120px; height: 120px; font-size: 3rem; margin: 0 auto;">
+                                <i class="bi bi-mortarboard"></i>
+                            </div>
+                            <!-- Floating stats -->
+                            <div class="position-absolute top-0 start-0">
+                                <div class="stats-card">
+                                    <div class="stats-number">{{ stats.total_courses or 50 }}+</div>
+                                    <div class="small text-muted">Courses</div>
+                                </div>
+                            </div>
+                            <div class="position-absolute top-0 end-0">
+                                <div class="stats-card">
+                                    <div class="stats-number">{{ stats.total_students or 1000 }}+</div>
+                                    <div class="small text-muted">Students</div>
+                                </div>
+                            </div>
+                            <div class="position-absolute bottom-0 start-50 translate-middle-x">
+                                <div class="stats-card">
+                                    <div class="stats-number">{{ stats.total_instructors or 25 }}+</div>
+                                    <div class="small text-muted">Instructors</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section bg-light">
+    <div class="container-fluid">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Why Choose EduNaija?</h2>
+            <p class="lead text-muted">Experience learning like never before with our modern, mobile-first platform</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon primary">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <h4 class="mb-3">Mobile First</h4>
+                    <p class="text-muted">Learn anywhere, anytime with our responsive design optimized for all devices. Download content for offline learning.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon secondary">
+                        <i class="bi bi-award"></i>
+                    </div>
+                    <h4 class="mb-3">Industry Certificates</h4>
+                    <p class="text-muted">Earn recognized certificates that boost your career prospects and validate your new skills to employers.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon purple">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h4 class="mb-3">Expert Instructors</h4>
+                    <p class="text-muted">Learn from industry professionals and experienced educators who bring real-world knowledge to your learning journey.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon teal">
+                        <i class="bi bi-lightning"></i>
+                    </div>
+                    <h4 class="mb-3">Interactive Learning</h4>
+                    <p class="text-muted">Engage with quizzes, assignments, and hands-on projects that reinforce your learning and build practical skills.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon emerald">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <h4 class="mb-3">Learn at Your Pace</h4>
+                    <p class="text-muted">Self-paced learning that fits your schedule. Access course materials 24/7 and progress at your own speed.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon secondary">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <h4 class="mb-3">Affordable Pricing</h4>
+                    <p class="text-muted">Quality education at prices that work for Nigerian learners. Flexible payment options and voucher system available.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Categories -->
+{% if popular_categories %}
+<section class="section">
+    <div class="container-fluid">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Popular Categories</h2>
+            <p class="lead text-muted">Discover courses in trending fields and build in-demand skills</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for category in popular_categories[:6] %}
+            <div class="col-lg-2 col-md-4 col-6">
+                <a href="{{ url_for('courses', category=category) }}" class="text-decoration-none">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <div class="feature-icon 
+                                {% if loop.index0 % 5 == 0 %}primary{% endif %}
+                                {% if loop.index0 % 5 == 1 %}secondary{% endif %}
+                                {% if loop.index0 % 5 == 2 %}purple{% endif %}
+                                {% if loop.index0 % 5 == 3 %}teal{% endif %}
+                                {% if loop.index0 % 5 == 4 %}emerald{% endif %}" 
+                                style="width: 48px; height: 48px; font-size: 1.25rem;">
+                                <i class="bi bi-{% if category == 'Programming' %}code-slash{% elif category == 'Business' %}briefcase{% elif category == 'Design' %}palette{% elif category == 'Marketing' %}megaphone{% else %}book{% endif %}"></i>
+                            </div>
+                            <h6 class="mb-2">{{ get_category_name(category) }}</h6>
+                            <small class="text-muted">{{ courses|selectattr('category', 'equalto', category)|list|length }} courses</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured Courses -->
+{% if recent_courses %}
+<section class="section bg-light">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="display-5 fw-bold mb-2">Featured Courses</h2>
+                <p class="text-muted">Start learning with our most popular courses</p>
+            </div>
+            <a href="{{ url_for('courses') }}" class="btn btn-outline-primary">
+                View All <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+        
+        <div class="row g-4">
+            {% for course in recent_courses[:6] %}
+            <div class="col-lg-4 col-md-6">
+                <div class="course-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge badge-{% if loop.index0 % 3 == 0 %}primary{% elif loop.index0 % 3 == 1 %}secondary{% else %}purple{% endif %}">
+                                {{ course.category or 'General' }}
+                            </span>
+                            <div class="feature-icon {% if loop.index0 % 3 == 0 %}primary{% elif loop.index0 % 3 == 1 %}secondary{% else %}purple{% endif %}" 
+                                 style="width: 32px; height: 32px; font-size: 0.875rem;">
+                                <i class="bi bi-bookmark"></i>
+                            </div>
+                        </div>
+                        
+                        <h5 class="card-title mb-3">{{ course.title }}</h5>
+                        <p class="text-muted mb-3">{{ course.description[:100] }}{% if course.description|length > 100 %}...{% endif %}</p>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="feature-icon primary me-2" style="width: 24px; height: 24px; font-size: 0.75rem;">
+                                {{ (course.instructor.username[0] if course.instructor else 'A')|upper }}
+                            </div>
+                            <small class="text-muted">{{ course.instructor.username if course.instructor else 'Admin' }}</small>
+                            <small class="text-muted ms-auto">
+                                <i class="bi bi-people me-1"></i>{{ course.enrollments.count() }}
+                            </small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="h5 text-primary mb-0">{{ course.price|currency }}</span>
+                            </div>
+                            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary btn-sm">
+                                Learn More <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Success Stories/Testimonials -->
+<section class="section">
+    <div class="container-fluid">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Transform Your Career</h2>
+            <p class="lead text-muted">Join thousands who have advanced their careers with EduNaija</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <div class="feature-icon secondary mb-3">
+                            <i class="bi bi-quote"></i>
+                        </div>
+                        <p class="mb-3">"EduNaija helped me transition from accounting to data science. The courses are practical and the instructors are amazing!"</p>
+                        <h6 class="mb-1">Adaora O.</h6>
+                        <small class="text-muted">Data Analyst, Lagos</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <div class="feature-icon purple mb-3">
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="mb-3">"The mobile app is perfect for learning during my commute. I completed 3 courses in 6 months and got promoted!"</p>
+                        <h6 class="mb-1">Emeka N.</h6>
+                        <small class="text-muted">Software Developer, Abuja</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <div class="feature-icon emerald mb-3">
+                            <i class="bi bi-trophy"></i>
+                        </div>
+                        <p class="mb-3">"Started my own digital marketing agency after completing the business courses. EduNaija changed my life!"</p>
+                        <h6 class="mb-1">Fatima A.</h6>
+                        <small class="text-muted">Entrepreneur, Kano</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="section bg-primary-gradient text-white">
+    <div class="container-fluid text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="display-5 fw-bold mb-3">Ready to Start Your Journey?</h2>
+                <p class="lead mb-4">Join over 10,000 Nigerians who are already transforming their careers with EduNaija. Start learning today!</p>
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-person-plus me-2"></i>Create Free Account
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('courses') }}" class="btn btn-outline-primary btn-lg bg-white text-primary">
+                        <i class="bi bi-search me-2"></i>Browse All Courses
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

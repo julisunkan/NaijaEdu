@@ -1,0 +1,260 @@
+{% extends "base_modern.html" %}
+
+{% block title %}Sign Up - EduNaija{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="card">
+                    <div class="card-body p-5">
+                        <!-- Header -->
+                        <div class="text-center mb-4">
+                            <div class="feature-icon secondary mb-3" style="width: 64px; height: 64px; font-size: 1.5rem; margin: 0 auto;">
+                                <i class="bi bi-person-plus"></i>
+                            </div>
+                            <h2 class="fw-bold mb-2">Join EduNaija</h2>
+                            <p class="text-muted">Start your learning journey today</p>
+                        </div>
+                        
+                        <!-- Role Selection -->
+                        <div class="mb-4">
+                            <p class="form-label fw-medium mb-3">I want to:</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check" name="roleChoice" id="studentRole" value="student" checked>
+                                    <label class="btn btn-outline-primary w-100 p-3" for="studentRole">
+                                        <i class="bi bi-book d-block mb-2" style="font-size: 1.5rem;"></i>
+                                        <strong>Learn</strong>
+                                        <small class="d-block text-muted">Take courses and earn certificates</small>
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check" name="roleChoice" id="tutorRole" value="tutor">
+                                    <label class="btn btn-outline-secondary w-100 p-3" for="tutorRole">
+                                        <i class="bi bi-person-workspace d-block mb-2" style="font-size: 1.5rem;"></i>
+                                        <strong>Teach</strong>
+                                        <small class="d-block text-muted">Create and sell courses</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Registration Form -->
+                        <form method="POST" id="registerForm">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    {{ form.first_name.label(class="form-label fw-medium") }}
+                                    {{ form.first_name(class="form-control", placeholder="Enter your first name") }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.first_name.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.last_name.label(class="form-label fw-medium") }}
+                                    {{ form.last_name(class="form-control", placeholder="Enter your last name") }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.last_name.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.username.label(class="form-label fw-medium") }}
+                                {{ form.username(class="form-control", placeholder="Choose a unique username") }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.username.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.email.label(class="form-label fw-medium") }}
+                                {{ form.email(class="form-control", placeholder="Enter your email address") }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.password.label(class="form-label fw-medium") }}
+                                <div class="position-relative">
+                                    {{ form.password(class="form-control", placeholder="Create a strong password", id="passwordField") }}
+                                    <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y" 
+                                            onclick="togglePassword()" style="border: none; background: none;">
+                                        <i class="bi bi-eye" id="toggleIcon"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    <small class="text-muted">Password must be at least 8 characters long</small>
+                                </div>
+                                {% if form.password.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.password.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                {{ form.confirm_password.label(class="form-label fw-medium") }}
+                                {{ form.confirm_password(class="form-control", placeholder="Confirm your password") }}
+                                {% if form.confirm_password.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.confirm_password.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Hidden role field -->
+                            {{ form.role(style="display: none;") }}
+                            
+                            <!-- Terms and Conditions -->
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                                <label class="form-check-label text-muted" for="agreeTerms">
+                                    I agree to the <a href="#" class="text-primary">Terms of Service</a> and 
+                                    <a href="#" class="text-primary">Privacy Policy</a>
+                                </label>
+                            </div>
+                            
+                            {{ form.submit(class="btn btn-primary btn-lg w-100 mb-3") }}
+                        </form>
+                        
+                        <!-- Social Registration -->
+                        <div class="text-center mb-4">
+                            <div class="position-relative">
+                                <hr>
+                                <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">
+                                    or sign up with
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-2 mb-4">
+                            <div class="col-6">
+                                <button class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-google me-2"></i>Google
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-facebook me-2"></i>Facebook
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Login Link -->
+                        <div class="text-center">
+                            <p class="text-muted mb-0">
+                                Already have an account? 
+                                <a href="{{ url_for('login') }}" class="text-primary text-decoration-none fw-medium">Sign in</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefits -->
+                <div class="card mt-4 bg-light border-0">
+                    <div class="card-body p-4">
+                        <h6 class="text-center mb-3">What you'll get:</h6>
+                        <div class="row g-3 text-center">
+                            <div class="col-md-4">
+                                <i class="bi bi-check-circle-fill text-success mb-2 d-block"></i>
+                                <small class="text-muted">Access to all courses</small>
+                            </div>
+                            <div class="col-md-4">
+                                <i class="bi bi-award-fill text-primary mb-2 d-block"></i>
+                                <small class="text-muted">Industry certificates</small>
+                            </div>
+                            <div class="col-md-4">
+                                <i class="bi bi-people-fill text-secondary mb-2 d-block"></i>
+                                <small class="text-muted">Community access</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Handle role selection
+document.querySelectorAll('input[name="roleChoice"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.getElementById('role').value = this.value;
+        
+        // Update form styling based on role
+        const form = document.getElementById('registerForm');
+        if (this.value === 'tutor') {
+            form.classList.add('tutor-mode');
+        } else {
+            form.classList.remove('tutor-mode');
+        }
+    });
+});
+
+// Set initial role value
+document.getElementById('role').value = 'student';
+
+function togglePassword() {
+    const passwordField = document.getElementById('passwordField');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleIcon.className = 'bi bi-eye-slash';
+    } else {
+        passwordField.type = 'password';
+        toggleIcon.className = 'bi bi-eye';
+    }
+}
+
+// Password strength indicator
+document.getElementById('passwordField').addEventListener('input', function() {
+    const password = this.value;
+    const strengthBar = document.createElement('div');
+    
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    
+    // Update strength indicator (you can add visual feedback here)
+});
+
+// Form submission animation
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const submitBtn = document.querySelector('input[type="submit"]');
+    submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Creating account...';
+    submitBtn.disabled = true;
+});
+
+// Add smooth animations
+document.addEventListener('DOMContentLoaded', function() {
+    const card = document.querySelector('.card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        card.style.transition = 'all 0.3s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+    }, 100);
+});
+</script>
+{% endblock %}

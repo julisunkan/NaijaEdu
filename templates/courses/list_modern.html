@@ -1,0 +1,265 @@
+{% extends "base_modern.html" %}
+
+{% block title %}All Courses - EduNaija{% endblock %}
+
+{% block content %}
+<!-- Course Header -->
+<section class="hero-section section-sm">
+    <div class="container-fluid">
+        <div class="hero-content">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">Explore All Courses</h1>
+                    <p class="lead mb-4">Discover your next learning opportunity from our comprehensive course library</p>
+                </div>
+                <div class="col-lg-4">
+                    {% if current_user.is_authenticated and current_user.role in ['instructor', 'tutor', 'admin'] %}
+                    <div class="text-end">
+                        <a href="{{ url_for('create_course') }}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-plus-circle me-2"></i>Create Course
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Search and Filter Section -->
+<section class="section-sm bg-light">
+    <div class="container-fluid">
+        <div class="row g-4">
+            <!-- Search Bar -->
+            <div class="col-lg-8">
+                <form method="GET" action="{{ url_for('courses') }}">
+                    <div class="input-group input-group-lg">
+                        <input type="text" class="form-control" name="search" 
+                               placeholder="Search for courses, skills, or topics..." 
+                               value="{{ request.args.get('search', '') }}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Category Filter -->
+            <div class="col-lg-4">
+                <select class="form-select form-select-lg" onchange="filterCourses(this.value)">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category[0] }}" {% if selected_category == category[0] %}selected{% endif %}>
+                        {{ category[1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <!-- Active Filters -->
+        {% if selected_category or search_term %}
+        <div class="mt-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="text-muted">Active filters:</span>
+                {% if selected_category %}
+                <span class="badge badge-primary">
+                    {{ get_category_name(selected_category) }}
+                    <a href="{{ url_for('courses', search=search_term) }}" class="text-white ms-1">×</a>
+                </span>
+                {% endif %}
+                {% if search_term %}
+                <span class="badge badge-secondary">
+                    "{{ search_term }}"
+                    <a href="{{ url_for('courses', category=selected_category) }}" class="text-white ms-1">×</a>
+                </span>
+                {% endif %}
+                <a href="{{ url_for('courses') }}" class="btn btn-sm btn-outline-primary">Clear All</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Courses Grid -->
+<section class="section">
+    <div class="container-fluid">
+        {% if courses %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>{{ courses|length }} course{{ 's' if courses|length != 1 }} found</h3>
+                    <div class="d-flex gap-2">
+                        <select class="form-select" style="width: auto;" onchange="sortCourses(this.value)">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="price_low">Price: Low to High</option>
+                            <option value="price_high">Price: High to Low</option>
+                            <option value="popular">Most Popular</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row g-4" id="coursesGrid">
+            {% for course in courses %}
+            <div class="col-lg-4 col-md-6 course-item" 
+                 data-category="{{ course.category or 'general' }}" 
+                 data-price="{{ course.price or 0 }}"
+                 data-popularity="{{ course.enrollments.count() }}">
+                <div class="course-card h-100">
+                    <div class="card-body">
+                        <!-- Course Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge badge-{% if loop.index0 % 4 == 0 %}primary{% elif loop.index0 % 4 == 1 %}secondary{% elif loop.index0 % 4 == 2 %}purple{% else %}teal{% endif %}">
+                                {{ course.category or 'General' }}
+                            </span>
+                            {% if course.approval_status == 'pending' %}
+                            <span class="badge bg-warning">Pending Review</span>
+                            {% elif course.approval_status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Course Content -->
+                        <h5 class="card-title mb-3">{{ course.title }}</h5>
+                        <p class="text-muted mb-3">{{ course.description[:120] }}{% if course.description|length > 120 %}...{% endif %}</p>
+                        
+                        <!-- Course Stats -->
+                        <div class="row text-sm mb-3">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="feature-icon primary me-2" style="width: 24px; height: 24px; font-size: 0.75rem;">
+                                        {{ (course.instructor.username[0] if course.instructor else 'A')|upper }}
+                                    </div>
+                                    <small class="text-muted">{{ course.instructor.username if course.instructor else 'Admin' }}</small>
+                                </div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <small class="text-muted">
+                                    <i class="bi bi-people me-1"></i>{{ course.enrollments.count() }} enrolled
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Course Features -->
+                        <div class="mb-3">
+                            <div class="row text-sm">
+                                <div class="col-6">
+                                    <small class="text-muted">
+                                        <i class="bi bi-book me-1"></i>{{ course.lessons.count() }} lessons
+                                    </small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">
+                                        <i class="bi bi-patch-check me-1"></i>Certificate
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Price and Action -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="h5 text-primary mb-0">{{ course.price|currency }}</span>
+                                {% if course.price > 10000 %}
+                                <br><small class="text-muted">or ₦{{ (course.price / 3)|round|int }}/month</small>
+                                {% endif %}
+                            </div>
+                            <a href="{{ url_for('course_detail', course_id=course.id) }}" 
+                               class="btn btn-primary">
+                                Learn More <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Load More Button -->
+        {% if courses|length >= 12 %}
+        <div class="text-center mt-5">
+            <button class="btn btn-outline-primary btn-lg" onclick="loadMoreCourses()">
+                <i class="bi bi-arrow-down me-2"></i>Load More Courses
+            </button>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-5">
+            <div class="feature-icon secondary mb-4" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto;">
+                <i class="bi bi-search"></i>
+            </div>
+            <h3 class="mb-3">No courses found</h3>
+            <p class="text-muted mb-4">Try adjusting your search terms or browse all categories</p>
+            <a href="{{ url_for('courses') }}" class="btn btn-primary">
+                <i class="bi bi-arrow-left me-2"></i>View All Courses
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterCourses(category) {
+    const currentUrl = new URL(window.location);
+    if (category) {
+        currentUrl.searchParams.set('category', category);
+    } else {
+        currentUrl.searchParams.delete('category');
+    }
+    window.location.href = currentUrl.toString();
+}
+
+function sortCourses(sortBy) {
+    const grid = document.getElementById('coursesGrid');
+    const courses = Array.from(grid.children);
+    
+    courses.sort((a, b) => {
+        switch(sortBy) {
+            case 'price_low':
+                return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+            case 'price_high':
+                return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+            case 'popular':
+                return parseInt(b.dataset.popularity) - parseInt(a.dataset.popularity);
+            default:
+                return 0;
+        }
+    });
+    
+    courses.forEach(course => grid.appendChild(course));
+}
+
+function loadMoreCourses() {
+    // Add loading animation
+    const button = event.target;
+    button.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Loading...';
+    
+    // Simulate loading more courses
+    setTimeout(() => {
+        button.innerHTML = '<i class="bi bi-arrow-down me-2"></i>Load More Courses';
+        // In a real implementation, this would make an AJAX call
+    }, 1000);
+}
+
+// Add smooth animations on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const courses = document.querySelectorAll('.course-item');
+    courses.forEach((course, index) => {
+        course.style.opacity = '0';
+        course.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            course.style.transition = 'all 0.3s ease';
+            course.style.opacity = '1';
+            course.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}
