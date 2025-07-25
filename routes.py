@@ -1590,7 +1590,9 @@ def instructor_course_assignments(course_id):
         return redirect(url_for('manage_courses'))
     
     assignments = Assignment.query.filter_by(course_id=course_id).all()
-    return render_template('instructor/course_assignments.html', course=course, assignments=assignments, now=datetime.utcnow())
+    from forms import AssignmentForm
+    form = AssignmentForm()  # For CSRF token
+    return render_template('instructor/course_assignments.html', course=course, assignments=assignments, now=datetime.utcnow(), form=form)
 
 # Admin settings
 @app.route('/settings', methods=['GET', 'POST'])

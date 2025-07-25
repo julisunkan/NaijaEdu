@@ -74,7 +74,7 @@
                                             <i data-feather="edit"></i>
                                         </a>
                                         <button type="button" class="btn btn-sm btn-danger" 
-                                                onclick="confirmDeleteAssignment({{ assignment.id }}, '{{ assignment.title|replace("'", "\\'") }}')">
+                                                onclick="confirmDeleteAssignment({{ assignment.id }}, {{ assignment.title|tojson }})">
                                             <i data-feather="trash-2"></i>
                                         </button>
                                     </div>
@@ -118,7 +118,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form id="deleteAssignmentForm" method="POST" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    {{ form.hidden_tag() if form else '' }}
                     <button type="submit" class="btn btn-danger">Delete Assignment</button>
                 </form>
             </div>
@@ -129,7 +129,7 @@
 <script>
 function confirmDeleteAssignment(assignmentId, assignmentTitle) {
     document.getElementById('assignmentTitle').textContent = assignmentTitle;
-    document.getElementById('deleteAssignmentForm').action = '/instructor/assignments/' + assignmentId + '/delete';
+    document.getElementById('deleteAssignmentForm').action = '/assignments/' + assignmentId + '/instructor_delete';
     new bootstrap.Modal(document.getElementById('deleteAssignmentModal')).show();
 }
 </script>
