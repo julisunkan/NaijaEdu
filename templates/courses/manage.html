@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_modern.html" %}
 
 {% block title %}Manage Courses{% endblock %}
 
@@ -78,7 +78,7 @@
                     
                     {% if current_user.role == 'admin' or course.instructor_id == current_user.id %}
                     <button type="button" class="btn btn-outline-danger btn-sm" 
-                            onclick="confirmDeleteCourse({{ course.title|tojson }}, {{ url_for('instructor_delete_course', course_id=course.id)|tojson }})">
+                            onclick="confirmDeleteCourse('{{ course.title|e }}', '{{ url_for('instructor_delete_course', course_id=course.id) }}')">
                         <i data-feather="trash-2"></i> Delete
                     </button>
                     {% endif %}
