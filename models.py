@@ -70,6 +70,7 @@ class User(UserMixin, db.Model):
         return False
     
     # Override Flask-Login's is_active property
+    @property  
     def is_active(self):
         return bool(self.active and not self.banned)
     
