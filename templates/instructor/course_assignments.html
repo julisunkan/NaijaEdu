@@ -73,6 +73,10 @@
                                            class="btn btn-sm btn-warning">
                                             <i data-feather="edit"></i>
                                         </a>
+                                        <a href="{{ url_for('assignment_submissions', assignment_id=assignment.id) }}" 
+                                           class="btn btn-sm btn-info">
+                                            <i data-feather="users"></i> Submissions
+                                        </a>
                                         <button type="button" class="btn btn-sm btn-danger" 
                                                 onclick="confirmDeleteAssignment({{ assignment.id }}, {{ assignment.title|tojson }})">
                                             <i data-feather="trash-2"></i>

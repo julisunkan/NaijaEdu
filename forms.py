@@ -119,6 +119,10 @@ class AssignmentSubmissionForm(FlaskForm):
     content = TextAreaField('Submission Text')
     file = FileField('Upload File', validators=[FileAllowed(['pdf', 'doc', 'docx', 'txt'], 'Documents only!')])
 
+class AssignmentGradingForm(FlaskForm):
+    score = FloatField('Score', validators=[DataRequired(), NumberRange(min=0)], render_kw={"step": "0.1"})
+    feedback = TextAreaField('Feedback', validators=[Optional()], render_kw={"rows": 4, "placeholder": "Provide detailed feedback to the student about their submission..."})
+
 class SystemSettingsForm(FlaskForm):
     site_name = StringField('Site Name', validators=[DataRequired(), Length(max=100)])
     site_description = TextAreaField('Site Description')

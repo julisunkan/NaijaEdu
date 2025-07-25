@@ -727,7 +727,7 @@ def instructor_quiz_attempts():
 @app.route('/instructor/submissions/<int:submission_id>/grade', methods=['POST'])
 @login_required
 @instructor_required
-def grade_submission(submission_id):
+def instructor_quick_grade_submission(submission_id):
     submission = AssignmentSubmission.query.get_or_404(submission_id)
     
     # Verify instructor owns the course
@@ -1115,6 +1115,111 @@ def submit_assignment(assignment_id):
         return redirect(url_for('course_detail', course_id=assignment.course_id))
     
     return render_template('assignments/submit.html', form=form, assignment=assignment, submission=existing_submission, now=dt.utcnow())
+
+@app.route('/assignments/<int:assignment_id>/submissions')
+@login_required
+@instructor_required
+def assignment_submissions(assignment_id):
+    """View all submissions for an assignment (instructor/tutor only)"""
+    assignment = Assignment.query.get_or_404(assignment_id)
+    course = assignment.course
+    
+    # Only allow viewing submissions for own courses (or admin can view any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only view submissions for your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    submissions = AssignmentSubmission.query.filter_by(assignment_id=assignment_id).order_by(AssignmentSubmission.submitted_at.desc()).all()
+    
+    return render_template('instructor/assignment_submissions.html', 
+                         assignment=assignment, 
+                         course=course, 
+                         submissions=submissions)
+
+@app.route('/submissions/<int:submission_id>/grade', methods=['GET', 'POST'])
+@login_required
+@instructor_required
+def instructor_grade_submission(submission_id):
+    """Grade a specific assignment submission"""
+    submission = AssignmentSubmission.query.get_or_404(submission_id)
+    assignment = submission.assignment
+    course = assignment.course
+    
+    # Only allow grading submissions for own courses (or admin can grade any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only grade submissions for your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    form = AssignmentGradingForm(obj=submission)
+    if form.validate_on_submit():
+        try:
+            submission.score = form.score.data
+            submission.feedback = form.feedback.data
+            submission.graded_at = datetime.utcnow()
+            
+            # Calculate and award credits based on score
+            credits_earned = assignment.calculate_credits_earned(form.score.data, assignment.max_points)
+            
+            # Create or update course credit record
+            credit_record = CourseCredit.query.filter_by(
+                user_id=submission.user_id,
+                course_id=course.id,
+                item_type='assignment',
+                item_id=assignment.id
+            ).first()
+            
+            if credit_record:
+                # Update existing record with new grade
+                credit_record.credits_earned = credits_earned
+                credit_record.max_credits = assignment.max_credits
+                credit_record.score_percentage = (form.score.data / assignment.max_points) * 100 if assignment.max_points > 0 else 0
+                credit_record.earned_at = datetime.utcnow()
+            else:
+                # Create new credit record
+                credit_record = CourseCredit()
+                credit_record.user_id = submission.user_id
+                credit_record.course_id = course.id
+                credit_record.item_type = 'assignment'
+                credit_record.item_id = assignment.id
+                credit_record.credits_earned = credits_earned
+                credit_record.max_credits = assignment.max_credits
+                credit_record.score_percentage = (form.score.data / assignment.max_points) * 100 if assignment.max_points > 0 else 0
+                db.session.add(credit_record)
+            
+            db.session.commit()
+            flash(f'Assignment graded successfully! Student earned {credits_earned} credits.', 'success')
+            return redirect(url_for('assignment_submissions', assignment_id=assignment.id))
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error grading submission: {e}")
+            flash('Error grading assignment. Please try again.', 'danger')
+    
+    return render_template('instructor/grade_submission.html', 
+                         form=form, 
+                         submission=submission, 
+                         assignment=assignment, 
+                         course=course)
+
+@app.route('/submissions/<int:submission_id>/download')
+@login_required
+@instructor_required
+def download_submission_file(submission_id):
+    """Download assignment submission file"""
+    submission = AssignmentSubmission.query.get_or_404(submission_id)
+    assignment = submission.assignment
+    course = assignment.course
+    
+    # Only allow downloading files for own courses (or admin can download any)
+    if current_user.role != 'admin' and course.instructor_id != current_user.id:
+        flash('You can only download files for your own courses', 'danger')
+        return redirect(url_for('manage_courses'))
+    
+    if not submission.file_path or not os.path.exists(submission.file_path):
+        flash('File not found', 'danger')
+        return redirect(url_for('assignment_submissions', assignment_id=assignment.id))
+    
+    return send_file(submission.file_path, as_attachment=True)
 
 # Withdrawal routes
 @app.route('/instructor/earnings')

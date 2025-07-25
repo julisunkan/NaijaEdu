@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Assignment Submissions - {{ assignment.title }} - {{ config.SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Assignment Submissions</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.id) }}">{{ course.title }}</a></li>
+                    <li class="breadcrumb-item active">{{ assignment.title }}</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-secondary">
+            <i data-feather="arrow-left"></i> Back to Course
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Assignment Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h6><strong>{{ assignment.title }}</strong></h6>
+                    <p class="text-muted">{{ assignment.description }}</p>
+                    {% if assignment.instructions %}
+                    <div class="mt-3">
+                        <strong>Instructions:</strong>
+                        <p>{{ assignment.instructions|nl2br }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-light p-3 rounded">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <h6 class="text-muted mb-1">Max Points</h6>
+                                    <h4 class="mb-0 text-primary">{{ assignment.max_points }}</h4>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h6 class="text-muted mb-1">Max Credits</h6>
+                                <h4 class="mb-0 text-success">{{ assignment.max_credits }}</h4>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <div class="text-center">
+                            <small class="text-muted">Pass Threshold: {{ assignment.pass_threshold }}%</small>
+                        </div>
+                        {% if assignment.due_date %}
+                        <hr class="my-2">
+                        <div class="text-center">
+                            <small class="text-muted">Due: {{ assignment.due_date.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Student Submissions ({{ submissions|length }})</h5>
+            <div>
+                <small class="text-muted">
+                    <i data-feather="users"></i> Total Submissions: {{ submissions|length }}
+                </small>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if submissions %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Submitted At</th>
+                            <th>Score</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in submissions %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                         style="width: 35px; height: 35px; font-size: 14px;">
+                                        {{ submission.user.first_name[0] if submission.user.first_name else submission.user.username[0] }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">
+                                            {{ submission.user.first_name }} {{ submission.user.last_name }}
+                                            {% if submission.user.first_name == '' and submission.user.last_name == '' %}
+                                                {{ submission.user.username }}
+                                            {% endif %}
+                                        </div>
+                                        <small class="text-muted">{{ submission.user.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>{{ submission.submitted_at.strftime('%b %d, %Y') }}</div>
+                                <small class="text-muted">{{ submission.submitted_at.strftime('%I:%M %p') }}</small>
+                            </td>
+                            <td>
+                                {% if submission.score is not none %}
+                                    <span class="badge bg-{% if (submission.score / assignment.max_points * 100) >= assignment.pass_threshold %}success{% else %}warning{% endif %} fs-6">
+                                        {{ "%.1f"|format(submission.score) }}/{{ assignment.max_points }}
+                                    </span>
+                                    <div><small class="text-muted">{{ "%.1f"|format((submission.score / assignment.max_points * 100)) }}%</small></div>
+                                {% else %}
+                                    <span class="text-muted">Not graded</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if submission.graded_at %}
+                                    <span class="badge bg-success">
+                                        <i data-feather="check-circle" style="width: 12px; height: 12px;"></i> Graded
+                                    </span>
+                                    <div><small class="text-muted">{{ submission.graded_at.strftime('%b %d, %Y') }}</small></div>
+                                {% else %}
+                                    <span class="badge bg-warning">
+                                        <i data-feather="clock" style="width: 12px; height: 12px;"></i> Pending
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('instructor_grade_submission', submission_id=submission.id) }}" 
+                                       class="btn btn-sm {% if submission.graded_at %}btn-outline-primary{% else %}btn-primary{% endif %}">
+                                        <i data-feather="{% if submission.graded_at %}edit{% else %}check-square{% endif %}" style="width: 14px; height: 14px;"></i>
+                                        {% if submission.graded_at %}Edit Grade{% else %}Grade{% endif %}
+                                    </a>
+                                    {% if submission.file_path %}
+                                    <a href="{{ url_for('download_submission_file', submission_id=submission.id) }}" 
+                                       class="btn btn-sm btn-outline-info" target="_blank">
+                                        <i data-feather="download" style="width: 14px; height: 14px;"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i data-feather="inbox" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
+                <h4>No Submissions Yet</h4>
+                <p class="text-muted">Students haven't submitted any assignments yet. They will appear here once submitted.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize Feather icons
+    feather.replace();
+</script>
+{% endblock %}

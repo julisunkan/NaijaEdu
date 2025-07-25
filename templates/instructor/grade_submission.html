@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Grade Submission - {{ assignment.title }} - {{ config.SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Grade Assignment Submission</h2>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.id) }}">{{ course.title }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ url_for('assignment_submissions', assignment_id=assignment.id) }}">{{ assignment.title }}</a></li>
+                            <li class="breadcrumb-item active">Grade Submission</li>
+                        </ol>
+                    </nav>
+                </div>
+                    <a href="{{ url_for('assignment_submissions', assignment_id=assignment.id) }}" class="btn btn-secondary">
+                        <i data-feather="arrow-left"></i> Back to Submissions
+                    </a>
+                </div>
+
+                <!-- Student Submission Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i data-feather="user"></i>
+                                {{ submission.user.first_name }} {{ submission.user.last_name }}
+                                {% if submission.user.first_name == '' and submission.user.last_name == '' %}
+                                    {{ submission.user.username }}
+                                {% endif %}
+                            </h5>
+                            <small class="text-muted">
+                                Submitted: {{ submission.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h6>Student Submission:</h6>
+                        {% if submission.content %}
+                        <div class="bg-light p-3 rounded mb-3">
+                            <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ submission.content }}</pre>
+                        </div>
+                        {% endif %}
+                        
+                        {% if submission.file_path %}
+                        <div class="mb-3">
+                            <h6>Attached File:</h6>
+                            <div class="d-flex align-items-center">
+                                <i data-feather="paperclip" class="me-2"></i>
+                                <a href="{{ url_for('download_submission_file', submission_id=submission.id) }}" 
+                                   class="btn btn-outline-primary btn-sm" target="_blank">
+                                    <i data-feather="download" class="me-1"></i>
+                                    Download Submission File
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if not submission.content and not submission.file_path %}
+                        <div class="alert alert-warning">
+                            <i data-feather="alert-triangle"></i>
+                            No submission content or file provided by the student.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Grading Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i data-feather="edit-3"></i>
+                            {% if submission.graded_at %}Update Grade{% else %}Grade Submission{% endif %}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.score.label(class="form-label") }}
+                                        <div class="input-group">
+                                            {{ form.score(class="form-control", max=assignment.max_points) }}
+                                            <span class="input-group-text">/ {{ assignment.max_points }} points</span>
+                                        </div>
+                                        {% if form.score.errors %}
+                                            <div class="text-danger">
+                                                {% for error in form.score.errors %}
+                                                    <small>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <small class="text-muted">Maximum points for this assignment: {{ assignment.max_points }}</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="bg-light p-3 rounded">
+                                        <h6 class="mb-2">Credit Calculation Preview</h6>
+                                        <div id="credit-preview">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Percentage:</span>
+                                                <span id="percentage-display">-</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Credits Earned:</span>
+                                                <span id="credits-display">-</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Max Credits:</span>
+                                                <span>{{ assignment.max_credits }}</span>
+                                            </div>
+                                            <hr class="my-2">
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">Pass Threshold:</small>
+                                                <small class="text-muted">{{ assignment.pass_threshold }}%</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                {{ form.feedback.label(class="form-label") }}
+                                {{ form.feedback(class="form-control") }}
+                                {% if form.feedback.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.feedback.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Provide constructive feedback to help the student improve.</small>
+                            </div>
+                            
+                            {% if submission.graded_at %}
+                            <div class="alert alert-info">
+                                <i data-feather="info"></i>
+                                <strong>Previously Graded:</strong> This submission was graded on {{ submission.graded_at.strftime('%B %d, %Y at %I:%M %p') }}.
+                                Updating the grade will recalculate the student's credits.
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('assignment_submissions', assignment_id=assignment.id) }}" class="btn btn-secondary">
+                                    <i data-feather="arrow-left"></i> Back to Submissions
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-feather="save"></i>
+                                    {% if submission.graded_at %}Update Grade{% else %}Submit Grade{% endif %}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Assignment Details Sidebar -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Assignment Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <h6>{{ assignment.title }}</h6>
+                        <p class="text-muted">{{ assignment.description }}</p>
+                        
+                        {% if assignment.instructions %}
+                        <div class="mb-3">
+                            <strong>Instructions:</strong>
+                            <div class="small text-muted mt-1">{{ assignment.instructions|nl2br }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="border-top pt-3">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <div class="text-primary fw-bold">{{ assignment.max_points }}</div>
+                                        <small class="text-muted">Max Points</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-success fw-bold">{{ assignment.max_credits }}</div>
+                                    <small class="text-muted">Max Credits</small>
+                                </div>
+                            </div>
+                            <div class="text-center mt-2">
+                                <small class="text-muted">Pass: {{ assignment.pass_threshold }}%</small>
+                            </div>
+                        </div>
+                        
+                        {% if assignment.due_date %}
+                        <div class="border-top pt-3 mt-3">
+                            <div class="text-center">
+                                <div class="text-muted">Due Date</div>
+                                <div class="fw-bold">{{ assignment.due_date.strftime('%B %d, %Y') }}</div>
+                                <small class="text-muted">{{ assignment.due_date.strftime('%I:%M %p') }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Real-time credit calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            const scoreInput = document.getElementById('score');
+            const maxPoints = {{ assignment.max_points }};
+            const maxCredits = {{ assignment.max_credits }};
+            const passThreshold = {{ assignment.pass_threshold }};
+            
+            function updateCreditPreview() {
+                const score = parseFloat(scoreInput.value) || 0;
+                const percentage = maxPoints > 0 ? (score / maxPoints * 100).toFixed(1) : 0;
+                
+                let creditsEarned = 0;
+                if (percentage >= passThreshold) {
+                    const creditPercentage = percentage / 100;
+                    creditsEarned = Math.floor(maxCredits * creditPercentage);
+                }
+                
+                document.getElementById('percentage-display').textContent = percentage + '%';
+                document.getElementById('credits-display').textContent = creditsEarned;
+                
+                // Update display colors based on pass threshold
+                const percentageElement = document.getElementById('percentage-display');
+                const creditsElement = document.getElementById('credits-display');
+                
+                if (percentage >= passThreshold) {
+                    percentageElement.className = 'text-success fw-bold';
+                    creditsElement.className = 'text-success fw-bold';
+                } else {
+                    percentageElement.className = 'text-warning fw-bold';
+                    creditsElement.className = 'text-warning fw-bold';
+                }
+            }
+            
+            scoreInput.addEventListener('input', updateCreditPreview);
+            updateCreditPreview(); // Initial calculation
+        });
+        
+        // Initialize Feather icons
+        feather.replace();
+    </script>
+    {% endblock %}
