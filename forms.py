@@ -90,7 +90,7 @@ class AssignmentForm(FlaskForm):
     title = StringField('Assignment Title', validators=[DataRequired(), Length(max=200)])
     description = TextAreaField('Description', validators=[DataRequired()])
     instructions = TextAreaField('Detailed Instructions', validators=[Optional()])
-    due_date = DateTimeField('Due Date', format='%Y-%m-%d %H:%M:%S', validators=[Optional()])
+    due_date = DateTimeField('Due Date', format='%Y-%m-%dT%H:%M', validators=[Optional()])
     max_points = IntegerField('Maximum Points', validators=[DataRequired(), NumberRange(min=1)], default=100)
     # Credit system fields
     max_credits = IntegerField('Maximum Credits', validators=[DataRequired(), NumberRange(min=1)], default=15)

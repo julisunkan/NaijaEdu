@@ -1031,8 +1031,6 @@ def instructor_edit_assignment(assignment_id):
     form = AssignmentForm(obj=assignment)
     if request.method == 'POST':
         print(f"POST request received for assignment {assignment_id}")
-        print(f"Form data: {request.form}")
-        print(f"Form validates: {form.validate_on_submit()}")
         if form.errors:
             print(f"Form errors: {form.errors}")
     
