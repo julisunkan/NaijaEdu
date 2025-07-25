@@ -104,7 +104,16 @@ def dashboard():
         # Get vouchers and users for admin dashboard
         vouchers = Voucher.query.order_by(Voucher.created_at.desc()).all()
         users = User.query.all()
-        return render_template('dashboard/admin.html', vouchers=vouchers, User=User)
+        
+        # Calculate stats for admin dashboard
+        stats = {
+            'total_users': User.query.count(),
+            'total_courses': Course.query.count(),
+            'total_revenue': db.session.query(db.func.sum(Payment.amount)).filter_by(status='completed').scalar() or 0,
+            'pending_payments': Payment.query.filter_by(status='pending').count()
+        }
+        
+        return render_template('dashboard/admin.html', vouchers=vouchers, User=User, stats=stats)
     elif current_user.role in ['instructor', 'tutor']:
         # Get instructor's courses and submissions
         instructor_courses = Course.query.filter_by(instructor_id=current_user.id).all()
