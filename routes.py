@@ -1029,18 +1029,31 @@ def instructor_edit_assignment(assignment_id):
         return redirect(url_for('manage_courses'))
     
     form = AssignmentForm(obj=assignment)
+    if request.method == 'POST':
+        print(f"POST request received for assignment {assignment_id}")
+        print(f"Form data: {request.form}")
+        print(f"Form validates: {form.validate_on_submit()}")
+        if form.errors:
+            print(f"Form errors: {form.errors}")
+    
     if form.validate_on_submit():
-        assignment.title = form.title.data
-        assignment.description = form.description.data
-        assignment.instructions = form.instructions.data
-        assignment.due_date = form.due_date.data
-        assignment.max_points = form.max_points.data
-        assignment.max_credits = form.max_credits.data
-        assignment.pass_threshold = form.pass_threshold.data
-        
-        db.session.commit()
-        flash('Assignment updated successfully!', 'success')
-        return redirect(url_for('course_detail', course_id=course.id))
+        try:
+            assignment.title = form.title.data
+            assignment.description = form.description.data
+            assignment.instructions = form.instructions.data
+            assignment.due_date = form.due_date.data
+            assignment.max_points = form.max_points.data
+            assignment.max_credits = form.max_credits.data
+            assignment.pass_threshold = form.pass_threshold.data
+            
+            db.session.commit()
+            flash('Assignment updated successfully!', 'success')
+            return redirect(url_for('course_detail', course_id=course.id))
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating assignment: {e}")
+            flash('Error updating assignment. Please try again.', 'danger')
+    
     return render_template('assignments/edit.html', form=form, assignment=assignment, course=course)
 
 @app.route('/assignments/<int:assignment_id>/instructor_delete', methods=['POST'])

@@ -18,7 +18,7 @@
                         <div class="mb-3">
                             {{ form.title.label(class="form-label") }}
                             {{ form.title(class="form-control") }}
-                            {% if form.title.errors %}
+                                {% if form.title.errors %}
                                 <div class="text-danger">
                                     {% for error in form.title.errors %}
                                         <small>{{ error }}</small>
@@ -30,12 +30,26 @@
                         <div class="mb-3">
                             {{ form.description.label(class="form-label") }}
                             {{ form.description(class="form-control", rows="3") }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.description.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                         
                         <div class="mb-3">
                             {{ form.instructions.label(class="form-label") }}
                             {{ form.instructions(class="form-control", rows="4") }}
                             <small class="text-muted">Detailed instructions for students</small>
+                            {% if form.instructions.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.instructions.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                         
                         <div class="mb-3">
@@ -50,6 +64,13 @@
                                     {{ form.max_points.label(class="form-label") }}
                                     {{ form.max_points(class="form-control", type="number", min="1") }}
                                     <small class="text-muted">Maximum points for grading</small>
+                                    {% if form.max_points.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.max_points.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -57,6 +78,13 @@
                                     {{ form.max_credits.label(class="form-label") }}
                                     {{ form.max_credits(class="form-control", type="number", min="0") }}
                                     <small class="text-muted">Maximum credits students can earn</small>
+                                    {% if form.max_credits.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.max_credits.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -67,6 +95,13 @@
                                         <span class="input-group-text">%</span>
                                     </div>
                                     <small class="text-muted">Minimum score to earn credits</small>
+                                    {% if form.pass_threshold.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.pass_threshold.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -75,6 +110,20 @@
                         <div class="alert alert-info">
                             <i data-feather="info"></i> 
                             This assignment has {{ assignment.submissions.count() }} submission(s) from students.
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Display any form validation errors -->
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h6>Please correct the following errors:</h6>
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items() %}
+                                    {% for error in errors %}
+                                        <li>{{ field }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
                         </div>
                         {% endif %}
                         
