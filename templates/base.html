@@ -486,14 +486,9 @@
                     <span>Dashboard</span>
                 </a>
                 
-                <a href="{{ url_for('wallet_history') }}" class="profile-menu-item">
-                    <i class="bi bi-wallet2"></i>
-                    <span>Wallet</span>
-                </a>
-                
-                <a href="{{ url_for('my_certificates') }}" class="profile-menu-item">
-                    <i class="bi bi-award"></i>
-                    <span>Certificates</span>
+                <a href="{{ url_for('courses') }}" class="profile-menu-item">
+                    <i class="bi bi-book"></i>
+                    <span>All Courses</span>
                 </a>
                 
                 {% if current_user.role in ['instructor', 'tutor'] %}
@@ -502,8 +497,13 @@
                     <i class="bi bi-briefcase me-1"></i>Instructor Tools
                 </div>
                 
+                <a href="{{ url_for('create_course') }}" class="profile-menu-item">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Create Course</span>
+                </a>
+                
                 <a href="{{ url_for('manage_courses') }}" class="profile-menu-item">
-                    <i class="bi bi-book"></i>
+                    <i class="bi bi-folder"></i>
                     <span>My Courses</span>
                 </a>
                 
@@ -524,14 +524,14 @@
                     <i class="bi bi-shield-check me-1"></i>Administration
                 </div>
                 
-                <a href="{{ url_for('dashboard') }}" class="profile-menu-item">
-                    <i class="bi bi-grid"></i>
-                    <span>Admin Dashboard</span>
-                </a>
-                
                 <a href="{{ url_for('manage_payments') }}" class="profile-menu-item">
                     <i class="bi bi-credit-card"></i>
-                    <span>Manage Payments</span>
+                    <span>Payments</span>
+                </a>
+                
+                <a href="{{ url_for('create_voucher') }}" class="profile-menu-item">
+                    <i class="bi bi-tag"></i>
+                    <span>Create Voucher</span>
                 </a>
                 
                 <a href="{{ url_for('admin_settings') }}" class="profile-menu-item">
