@@ -58,7 +58,18 @@ class User(UserMixin, db.Model):
         return enrollment is not None
     
     # Check if user account is active (for Flask-Login compatibility)
+    def get_id(self):
+        return str(self.id)
+    
     @property
+    def is_authenticated(self):
+        return True
+    
+    @property
+    def is_anonymous(self):
+        return False
+    
+    # Override Flask-Login's is_active property
     def is_active(self):
         return bool(self.active and not self.banned)
     
@@ -288,8 +299,14 @@ class QuizAttempt(db.Model):
     score = db.Column(db.Float, default=0.0)
     total_points = db.Column(db.Integer, default=0)
     answers = db.Column(db.Text)  # JSON string of answers
+    attempt_number = db.Column(db.Integer, default=1)
+    correct_answers = db.Column(db.Integer, default=0)
+    total_questions = db.Column(db.Integer, default=0)
     started_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)
+    attempt_number = db.Column(db.Integer, default=1)
+    correct_answers = db.Column(db.Integer, default=0)
+    total_questions = db.Column(db.Integer, default=0)
 
 class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

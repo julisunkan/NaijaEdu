@@ -44,9 +44,9 @@
                             <small>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</small>
                         </td>
                         <td>
-                            {% if submission.grade is not none %}
-                            <span class="badge bg-{% if submission.grade >= submission.assignment.max_points * 0.7 %}success{% elif submission.grade >= submission.assignment.max_points * 0.5 %}warning{% else %}danger{% endif %}">
-                                {{ submission.grade }}/{{ submission.assignment.max_points }}
+                            {% if submission.score is not none %}
+                            <span class="badge bg-{% if submission.score >= submission.assignment.max_points * 0.7 %}success{% elif submission.score >= submission.assignment.max_points * 0.5 %}warning{% else %}danger{% endif %}">
+                                {{ submission.score }}/{{ submission.assignment.max_points }}
                             </span>
                             {% else %}
                             <span class="badge bg-secondary">Not Graded</span>
@@ -67,7 +67,7 @@
                                     data-student-name="{{ submission.user.username }}"
                                     data-assignment-title="{{ submission.assignment.title }}"
                                     data-max-points="{{ submission.assignment.max_points }}"
-                                    data-current-grade="{{ submission.grade or '' }}"
+                                    data-current-grade="{{ submission.score or '' }}"
                                     data-current-feedback="{{ submission.feedback or '' }}"
                                     data-submission-content="{{ submission.content or '' }}"
                                     data-has-file="{{ 'yes' if submission.file_path else 'no' }}">
