@@ -57,7 +57,11 @@ class User(UserMixin, db.Model):
         ).first()
         return enrollment is not None
     
-    # Check if user account is active
+    # Check if user account is active (for Flask-Login compatibility)
+    @property
+    def is_active(self):
+        return bool(self.active and not self.banned)
+    
     def is_account_active(self) -> bool:
         return bool(self.active and not self.banned)
     

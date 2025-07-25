@@ -42,7 +42,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user and user.check_password(form.password.data) and user.is_active:
+        if user and user.check_password(form.password.data) and user.active:
             login_user(user)
             flash('Welcome back!', 'success')
             next_page = request.args.get('next')
@@ -583,8 +583,8 @@ def edit_user(user_id):
     if form.validate_on_submit():
         old_role = user.role
         user.role = form.role.data
-        user.is_active = form.active.data
-        user.is_banned = form.banned.data
+        user.active = form.active.data
+        user.banned = form.banned.data
         user.ban_reason = form.ban_reason.data if form.banned.data else None
         user.email_verified = form.email_verified.data
         user.instructor_verified = form.instructor_verified.data
@@ -609,7 +609,7 @@ def ban_user(user_id):
     user = User.query.get_or_404(user_id)
     ban_reason = request.form.get('ban_reason', '')
     
-    user.is_banned = True
+    user.banned = True
     user.ban_reason = ban_reason
     db.session.commit()
     
@@ -621,7 +621,7 @@ def ban_user(user_id):
 @admin_required
 def unban_user(user_id):
     user = User.query.get_or_404(user_id)
-    user.is_banned = False
+    user.banned = False
     user.ban_reason = None
     db.session.commit()
     
