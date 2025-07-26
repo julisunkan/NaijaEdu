@@ -147,13 +147,13 @@
                         
                         <!-- Action buttons -->
                         <div class="d-flex gap-2 mt-auto">
-                            <a href="{{ url_for('course_detail', id=course.id) }}" class="btn btn-primary flex-grow-1">
+                            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary flex-grow-1">
                                 <i data-feather="eye" class="me-2" style="width: 1rem; height: 1rem;"></i>
                                 View Details
                             </a>
                             {% if current_user.is_authenticated %}
                                 {% if current_user.can_access_course(course) %}
-                                    <a href="{{ url_for('course_detail', id=course.id) }}" class="btn btn-success">
+                                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-success">
                                         <i data-feather="play" style="width: 1rem; height: 1rem;"></i>
                                     </a>
                                 {% else %}

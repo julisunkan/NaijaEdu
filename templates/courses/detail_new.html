@@ -209,7 +209,7 @@
                                                             </small>
                                                         </div>
                                                         {% if user_enrolled %}
-                                                            <a href="{{ url_for('view_lesson', id=lesson.id) }}" class="btn btn-outline-primary btn-sm me-3" onclick="event.stopPropagation();">
+                                                            <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" class="btn btn-outline-primary btn-sm me-3" onclick="event.stopPropagation();">
                                                                 <i data-feather="external-link" style="width: 0.875rem; height: 0.875rem;"></i>
                                                             </a>
                                                         {% endif %}
