@@ -36,7 +36,7 @@ def index():
         'total_certificates': 0  # Will be updated later
     }
     
-    return render_template('index_modern.html', 
+    return render_template('index_new.html', 
                          courses=cached_data['courses'],
                          recent_courses=cached_data['courses'],
                          popular_categories=cached_data['popular_categories'],
@@ -58,7 +58,7 @@ def login():
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('dashboard'))
         flash('Invalid username or password', 'danger')
-    return render_template('auth/login_modern.html', form=form)
+    return render_template('auth/login_new.html', form=form)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -88,7 +88,7 @@ def register():
             db.session.add(user)
             db.session.commit()
             return redirect(url_for('login'))
-    return render_template('auth/register_modern.html', form=form)
+    return render_template('auth/register_new.html', form=form)
 
 @app.route('/logout')
 @login_required
@@ -128,7 +128,21 @@ def dashboard():
                              recent_submissions=recent_submissions,
                              recent_quiz_attempts=recent_quiz_attempts)
     else:
-        return render_template('dashboard/student_modern.html')
+        # Get student-specific data
+        enrolled_courses = Enrollment.query.filter_by(user_id=current_user.id, status='approved').all()
+        completed_courses = [e for e in enrolled_courses if e.progress >= 100]
+        in_progress_courses = [e for e in enrolled_courses if e.progress < 100]
+        certificates = []  # Will be populated when certificates are available
+        recent_activities = []  # Mock data for now
+        achievements = []  # Mock data for now
+        
+        return render_template('dashboard/student_new.html',
+                             enrolled_courses=enrolled_courses,
+                             completed_courses=completed_courses,
+                             in_progress_courses=in_progress_courses,
+                             certificates=certificates,
+                             recent_activities=recent_activities,
+                             achievements=achievements)
 
 # Course routes
 @app.route('/courses')
@@ -149,7 +163,7 @@ def courses():
     
     courses = query.all()
     categories = get_category_choices()
-    return render_template('courses/list_modern.html', 
+    return render_template('courses/list_new.html', 
                          courses=courses, 
                          categories=categories,
                          selected_category=category,

@@ -1,0 +1,320 @@
+{% extends "base_new.html" %}
+
+{% block title %}LearnNG - Transform Your Future with Quality Education{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    Learn Skills That 
+                    <span class="text-warning">Matter</span>
+                </h1>
+                <p class="lead mb-4">
+                    Join thousands of Nigerians advancing their careers with world-class courses designed for the African market. Learn at your own pace, earn certificates, and transform your future.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mb-4">
+                    <a href="{{ url_for('courses') }}" class="btn btn-light btn-lg">
+                        <i data-feather="play-circle" class="me-2"></i>
+                        Explore Courses
+                    </a>
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">
+                        <i data-feather="user-plus" class="me-2"></i>
+                        Join Free
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="d-flex align-items-center text-white-50">
+                    <div class="me-4">
+                        <i data-feather="users" class="me-2"></i>
+                        <strong>10,000+</strong> Students
+                    </div>
+                    <div class="me-4">
+                        <i data-feather="book" class="me-2"></i>
+                        <strong>{{ courses|length }}+</strong> Courses
+                    </div>
+                    <div>
+                        <i data-feather="award" class="me-2"></i>
+                        <strong>95%</strong> Success Rate
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="position-relative">
+                    <!-- Hero Illustration using SVG -->
+                    <svg width="500" height="400" viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg" class="img-fluid">
+                        <!-- Background circles -->
+                        <circle cx="350" cy="150" r="80" fill="rgba(255,255,255,0.1)"/>
+                        <circle cx="150" cy="300" r="60" fill="rgba(255,255,255,0.1)"/>
+                        
+                        <!-- Main illustration -->
+                        <rect x="100" y="120" width="300" height="200" rx="20" fill="white" opacity="0.95"/>
+                        <rect x="120" y="140" width="260" height="30" rx="5" fill="#f1f5f9"/>
+                        <rect x="120" y="185" width="180" height="15" rx="3" fill="#e2e8f0"/>
+                        <rect x="120" y="210" width="220" height="15" rx="3" fill="#e2e8f0"/>
+                        <rect x="120" y="235" width="160" height="15" rx="3" fill="#e2e8f0"/>
+                        
+                        <!-- Play button -->
+                        <circle cx="320" cy="220" r="25" fill="#2563eb"/>
+                        <path d="M312 210 L332 220 L312 230 Z" fill="white"/>
+                        
+                        <!-- People studying -->
+                        <circle cx="200" cy="80" r="25" fill="#fbbf24"/>
+                        <rect x="185" y="105" width="30" height="40" rx="15" fill="#3b82f6"/>
+                        
+                        <circle cx="320" cy="350" r="25" fill="#f59e0b"/>
+                        <rect x="305" y="375" width="30" height="40" rx="15" fill="#10b981"/>
+                        
+                        <!-- Books -->
+                        <rect x="50" y="180" width="20" height="25" rx="2" fill="#ef4444"/>
+                        <rect x="75" y="175" width="20" height="30" rx="2" fill="#8b5cf6"/>
+                        <rect x="100" y="170" width="20" height="35" rx="2" fill="#06b6d4"/>
+                        
+                        <!-- Graduation cap -->
+                        <rect x="420" y="80" width="40" height="8" rx="4" fill="#1f2937"/>
+                        <rect x="430" y="75" width="20" height="15" rx="2" fill="#374151"/>
+                        <rect x="445" y="70" width="8" height="20" rx="1" fill="#6b7280"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light-gradient">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold text-gradient mb-3">Why Choose LearnNG?</h2>
+                <p class="lead text-muted">We understand the Nigerian learning landscape and provide education that fits your lifestyle and career goals.</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card border-0 h-100">
+                    <div class="card-body">
+                        <div class="feature-icon mb-3">
+                            <i data-feather="clock" style="width: 2rem; height: 2rem;"></i>
+                        </div>
+                        <h4>Learn at Your Pace</h4>
+                        <p class="text-muted">Access courses 24/7 and learn when it's convenient for you. Perfect for busy professionals and students.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card border-0 h-100">
+                    <div class="card-body">
+                        <div class="feature-icon mb-3">
+                            <i data-feather="map-pin" style="width: 2rem; height: 2rem;"></i>
+                        </div>
+                        <h4>Nigeria-Focused</h4>
+                        <p class="text-muted">Courses designed specifically for the Nigerian market with local examples and career opportunities.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card border-0 h-100">
+                    <div class="card-body">
+                        <div class="feature-icon mb-3">
+                            <i data-feather="award" style="width: 2rem; height: 2rem;"></i>
+                        </div>
+                        <h4>Verified Certificates</h4>
+                        <p class="text-muted">Earn industry-recognized certificates that boost your career prospects and professional credibility.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card border-0 h-100">
+                    <div class="card-body">
+                        <div class="feature-icon mb-3">
+                            <i data-feather="users" style="width: 2rem; height: 2rem;"></i>
+                        </div>
+                        <h4>Expert Instructors</h4>
+                        <p class="text-muted">Learn from industry professionals and certified educators with real-world experience.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card border-0 h-100">
+                    <div class="card-body">
+                        <div class="feature-icon mb-3">
+                            <i data-feather="smartphone" style="width: 2rem; height: 2rem;"></i>
+                        </div>
+                        <h4>Mobile Friendly</h4>
+                        <p class="text-muted">Access your courses on any device. Learn on your phone, tablet, or computer seamlessly.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card border-0 h-100">
+                    <div class="card-body">
+                        <div class="feature-icon mb-3">
+                            <i data-feather="dollar-sign" style="width: 2rem; height: 2rem;"></i>
+                        </div>
+                        <h4>Affordable Pricing</h4>
+                        <p class="text-muted">Quality education at prices that make sense for Nigerians. Payment in Naira with flexible options.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Courses Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold text-gradient mb-3">Popular Courses</h2>
+                <p class="lead text-muted">Discover our most popular courses that are helping Nigerians advance their careers.</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for course in courses[:6] %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card course-card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge bg-primary">{{ course.category or 'Technology' }}</span>
+                            <div class="course-price">{{ course.price|currency }}</div>
+                        </div>
+                        
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="text-muted small mb-3">{{ course.description[:100] }}...</p>
+                        
+                        <div class="d-flex align-items-center mb-3 text-muted small">
+                            <i data-feather="user" class="me-2" style="width: 1rem; height: 1rem;"></i>
+                            <span class="me-3">{{ course.instructor.first_name or course.instructor.username }}</span>
+                            <i data-feather="clock" class="me-2" style="width: 1rem; height: 1rem;"></i>
+                            <span>{{ course.lessons.count() }} lessons</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('course_detail', id=course.id) }}" class="btn btn-primary">
+                                <i data-feather="eye" class="me-2" style="width: 1rem; height: 1rem;"></i>
+                                View Course
+                            </a>
+                            <div class="text-muted small">
+                                <i data-feather="star" class="me-1" style="width: 1rem; height: 1rem; color: #fbbf24;"></i>
+                                4.8 (256 reviews)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{{ url_for('courses') }}" class="btn btn-outline-primary btn-lg">
+                <i data-feather="grid" class="me-2"></i>
+                View All Courses
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-5 bg-light-gradient">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-3 col-6 mb-4">
+                <div class="display-4 fw-bold text-gradient">10K+</div>
+                <p class="text-muted mb-0">Happy Students</p>
+            </div>
+            <div class="col-lg-3 col-6 mb-4">
+                <div class="display-4 fw-bold text-gradient">{{ courses|length }}+</div>
+                <p class="text-muted mb-0">Quality Courses</p>
+            </div>
+            <div class="col-lg-3 col-6 mb-4">
+                <div class="display-4 fw-bold text-gradient">50+</div>
+                <p class="text-muted mb-0">Expert Instructors</p>
+            </div>
+            <div class="col-lg-3 col-6 mb-4">
+                <div class="display-4 fw-bold text-gradient">95%</div>
+                <p class="text-muted mb-0">Success Rate</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-5 fw-bold text-gradient mb-3">Ready to Start Learning?</h2>
+                <p class="lead text-muted mb-4">Join thousands of Nigerians who are already transforming their careers with our courses.</p>
+                
+                {% if not current_user.is_authenticated %}
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                        <i data-feather="user-plus" class="me-2"></i>
+                        Create Free Account
+                    </a>
+                    <a href="{{ url_for('courses') }}" class="btn btn-outline-primary btn-lg">
+                        <i data-feather="search" class="me-2"></i>
+                        Browse Courses
+                    </a>
+                </div>
+                {% else %}
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                        <i data-feather="layout" class="me-2"></i>
+                        Go to Dashboard
+                    </a>
+                    <a href="{{ url_for('courses') }}" class="btn btn-outline-primary btn-lg">
+                        <i data-feather="search" class="me-2"></i>
+                        Find New Courses
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize course cards animation
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add animation to course cards on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        // Observe course cards
+        document.querySelectorAll('.course-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+        
+        // Initialize feather icons
+        feather.replace();
+    });
+</script>
+{% endblock %}
