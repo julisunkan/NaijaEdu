@@ -1,0 +1,402 @@
+{% extends "base_new.html" %}
+
+{% block title %}Instructor Dashboard - LearnNG{% endblock %}
+
+{% block content %}
+<!-- Instructor Dashboard Header -->
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold mb-3">Instructor Dashboard</h1>
+                <p class="lead mb-4 opacity-90">
+                    Welcome back, {{ current_user.first_name or current_user.username }}! Manage your courses, track student progress, and grow your teaching impact.
+                </p>
+                <div class="d-flex align-items-center text-white-50">
+                    <div class="me-4">
+                        <i data-feather="book" class="me-2"></i>
+                        <strong>{{ courses|length }}</strong> Courses
+                    </div>
+                    <div class="me-4">
+                        <i data-feather="users" class="me-2"></i>
+                        <strong>{{ total_students or 0 }}</strong> Students
+                    </div>
+                    <div>
+                        <i data-feather="star" class="me-2"></i>
+                        <strong>4.8</strong> Rating
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="position-relative">
+                    <!-- Instructor Dashboard Illustration -->
+                    <svg width="300" height="250" viewBox="0 0 300 250" fill="none" xmlns="http://www.w3.org/2000/svg" class="img-fluid">
+                        <!-- Teaching Screen -->
+                        <rect x="50" y="60" width="200" height="130" rx="15" fill="white" opacity="0.95"/>
+                        <rect x="65" y="75" width="170" height="20" rx="5" fill="#f1f5f9"/>
+                        <rect x="65" y="105" width="80" height="30" rx="5" fill="#3b82f6"/>
+                        <rect x="155" y="105" width="80" height="30" rx="5" fill="#10b981"/>
+                        <rect x="65" y="145" width="170" height="6" rx="3" fill="#e2e8f0"/>
+                        <rect x="65" y="160" width="120" height="6" rx="3" fill="#e2e8f0"/>
+                        
+                        <!-- Play button -->
+                        <circle cx="105" cy="120" r="8" fill="white"/>
+                        <path d="M102 117 L109 120 L102 123 Z" fill="#3b82f6"/>
+                        
+                        <!-- Students -->
+                        <circle cx="195" cy="120" r="8" fill="white"/>
+                        <rect x="191" y="116" width="8" height="8" fill="#10b981"/>
+                        
+                        <!-- Instructor figure -->
+                        <circle cx="150" cy="35" r="12" fill="#fbbf24"/>
+                        <rect x="142" y="47" width="16" height="20" rx="8" fill="#1f2937"/>
+                        
+                        <!-- Book -->
+                        <rect x="130" y="25" width="8" height="12" rx="1" fill="#ef4444"/>
+                        
+                        <!-- Floating elements -->
+                        <circle cx="30" cy="100" r="6" fill="rgba(255,255,255,0.3)"/>
+                        <circle cx="270" cy="160" r="8" fill="rgba(255,255,255,0.3)"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Stats Cards -->
+<section class="py-5 bg-light-gradient">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3 bg-primary">
+                            <i data-feather="book" style="width: 1.5rem; height: 1.5rem;"></i>
+                        </div>
+                        <h3 class="fw-bold">{{ courses|length }}</h3>
+                        <p class="text-muted mb-0">My Courses</p>
+                        <small class="text-primary">
+                            <i data-feather="plus" style="width: 0.875rem; height: 0.875rem;"></i>
+                            Create new course
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3 bg-success">
+                            <i data-feather="users" style="width: 1.5rem; height: 1.5rem;"></i>
+                        </div>
+                        <h3 class="fw-bold">{{ total_students or 0 }}</h3>
+                        <p class="text-muted mb-0">Total Students</p>
+                        <small class="text-success">
+                            <i data-feather="trending-up" style="width: 0.875rem; height: 0.875rem;"></i>
+                            +15% this month
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3 bg-warning">
+                            <i data-feather="file-text" style="width: 1.5rem; height: 1.5rem;"></i>
+                        </div>
+                        <h3 class="fw-bold">{{ recent_submissions|length }}</h3>
+                        <p class="text-muted mb-0">New Submissions</p>
+                        <small class="text-warning">
+                            <i data-feather="clock" style="width: 0.875rem; height: 0.875rem;"></i>
+                            Needs grading
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3 bg-info">
+                            <i data-feather="dollar-sign" style="width: 1.5rem; height: 1.5rem;"></i>
+                        </div>
+                        <h3 class="fw-bold">{{ current_user.wallet_balance|currency }}</h3>
+                        <p class="text-muted mb-0">Earnings</p>
+                        <small class="text-info">
+                            <a href="{{ url_for('instructor_withdraw') }}" class="text-decoration-none">
+                                <i data-feather="download" style="width: 0.875rem; height: 0.875rem;"></i>
+                                Withdraw
+                            </a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Dashboard Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Left Column - Course Management -->
+            <div class="col-lg-8">
+                <!-- My Courses Section -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 pb-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0">
+                                <i data-feather="book" class="me-2 text-primary"></i>
+                                My Courses
+                            </h5>
+                            <a href="{{ url_for('create_course') }}" class="btn btn-primary btn-sm">
+                                <i data-feather="plus" class="me-2"></i>
+                                Create Course
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if courses %}
+                            <div class="row g-3">
+                                {% for course in courses[:4] %}
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="card-title fw-semibold">{{ course.title }}</h6>
+                                                <span class="badge bg-{{ 'success' if course.approval_status == 'approved' else 'warning' if course.approval_status == 'pending' else 'danger' }}">
+                                                    {{ course.approval_status.title() }}
+                                                </span>
+                                            </div>
+                                            <p class="text-muted small mb-2">{{ course.description[:80] }}...</p>
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <small class="text-muted">
+                                                    <i data-feather="users" class="me-1" style="width: 0.875rem; height: 0.875rem;"></i>
+                                                    {{ course.enrollments.count() }} students
+                                                </small>
+                                                <small class="fw-semibold text-success">{{ course.price|currency }}</small>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <a href="{{ url_for('course_detail', id=course.id) }}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                                                    <i data-feather="eye" class="me-1" style="width: 0.875rem; height: 0.875rem;"></i>
+                                                    View
+                                                </a>
+                                                <a href="{{ url_for('edit_course', id=course.id) }}" class="btn btn-outline-secondary btn-sm">
+                                                    <i data-feather="edit" style="width: 0.875rem; height: 0.875rem;"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            {% if courses|length > 4 %}
+                            <div class="text-center mt-3">
+                                <a href="{{ url_for('instructor_courses') }}" class="btn btn-outline-primary btn-sm">View All Courses</a>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i data-feather="book" class="text-muted mb-3" style="width: 3rem; height: 3rem; opacity: 0.5;"></i>
+                                <h6 class="text-muted">No courses yet</h6>
+                                <p class="text-muted small mb-3">Start creating courses to share your knowledge!</p>
+                                <a href="{{ url_for('create_course') }}" class="btn btn-primary btn-sm">
+                                    <i data-feather="plus" class="me-2"></i>
+                                    Create Your First Course
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Recent Submissions -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 pb-0">
+                        <h5 class="fw-bold mb-0">
+                            <i data-feather="file-text" class="me-2 text-primary"></i>
+                            Recent Submissions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_submissions %}
+                            <div class="list-group list-group-flush">
+                                {% for submission in recent_submissions[:5] %}
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <div class="feature-icon me-3 bg-warning" style="width: 2.5rem; height: 2.5rem;">
+                                                <i data-feather="file-text" style="width: 1.25rem; height: 1.25rem;"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ submission.assignment.title }}</div>
+                                                <small class="text-muted">{{ submission.user.first_name or submission.user.username }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="small text-muted">{{ submission.submitted_at.strftime('%b %d') if submission.submitted_at else 'Recently' }}</div>
+                                            <a href="{{ url_for('grade_submission', id=submission.id) }}" class="btn btn-outline-primary btn-sm">Grade</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <a href="{{ url_for('instructor_submissions') }}" class="btn btn-outline-primary btn-sm">View All Submissions</a>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-3">
+                                <i data-feather="inbox" class="text-muted mb-2" style="width: 2rem; height: 2rem; opacity: 0.5;"></i>
+                                <p class="text-muted mb-0">No submissions yet</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Quick Actions & Analytics -->
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 pb-0">
+                        <h6 class="fw-bold mb-0">Quick Actions</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('create_course') }}" class="btn btn-primary btn-sm">
+                                <i data-feather="plus" class="me-2"></i>
+                                Create New Course
+                            </a>
+                            <a href="{{ url_for('instructor_submissions') }}" class="btn btn-outline-warning btn-sm">
+                                <i data-feather="file-text" class="me-2"></i>
+                                Grade Submissions
+                            </a>
+                            <a href="{{ url_for('instructor_quiz_attempts') }}" class="btn btn-outline-info btn-sm">
+                                <i data-feather="help-circle" class="me-2"></i>
+                                View Quiz Attempts
+                            </a>
+                            <a href="{{ url_for('instructor_withdraw') }}" class="btn btn-outline-success btn-sm">
+                                <i data-feather="download" class="me-2"></i>
+                                Request Withdrawal
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Overview -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 pb-0">
+                        <h6 class="fw-bold mb-0">Performance Overview</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">Student Satisfaction</span>
+                                <span class="fw-semibold">4.8/5</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: 96%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">Course Completion Rate</span>
+                                <span class="fw-semibold">78%</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-primary" style="width: 78%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-0">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">Monthly Growth</span>
+                                <span class="fw-semibold">+15%</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-warning" style="width: 65%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 pb-0">
+                        <h6 class="fw-bold mb-0">Recent Activity</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="feature-icon me-3 bg-success" style="width: 2rem; height: 2rem;">
+                                        <i data-feather="user-plus" style="width: 1rem; height: 1rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">New Student Enrolled</div>
+                                        <small class="text-muted">Python Basics</small>
+                                    </div>
+                                    <small class="text-muted">2h ago</small>
+                                </div>
+                            </div>
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="feature-icon me-3 bg-warning" style="width: 2rem; height: 2rem;">
+                                        <i data-feather="file-text" style="width: 1rem; height: 1rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">Assignment Submitted</div>
+                                        <small class="text-muted">Web Development</small>
+                                    </div>
+                                    <small class="text-muted">4h ago</small>
+                                </div>
+                            </div>
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="feature-icon me-3 bg-primary" style="width: 2rem; height: 2rem;">
+                                        <i data-feather="star" style="width: 1rem; height: 1rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">New 5-Star Review</div>
+                                        <small class="text-muted">Data Science Course</small>
+                                    </div>
+                                    <small class="text-muted">1d ago</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize progress bars animation
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.transition = 'width 1s ease-in-out';
+                bar.style.width = width;
+            }, 500);
+        });
+
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        feather.replace();
+    });
+</script>
+{% endblock %}

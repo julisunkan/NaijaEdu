@@ -113,7 +113,7 @@ def dashboard():
             'pending_payments': Payment.query.filter_by(status='pending').count()
         }
         
-        return render_template('dashboard/admin_modern.html', vouchers=vouchers, User=User, stats=stats)
+        return render_template('dashboard/admin_new.html', vouchers=vouchers, User=User, stats=stats)
     elif current_user.role in ['instructor', 'tutor']:
         # Get instructor's courses and submissions
         instructor_courses = Course.query.filter_by(instructor_id=current_user.id).all()
@@ -123,10 +123,14 @@ def dashboard():
         recent_quiz_attempts = QuizAttempt.query.join(Quiz).join(Course).filter(
             Course.instructor_id == current_user.id
         ).order_by(QuizAttempt.completed_at.desc()).limit(10).all()
-        return render_template('dashboard/instructor_modern.html', 
+        # Calculate total students across all courses
+        total_students = sum(course.enrollments.count() for course in instructor_courses)
+        
+        return render_template('dashboard/instructor_new.html', 
                              courses=instructor_courses,
                              recent_submissions=recent_submissions,
-                             recent_quiz_attempts=recent_quiz_attempts)
+                             recent_quiz_attempts=recent_quiz_attempts,
+                             total_students=total_students)
     else:
         # Get student-specific data
         enrolled_courses = Enrollment.query.filter_by(user_id=current_user.id, status='approved').all()
@@ -186,7 +190,7 @@ def course_detail(course_id):
     user_enrolled = False
     if current_user.is_authenticated:
         user_enrolled = current_user.can_access_course(course)
-    return render_template('courses/detail_modern.html', course=course, user_enrolled=user_enrolled)
+    return render_template('courses/detail_new.html', course=course, user_enrolled=user_enrolled)
 
 @app.route('/courses/create', methods=['GET', 'POST'])
 @login_required

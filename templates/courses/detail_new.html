@@ -1,0 +1,505 @@
+{% extends "base_new.html" %}
+
+{% block title %}{{ course.title }} - LearnNG{% endblock %}
+
+{% block content %}
+<!-- Course Header -->
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge bg-white text-primary me-3">{{ course.category or 'Technology' }}</span>
+                    {% if course.approval_status != 'approved' %}
+                        <span class="badge bg-warning">{{ course.approval_status.title() }}</span>
+                    {% endif %}
+                </div>
+                <h1 class="display-5 fw-bold mb-3">{{ course.title }}</h1>
+                <p class="lead mb-4 opacity-90">{{ course.description }}</p>
+                
+                <div class="d-flex align-items-center text-white-50 mb-4">
+                    <div class="me-4">
+                        <i data-feather="user" class="me-2"></i>
+                        <strong>{{ course.instructor.first_name or course.instructor.username }}</strong>
+                    </div>
+                    <div class="me-4">
+                        <i data-feather="clock" class="me-2"></i>
+                        <strong>{{ course.lessons.count() }}</strong> lessons
+                    </div>
+                    <div class="me-4">
+                        <i data-feather="users" class="me-2"></i>
+                        <strong>{{ course.enrollments.count() }}</strong> students
+                    </div>
+                    <div>
+                        <i data-feather="star" class="me-2"></i>
+                        <strong>4.8</strong> rating
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-3">
+                    {% if user_enrolled %}
+                        <a href="#lessons" class="btn btn-light btn-lg">
+                            <i data-feather="play" class="me-2"></i>
+                            Continue Learning
+                        </a>
+                    {% elif current_user.is_authenticated %}
+                        {% if course.price == 0 %}
+                            <a href="{{ url_for('enroll_course', course_id=course.id) }}" class="btn btn-light btn-lg">
+                                <i data-feather="play" class="me-2"></i>
+                                Enroll Free
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('enroll_course', course_id=course.id) }}" class="btn btn-light btn-lg">
+                                <i data-feather="credit-card" class="me-2"></i>
+                                Enroll Now - {{ course.price|currency }}
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-light btn-lg">
+                            <i data-feather="log-in" class="me-2"></i>
+                            Login to Enroll
+                        </a>
+                    {% endif %}
+                    
+                    <button class="btn btn-outline-light btn-lg" onclick="shareCourse()">
+                        <i data-feather="share-2" class="me-2"></i>
+                        Share Course
+                    </button>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="position-relative">
+                    <!-- Course Detail Illustration -->
+                    <svg width="350" height="280" viewBox="0 0 350 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="img-fluid">
+                        <!-- Main Course Card -->
+                        <rect x="75" y="60" width="200" height="160" rx="20" fill="white" opacity="0.95" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+                        
+                        <!-- Course Content Preview -->
+                        <rect x="95" y="80" width="160" height="20" rx="5" fill="#f1f5f9"/>
+                        <rect x="95" y="110" width="120" height="12" rx="3" fill="#e2e8f0"/>
+                        <rect x="95" y="130" width="140" height="12" rx="3" fill="#e2e8f0"/>
+                        <rect x="95" y="150" width="100" height="12" rx="3" fill="#e2e8f0"/>
+                        
+                        <!-- Video Play Button -->
+                        <circle cx="175" cy="185" r="20" fill="rgba(255,255,255,0.9)"/>
+                        <path d="M168 177 L185 185 L168 193 Z" fill="#3b82f6"/>
+                        
+                        <!-- Price Tag -->
+                        <rect x="200" y="40" width="60" height="30" rx="15" fill="#10b981"/>
+                        <text x="230" y="58" text-anchor="middle" fill="white" font-size="12" font-weight="bold">₦{{ course.price|int }}</text>
+                        
+                        <!-- Students Avatars -->
+                        <circle cx="50" cy="120" r="12" fill="#fbbf24"/>
+                        <circle cx="320" cy="160" r="12" fill="#f59e0b"/>
+                        <circle cx="40" cy="200" r="10" fill="#ef4444"/>
+                        
+                        <!-- Floating Elements -->
+                        <circle cx="30" cy="80" r="8" fill="rgba(255,255,255,0.3)"/>
+                        <circle cx="320" cy="100" r="6" fill="rgba(255,255,255,0.3)"/>
+                        <rect x="300" y="200" width="12" height="12" rx="2" fill="rgba(255,255,255,0.2)"/>
+                        
+                        <!-- Course Rating Stars -->
+                        <g transform="translate(95,170)">
+                            <circle cx="5" cy="5" r="2" fill="#fbbf24"/>
+                            <circle cx="15" cy="5" r="2" fill="#fbbf24"/>
+                            <circle cx="25" cy="5" r="2" fill="#fbbf24"/>
+                            <circle cx="35" cy="5" r="2" fill="#fbbf24"/>
+                            <circle cx="45" cy="5" r="2" fill="#fbbf24"/>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Course Information Tabs -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0">
+                        <ul class="nav nav-pills card-header-pills" id="courseTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="overview-tab" data-bs-toggle="pill" data-bs-target="#overview" type="button">
+                                    <i data-feather="info" class="me-2"></i>Overview
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="curriculum-tab" data-bs-toggle="pill" data-bs-target="#curriculum" type="button">
+                                    <i data-feather="list" class="me-2"></i>Curriculum
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="instructor-tab" data-bs-toggle="pill" data-bs-target="#instructor" type="button">
+                                    <i data-feather="user" class="me-2"></i>Instructor
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="reviews-tab" data-bs-toggle="pill" data-bs-target="#reviews" type="button">
+                                    <i data-feather="star" class="me-2"></i>Reviews
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="courseTabContent">
+                            <!-- Overview Tab -->
+                            <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                                <h4 class="fw-bold mb-3">Course Description</h4>
+                                <p class="mb-4">{{ course.description|nl2br|safe }}</p>
+                                
+                                <h5 class="fw-bold mb-3">What You'll Learn</h5>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i data-feather="check" class="text-success me-3"></i>
+                                            <span>Master the fundamentals</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i data-feather="check" class="text-success me-3"></i>
+                                            <span>Build practical projects</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i data-feather="check" class="text-success me-3"></i>
+                                            <span>Industry best practices</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i data-feather="check" class="text-success me-3"></i>
+                                            <span>Certificate of completion</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h5 class="fw-bold mb-3">Requirements</h5>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2"><i data-feather="circle" class="text-muted me-3" style="width: 0.5rem; height: 0.5rem;"></i>Basic computer skills</li>
+                                    <li class="mb-2"><i data-feather="circle" class="text-muted me-3" style="width: 0.5rem; height: 0.5rem;"></i>Internet connection</li>
+                                    <li class="mb-2"><i data-feather="circle" class="text-muted me-3" style="width: 0.5rem; height: 0.5rem;"></i>Eagerness to learn</li>
+                                </ul>
+                            </div>
+
+                            <!-- Curriculum Tab -->
+                            <div class="tab-pane fade" id="curriculum" role="tabpanel">
+                                <h4 class="fw-bold mb-4">Course Curriculum</h4>
+                                
+                                {% if course.lessons.count() > 0 %}
+                                    <div class="accordion" id="lessonsAccordion">
+                                        {% for lesson in course.lessons %}
+                                        <div class="accordion-item border-0 shadow-sm mb-3">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#lesson{{ lesson.id }}">
+                                                    <div class="d-flex align-items-center w-100">
+                                                        <div class="feature-icon me-3" style="width: 2rem; height: 2rem;">
+                                                            <i data-feather="{% if lesson.content_type == 'video' %}play{% elif lesson.content_type == 'pdf' %}file-text{% else %}book-open{% endif %}" style="width: 1rem; height: 1rem;"></i>
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <div class="fw-semibold">{{ lesson.title }}</div>
+                                                            <small class="text-muted">
+                                                                {{ lesson.content_type.title() }} • 
+                                                                {% if lesson.duration %}{{ lesson.duration }} min{% else %}5 min{% endif %}
+                                                            </small>
+                                                        </div>
+                                                        {% if user_enrolled %}
+                                                            <a href="{{ url_for('view_lesson', id=lesson.id) }}" class="btn btn-outline-primary btn-sm me-3" onclick="event.stopPropagation();">
+                                                                <i data-feather="external-link" style="width: 0.875rem; height: 0.875rem;"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </button>
+                                            </h2>
+                                            <div id="lesson{{ lesson.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" data-bs-parent="#lessonsAccordion">
+                                                <div class="accordion-body">
+                                                    {% if lesson.description %}
+                                                        <p class="text-muted">{{ lesson.description }}</p>
+                                                    {% endif %}
+                                                    {% if not user_enrolled %}
+                                                        <div class="d-flex align-items-center text-muted">
+                                                            <i data-feather="lock" class="me-2"></i>
+                                                            <span>Enroll to access this lesson</span>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-5">
+                                        <i data-feather="book" class="text-muted mb-3" style="width: 3rem; height: 3rem; opacity: 0.5;"></i>
+                                        <h6 class="text-muted">No lessons available yet</h6>
+                                        <p class="text-muted">The instructor is still preparing the course content.</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Instructor Tab -->
+                            <div class="tab-pane fade" id="instructor" role="tabpanel">
+                                <div class="d-flex align-items-start mb-4">
+                                    <div class="feature-icon me-4 bg-primary" style="width: 4rem; height: 4rem;">
+                                        <i data-feather="user" style="width: 2rem; height: 2rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="fw-bold mb-2">{{ course.instructor.first_name or course.instructor.username }}</h4>
+                                        <p class="text-muted mb-3">Professional {{ course.category or 'Technology' }} Instructor</p>
+                                        {% if course.instructor.instructor_verified %}
+                                            <span class="badge bg-success mb-3">
+                                                <i data-feather="check-circle" class="me-1"></i>Verified Instructor
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="row g-4 mb-4">
+                                    <div class="col-md-4">
+                                        <div class="text-center">
+                                            <div class="h3 fw-bold text-primary">{{ course.instructor.courses_created.count() }}</div>
+                                            <p class="text-muted mb-0">Courses</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-center">
+                                            <div class="h3 fw-bold text-primary">1,250+</div>
+                                            <p class="text-muted mb-0">Students</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-center">
+                                            <div class="h3 fw-bold text-primary">4.8</div>
+                                            <p class="text-muted mb-0">Rating</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h5 class="fw-bold mb-3">About the Instructor</h5>
+                                <p class="text-muted">
+                                    {{ course.instructor.first_name or course.instructor.username }} is an experienced {{ course.category or 'technology' }} professional 
+                                    with years of industry experience. They are passionate about sharing knowledge and helping students 
+                                    achieve their learning goals through practical, hands-on instruction.
+                                </p>
+                            </div>
+
+                            <!-- Reviews Tab -->
+                            <div class="tab-pane fade" id="reviews" role="tabpanel">
+                                <div class="row mb-4">
+                                    <div class="col-md-4">
+                                        <div class="text-center">
+                                            <div class="display-4 fw-bold text-primary">4.8</div>
+                                            <div class="text-warning mb-2">
+                                                {% for i in range(5) %}
+                                                    <i data-feather="star" style="width: 1rem; height: 1rem; fill: currentColor;"></i>
+                                                {% endfor %}
+                                            </div>
+                                            <p class="text-muted">Based on {{ (course.enrollments.count() * 0.7)|round|int }} reviews</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <!-- Rating breakdown -->
+                                        {% for rating in [5, 4, 3, 2, 1] %}
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="me-3">{{ rating }} <i data-feather="star" style="width: 0.875rem; height: 0.875rem;"></i></span>
+                                            <div class="progress flex-grow-1 me-3" style="height: 8px;">
+                                                <div class="progress-bar bg-warning" style="width: {{ (6-rating) * 20 }}%"></div>
+                                            </div>
+                                            <span class="text-muted">{{ (6-rating) * 15 }}%</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Sample Reviews -->
+                                <div class="row g-4">
+                                    <div class="col-12">
+                                        <div class="card border-0 bg-light">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="feature-icon me-3 bg-success" style="width: 2.5rem; height: 2.5rem;">
+                                                        <i data-feather="user" style="width: 1.25rem; height: 1.25rem;"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="fw-semibold mb-0">Sarah Johnson</h6>
+                                                        <div class="text-warning small">
+                                                            {% for i in range(5) %}
+                                                                <i data-feather="star" style="width: 0.75rem; height: 0.75rem; fill: currentColor;"></i>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p class="mb-0">"Excellent course! The instructor explains concepts clearly and the hands-on projects really helped me understand the material. Highly recommended!"</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="card border-0 bg-light">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="feature-icon me-3 bg-primary" style="width: 2.5rem; height: 2.5rem;">
+                                                        <i data-feather="user" style="width: 1.25rem; height: 1.25rem;"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="fw-semibold mb-0">Michael Okafor</h6>
+                                                        <div class="text-warning small">
+                                                            {% for i in range(5) %}
+                                                                <i data-feather="star" style="width: 0.75rem; height: 0.75rem; fill: currentColor;"></i>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p class="mb-0">"Great value for money. The course content is well-structured and easy to follow. I was able to apply what I learned immediately in my job."</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Enrollment Card -->
+                <div class="card border-0 shadow-sm sticky-top mb-4" style="top: 100px;">
+                    <div class="card-body text-center">
+                        <div class="display-4 fw-bold text-success mb-3">
+                            {% if course.price == 0 %}
+                                Free
+                            {% else %}
+                                {{ course.price|currency }}
+                            {% endif %}
+                        </div>
+                        
+                        {% if user_enrolled %}
+                            <a href="#lessons" class="btn btn-success btn-lg w-100 mb-3">
+                                <i data-feather="play" class="me-2"></i>
+                                Continue Learning
+                            </a>
+                        {% elif current_user.is_authenticated %}
+                            {% if course.price == 0 %}
+                                <a href="{{ url_for('enroll_course', course_id=course.id) }}" class="btn btn-primary btn-lg w-100 mb-3">
+                                    <i data-feather="play" class="me-2"></i>
+                                    Enroll Free
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('enroll_course', course_id=course.id) }}" class="btn btn-primary btn-lg w-100 mb-3">
+                                    <i data-feather="credit-card" class="me-2"></i>
+                                    Enroll Now
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg w-100 mb-3">
+                                <i data-feather="log-in" class="me-2"></i>
+                                Login to Enroll
+                            </a>
+                        {% endif %}
+
+                        <div class="row g-3 text-start">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i data-feather="clock" class="text-muted me-2"></i>
+                                    <small class="text-muted">{{ course.lessons.count() }} lessons</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i data-feather="users" class="text-muted me-2"></i>
+                                    <small class="text-muted">{{ course.enrollments.count() }} students</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i data-feather="award" class="text-muted me-2"></i>
+                                    <small class="text-muted">Certificate</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i data-feather="smartphone" class="text-muted me-2"></i>
+                                    <small class="text-muted">Mobile access</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Courses -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0">
+                        <h6 class="fw-bold mb-0">Related Courses</h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- This would be populated with related courses -->
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="feature-icon me-3 bg-primary" style="width: 2.5rem; height: 2.5rem;">
+                                <i data-feather="book" style="width: 1.25rem; height: 1.25rem;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-semibold mb-0 small">Advanced {{ course.category or 'Technology' }}</h6>
+                                <small class="text-muted">₦15,000</small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="feature-icon me-3 bg-success" style="width: 2.5rem; height: 2.5rem;">
+                                <i data-feather="book" style="width: 1.25rem; height: 1.25rem;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-semibold mb-0 small">{{ course.category or 'Technology' }} Fundamentals</h6>
+                                <small class="text-muted">₦8,000</small>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <a href="{{ url_for('courses') }}" class="btn btn-outline-primary btn-sm">View All Courses</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function shareCourse() {
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ course.title }}',
+                text: '{{ course.description[:100] }}...',
+                url: window.location.href
+            });
+        } else {
+            // Fallback for browsers that don't support native sharing
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('Course link copied to clipboard!');
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize feather icons
+        feather.replace();
+        
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
