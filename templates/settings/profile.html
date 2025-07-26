@@ -1,0 +1,186 @@
+{% extends "base_new.html" %}
+
+{% block title %}Profile - LearnNG{% endblock %}
+
+{% block content %}
+<!-- Profile Header -->
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold mb-3">User Profile</h1>
+                <p class="lead mb-4 opacity-90">
+                    Manage your personal information and account settings.
+                </p>
+                <div class="d-flex align-items-center text-white-50">
+                    <div class="me-4">
+                        <i data-feather="user" class="me-2"></i>
+                        <strong>{{ current_user.role.title() }}</strong> Account
+                    </div>
+                    <div class="me-4">
+                        <i data-feather="calendar" class="me-2"></i>
+                        Member since {{ current_user.created_at.strftime('%B %Y') if current_user.created_at else 'Recently' }}
+                    </div>
+                    <div>
+                        <i data-feather="mail" class="me-2"></i>
+                        {{ current_user.email }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="position-relative">
+                    <!-- Profile Illustration -->
+                    <svg width="300" height="250" viewBox="0 0 300 250" fill="none" xmlns="http://www.w3.org/2000/svg" class="img-fluid">
+                        <!-- Profile Card -->
+                        <rect x="75" y="60" width="150" height="130" rx="15" fill="white" opacity="0.95"/>
+                        <circle cx="150" cy="100" r="25" fill="#3b82f6"/>
+                        <rect x="125" y="130" width="50" height="8" rx="4" fill="#e2e8f0"/>
+                        <rect x="110" y="145" width="80" height="6" rx="3" fill="#e2e8f0"/>
+                        <rect x="120" y="160" width="60" height="15" rx="7" fill="#10b981"/>
+                        
+                        <!-- Decorative elements -->
+                        <circle cx="50" cy="80" r="8" fill="rgba(255,255,255,0.3)"/>
+                        <circle cx="250" cy="120" r="10" fill="rgba(255,255,255,0.3)"/>
+                        <rect x="40" y="180" width="12" height="12" rx="2" fill="rgba(255,255,255,0.2)"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Profile Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Profile Information -->
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="fw-bold mb-0">
+                            <i data-feather="user" class="me-2 text-primary"></i>
+                            Profile Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Username</label>
+                                <div class="form-control bg-light">{{ current_user.username }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email</label>
+                                <div class="form-control bg-light">{{ current_user.email }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">First Name</label>
+                                <div class="form-control bg-light">{{ current_user.first_name or 'Not set' }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Last Name</label>
+                                <div class="form-control bg-light">{{ current_user.last_name or 'Not set' }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Account Type</label>
+                                <div class="form-control bg-light">{{ current_user.role.title() }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Wallet Balance</label>
+                                <div class="form-control bg-light text-success fw-bold">{{ current_user.wallet_balance|currency }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-primary me-3">
+                                <i data-feather="edit" class="me-2"></i>
+                                Edit Profile
+                            </button>
+                            <button class="btn btn-outline-secondary">
+                                <i data-feather="key" class="me-2"></i>
+                                Change Password
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Statistics -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="fw-bold mb-0">
+                            <i data-feather="bar-chart" class="me-2 text-primary"></i>
+                            Account Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4 text-center">
+                            {% if current_user.role == 'student' %}
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-primary">{{ current_user.enrollments.count() }}</div>
+                                    <p class="text-muted mb-0">Enrolled Courses</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-success">0</div>
+                                    <p class="text-muted mb-0">Completed</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-warning">0</div>
+                                    <p class="text-muted mb-0">Certificates</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-info">7</div>
+                                    <p class="text-muted mb-0">Day Streak</p>
+                                </div>
+                            {% elif current_user.role in ['instructor', 'tutor'] %}
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-primary">{{ current_user.courses_created.count() }}</div>
+                                    <p class="text-muted mb-0">Courses Created</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-success">
+                                        {% set total_students = current_user.courses_created|sum(attribute='enrollments')|list|length %}
+                                        {{ total_students }}
+                                    </div>
+                                    <p class="text-muted mb-0">Total Students</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-warning">4.8</div>
+                                    <p class="text-muted mb-0">Avg Rating</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-info">{{ current_user.wallet_balance|currency }}</div>
+                                    <p class="text-muted mb-0">Earnings</p>
+                                </div>
+                            {% else %}
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-primary">{{ current_user.User.query.count() if current_user.role == 'admin' else 0 }}</div>
+                                    <p class="text-muted mb-0">Total Users</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-success">{{ current_user.Course.query.count() if current_user.role == 'admin' else 0 }}</div>
+                                    <p class="text-muted mb-0">Total Courses</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-warning">₦0</div>
+                                    <p class="text-muted mb-0">Revenue</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 fw-bold text-info">0</div>
+                                    <p class="text-muted mb-0">Pending</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+    });
+</script>
+{% endblock %}

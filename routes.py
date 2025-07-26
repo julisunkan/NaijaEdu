@@ -97,6 +97,24 @@ def logout():
     flash('You have been logged out', 'info')
     return redirect(url_for('index'))
 
+# Additional dashboard routes for navigation consistency
+@app.route('/admin/dashboard')
+@login_required
+@admin_required
+def admin_dashboard():
+    return redirect(url_for('dashboard'))
+
+@app.route('/instructor/dashboard')
+@login_required
+@instructor_required
+def instructor_dashboard():
+    return redirect(url_for('dashboard'))
+
+@app.route('/profile')
+@login_required
+def profile():
+    return render_template('settings/profile.html')
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -2109,6 +2127,23 @@ def download_sample_import():
     except Exception as e:
         flash(f'Download failed: {str(e)}', 'danger')
         return redirect(url_for('bulk_import_courses'))
+
+# Additional missing routes to prevent 500 errors - only add if they don't exist
+
+
+
+# Alias routes for bulk operations
+@app.route('/admin/bulk_import')
+@login_required
+@admin_required
+def bulk_import():
+    return redirect(url_for('bulk_import_courses'))
+
+@app.route('/admin/bulk_export')
+@login_required
+@admin_required
+def bulk_export():
+    return redirect(url_for('bulk_export_courses'))
 
 # Error handlers
 @app.errorhandler(404)
