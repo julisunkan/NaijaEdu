@@ -2129,7 +2129,12 @@ def download_sample_import():
         return redirect(url_for('bulk_import_courses'))
 
 # Additional missing routes to prevent 500 errors - only add if they don't exist
-
+@app.route('/admin/certificate_templates')
+@login_required
+@admin_required
+def certificate_templates():
+    """Alias for manage_certificate_templates"""
+    return redirect(url_for('manage_certificate_templates'))
 
 
 # Alias routes for bulk operations
